@@ -104,6 +104,21 @@ Examples that demonstrate performance engineering in a datastructure-driven mode
 
 \subsubsection{SpMV}
 
+%Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
+
+\begin{figure}
+    \begin{minipage}[t]{0.5\textwidth}
+        \vspace{0pt} % Add this to ensure top alignment within minipage
+        \includegraphics[width=\linewidth]{spmv_performance_sorted_(faster_than_taco).png}
+    \end{minipage}%
+    \begin{minipage}[t]{0.5\textwidth}
+        \vspace{0pt} % Add this to ensure top alignment within minipage
+        \includegraphics[width=\linewidth]{spmv_performance_sorted_(slower_than_taco).png}
+    \end{minipage}
+    \caption{Performance of SpMV across various tools.}
+\end{figure}
+
+
 
 \subsection{Programming over flexible data}
 
@@ -118,8 +133,11 @@ Examples that demonstrate performance engineering in a datastructure-driven mode
 
 
 \subsubsection{Graph Applications}
-Bellman Ford, BFS, Pagerank, Triangle Counting.
-	Are there special graph structures or kernels we do better on?
+\begin{figure}
+	\includegraphics[width=\linewidth]{bfs_speedup_over_graphs.jl.png}
+	\includegraphics[width=\linewidth]{bellmanford_speedup_over_graphs.jl.png}
+    \caption{Performance of graph apps across various tools.}
+\end{figure}
 
 \subsubsection{High-level kernel fusion}
 Find an example where fusing the python interface gives a big speedup over non-fused kernels.
