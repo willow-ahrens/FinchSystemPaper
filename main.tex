@@ -16,7 +16,7 @@
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 \title{Finch: A Datastructure-Driven Array Programming Language}
-\author{Willow Ahrens, Teo Collins, Radha Patel, Changwan Hong, Saman Amarasinghe}
+\author{Willow Ahrens, Teo Collin, Radha Patel, Kyle Deeds, Changwan Hong, Saman Amarasinghe}
 
 \begin{document}
 \maketitle
@@ -55,13 +55,13 @@ application. The tensor interface makes it easy to extend Finch to new level
 formats. A unique tensor lifecycle model enables polymorphism by analyzing the
 appropriate stages to insert simple, overloadable, interface functions such as
 initialization or finalization. 
-\item A high-level array programming language and fusion interface for
-operations such as map, broadcast, or reduce that can be compiled to efficient
-code using the previous loop-level abstractions.
+
 \item We evaluate the productivity of our language in several case studies,
 showing that Finch can be used to accelerate a wide range of applications, 
 from classic operations such as spmv and spgemm, to more complex applications such as image processing and graph analytics.
-We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels.
+We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for
+operations such as map, broadcast, or reduce that can be compiled to efficient
+code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
 %\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
 %\item Tensor lifecycles, a simple constraint on tensor reads and writes that elegantly restricts Finch programs to avoid complex data dependencies, and enables tensor polymorphism by providing implementers with well-defined functions to overload.
@@ -120,20 +120,6 @@ Ragged                   &            &            & \checkmark &            & \
 
 \subsection{Syntax and Semantics}
 
-\section{The Finch Compiler}
-
-\subsection{Dimensionalization}
-
-\subsection{Concordization}
-
-\subsection{Bounds Analysis}
-
-\subsection{Performance Warnings}
-
-\subsection{Wrapperization}
-
-\subsection{Simplification and Algebraic Transformations}
-
 \section{The Tensor Interface}
 
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
@@ -160,14 +146,21 @@ Ragged                   &            &            & \checkmark &            & \
 \subsubsection{Sparse Scalars}
 \subsubsection{Early Break Scalars}
 
-\section{The Finch High-Level API (Needs a Name)}
 
-\subsection{Finch Logic}
+\section{The Finch Compiler}
 
-\subsection{Finch Interpreter}
+\subsection{Dimensionalization}
 
-\subsection{Lowering}
-\subsubsection{Heuristic Optimization}
+\subsection{Concordization}
+
+\subsection{Bounds Analysis}
+
+\subsection{Performance Warnings}
+
+\subsection{Wrapperization}
+
+\subsection{Simplification and Algebraic Transformations}
+
 
 \section{Evaluation}
 
@@ -223,8 +216,22 @@ Examples that demonstrate performance engineering in a datastructure-driven mode
     \caption{Performance of graph apps across various tools.}
 \end{figure}
 
-\subsubsection{High-level kernel fusion}
+\subsection{Implementing Numpy Array API in Finch}
+\subsubsection{The Finch High-Level API (Needs a Name)}
+
+\subsubsection{Finch Logic}
+
+\subsubsection{Finch Interpreter}
+
+\subsubsection{Lowering}
+\subsubsection{Heuristic Optimization}
+
 Find an example where fusing the python interface gives a big speedup over non-fused kernels.
+
+matmul, mttkrp, repeated ttm, triangle counting, multiple pointwise,
+in-place.
+dot((v^t .* u), w)) vs. 
+(v^t .* dot(u, w))
 
 \bibliographystyle{alpha}
 \bibliography{bibliography}
