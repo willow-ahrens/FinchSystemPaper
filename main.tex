@@ -15,10 +15,13 @@
 \usepackage{array}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
+
 \title{Finch: A Datastructure-Driven Array Programming Language}
 \author{Willow Ahrens, Teo Collin, Radha Patel, Kyle Deeds, Changwan Hong, Saman Amarasinghe}
 
 \begin{document}
+\newcommand\teo[1]{\textcolor{red}{teo:#1}}
+
 \maketitle
 
 \begin{abstract}
@@ -120,24 +123,12 @@ Ragged                   &            &            & \checkmark &            & \
 
 \subsection{Syntax and Semantics}
 
-\section{The Tensor Interface}
 
-\subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
+\section{Bridging Looplets and Finch: The Tensor Interface}
+\teo{I am doing stuff in this section.}
+\input{sections/tensors.tex}
 
-\subsection{Level Abstraction}
-    
-\begin{enumerate}
-\item fibers
-\item assembly
-\item reassembly
-\end{enumerate}
 
-\subsection{Core Level Langage Primitives}
-\begin{enumerate}
-\item SparseList
-\item SparseDict
-\item ...
-\end{enumerate}
 
 \subsection{Wrapper Tensors}
 
@@ -166,9 +157,27 @@ Ragged                   &            &            & \checkmark &            & \
 
 \subsection{Data-Driven Performance Engineering}
 \subsubsection{Sparse-Sparse Matrix Multiply}
+
 Examples that demonstrate performance engineering in a datastructure-driven model
 
 \subsubsection{SpMV}
+Finch provides many flexible level formats to efficiently capture a variety of patterns in datasets, encompassing both the structure and type of data. More specifically, these formats can represent banded, triangular, run-length-encoded, blocked, hashed, and boolean data, as well as several other formats. Finch also provides the control flow necessary to manipulate the order in which data in these flexible level formats is read and written, enabling us to take advantage of multiple structural patterns concurrently—for example, we can exploit both sparsity and symmetry by using a sparse level format and restricting data reads to one triangle of a matrix. % I'm not sure if the right place for this is here - maybe should come earlier?
+
+Structure in data arises both naturally, due to the chemical and physical properties of matter, and artificially via mathematical operations that induce particular patterns. Closely tailoring a storage format to a particular data pattern enables us to reduce the amount of stored values, make data accesses more efficient, and take advantage of spatial locality, resulting in more performant code.
+
+The sparse matrix-vector multiplication kernel is a common operation in sparse linear algebra with many applications including conjugate gradients, graph algorithms, numerical analysis, and neural networks. The wide range of applications unsurprisingly results in a wide range of types of datasets making it an effective kernel to demonstrate the utility of having flexible data formats. In this case study, we highlight a few different Finch formats and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do.
+
+We compare Finch’s performance to that of TACO, SuiteSparseGraphBLAS, and Julia’s standard library.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. In addition, we also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We depict the performance of SpMV across the aforementioned tools and compare to the fastest Finch format for that particular dataset in Figures 1 and 2. 
+
+\subsubsection{SparseList Format}
+\subsubsection{SparseVBL Format}
+The SparseVBL format is similar to the SparseList format, but contiguous fibers are stored together as blocks. Thus, it is most worthwhile to use when the matrix has a blocked structure—i.e. where there tend to be stretches of consecutive nonzero values. We found that the SparseVBL format performed the best for matrices with a clear block structure (list specific matrices) or an imperfect blocked structure (list specific matrices). 
+\subsubsection{Pattern Format}
+\subsubsection{Symmetric SpMV}
+Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by providing the capabilities to reuse memory reads and insert control flow logic to restrict iterations to either the lower or upper triangle of the sparse matrix. We can apply this strategy with any level format. Every symmetric matrix in the SparseList and SparseList-Pattern formats has better performance when we use a Finch SpMV program that takes advantage of this symmetry. However, the regular Finch SpMV program has better performance for symmetric matrices than the symmetric Finch SpMV program for the other more specialized formats, likely because we need in-order accesses to fully capitalize on the specialized storage. Symmetric SpMV with the SparseList level format in Finch results in an average of 1.3x speedup over TACO and symmetric SpMV with the SparseList-Pattern format in Finch results in an average speedup of 1.15x over TACO . Notably, there is a 1.9x speedup for the HB/saylr4 matrix. 
+\subsubsection{4D Blocked SpMV}
+
+
 
 %Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
 

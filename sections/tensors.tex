@@ -1,0 +1,37 @@
+Looplets provide descriptions of iterators. 
+%
+The Finch language provides descriptions of computations that iterate over a subset of a regular grid that is lexicographically ordered.
+
+%
+As we will see
+\begin{enumerate}
+    \item Compilation substitutes in different iterators depending on context, mainly the traversal pattern of the iterator (oh god).
+    \item Less obviously, iterators have other state that needs to be tracked, such as when we write stuff.
+    \item how do we ask for the right iterator and how do we change/manage their state?
+\end{enumerate}
+Need to Make these problems clear by this point, hope that read anticipate them.
+
+Solutions:
+\begin{enumerate}
+    \item Einsum like: limit when state can change, leading to a natural lifecycle for a tensor.
+    \item simple interface to go from an index expression into an iterator that decomposes in a way tensor compilers are used to.
+\end{enumerate}
+
+\subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
+
+
+\subsection{Level Abstraction}
+    
+\begin{enumerate}
+\item fibers
+\item assembly
+\item reassembly
+\end{enumerate}
+
+
+\subsection{Core Level Langage Primitives}
+\begin{enumerate}
+\item SparseList
+\item SparseDict
+\item ...
+\end{enumerate}
