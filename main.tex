@@ -29,24 +29,46 @@ However, arrays can only handle dense rectilinear integer grids. Real world arra
 
 \section{Introduction}
 
-- Fortran supported lots of control structures, no data structures, just dense arrays.
-
-- We tried to emulate complex data using only dense arrays but with complicated control structures.
-
-- Recently, people tried to build frameworks to support structured data, but gave up a lot of program side
-
-- We’re bringing these together, both need to work together.
-
+%- Fortran supported lots of control structures, no data structures, just dense arrays.
+%
+%- We tried to emulate complex data using only dense arrays but with complicated control structures.
+%
+%- Recently, people tried to build frameworks to support structured data, but gave up a lot of program side
+%
+%- We’re bringing these together, both need to work together.
 \subsection{Contributions}
 
 \begin{enumerate}
-\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
-\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
-\item Tensor lifecycles, a simple constraint on tensor reads and writes that elegantly restricts Finch programs to avoid complex data dependencies, and enables tensor polymorphism by providing implementers with well-defined functions to overload.
-\item Wrapper Tensors which modify existing datastructures and recombine them to support new patterns, such as affine indexing, padding, transposition, and slicing.
-\item Wrapper Levels which modify existing datastructures and enabling complex features such as atomic updates or contiguous versus separate allocation.
-\item We define the first mappings from the existing pydata/sparse array api high-level operations to low level finch notation
-\item <Performance Contributions>
+\item A rich structured array programming language with for-loops
+and complex control flow constructs at the same level of productivity
+of dense arrays. To our knowledge, the Finch programming language is the first
+to support if-conditions, early breaks, and multiple left hand sides over
+structured data, as well as complex accesses such as affine indexing or scatter/gather.
+\item More complex array structures than ever before. A complete level-by-level
+structure-description language for expressing the structure of data
+hierarchically. The first such set of formats to efficiently capture banded,
+triangular, run-length-encoded, or sparse datasets, and any combination thereof.
+\item The Finch compiler specializes programs to data structures in a
+predictable, deterministic approach, making it easier to search the complex
+space of programs and datastructures to find an appropriate fit for a given
+application. The tensor interface makes it easy to extend Finch to new level
+formats. A unique tensor lifecycle model enables polymorphism by analyzing the
+appropriate stages to insert simple, overloadable, interface functions such as
+initialization or finalization. 
+\item A high-level array programming language and fusion interface for
+operations such as map, broadcast, or reduce that can be compiled to efficient
+code using the previous loop-level abstractions.
+\item We evaluate the productivity of our language in several case studies,
+showing that Finch can be used to accelerate a wide range of applications, 
+from classic operations such as spmv and spgemm, to more complex applications such as image processing and graph analytics.
+We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels.
+%\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
+%\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
+%\item Tensor lifecycles, a simple constraint on tensor reads and writes that elegantly restricts Finch programs to avoid complex data dependencies, and enables tensor polymorphism by providing implementers with well-defined functions to overload.
+%\item Wrapper Tensors which modify existing datastructures and recombine them to support new patterns, such as affine indexing, padding, transposition, and slicing.
+%\item Wrapper Levels which modify existing datastructures and enabling complex features such as atomic updates or contiguous versus separate allocation.
+%\item We define the first mappings from the existing pydata/sparse array api high-level operations to low level finch notation
+%\item <Performance Contributions>
 \end{enumerate}
 
 \begin{table}[h!]
@@ -86,15 +108,66 @@ Ragged                   &            &            & \checkmark &            & \
 \label{tab:data_structures}
 \end{table}
 
-\section{Additional Topics}
+\section{Background}
+\subsection{Looplets}
+\subsection{FiberTrees}
 
+\subsection{Concordant Iteration}
+
+\subsection{Protocols}
+
+\section{The Finch Language}
+
+\subsection{Syntax and Semantics}
+
+\section{The Finch Compiler}
+
+\subsection{Dimensionalization}
+
+\subsection{Concordization}
+
+\subsection{Bounds Analysis}
+
+\subsection{Performance Warnings}
+
+\subsection{Wrapperization}
+
+\subsection{Simplification and Algebraic Transformations}
+
+\section{The Tensor Interface}
+
+\subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
+
+\subsection{Level Abstraction}
+    
 \begin{enumerate}
-\item Concordant iteration
-\item Dimensionalization
-\item Bounds analysis/queries
-\item Performance warnings
-
+\item fibers
+\item assembly
+\item reassembly
 \end{enumerate}
+
+\subsection{Core Level Langage Primitives}
+\begin{enumerate}
+\item SparseList
+\item SparseDict
+\item ...
+\end{enumerate}
+
+\subsection{Wrapper Tensors}
+
+\subsection{Scalars}
+
+\subsubsection{Sparse Scalars}
+\subsubsection{Early Break Scalars}
+
+\section{The Finch High-Level API (Needs a Name)}
+
+\subsection{Finch Logic}
+
+\subsection{Finch Interpreter}
+
+\subsection{Lowering}
+\subsubsection{Heuristic Optimization}
 
 \section{Evaluation}
 

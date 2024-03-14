@@ -1,14 +1,14 @@
 # Fdb version 4
-["bibtex main"] 1710424267 "main.aux" "main.bbl" "main" 1710424279 0
+["bibtex main"] 1710427225 "main.aux" "main.bbl" "main" 1710427227 0
   "./bibliography.bib" 1710424092 18804 1414c0b49473af4c9fbdebbff9f481b9 ""
   "/usr/local/texlive/2023/texmf-dist/bibtex/bst/base/alpha.bst" 1292289607 23907 a5f93555796fb564b924339521f10a7c ""
-  "main.aux" 1710424279 3489 1d7802af417e6f537319655435c3e9e7 "pdflatex"
+  "main.aux" 1710427227 6747 f817765014543de728a647fa2df012ee "pdflatex"
   (generated)
   "main.bbl"
   "main.blg"
   (rewritten before read)
-["pdflatex"] 1710424278 "/Users/willow/Projects/65cbcee80ad409ed1e326d04/main.tex" "main.pdf" "main" 1710424279 0
-  "/Users/willow/Projects/65cbcee80ad409ed1e326d04/main.tex" 1710424278 7611 dcfb49fece111cbc734c756498d4daa0 ""
+["pdflatex"] 1710427225 "/Users/willow/Projects/65cbcee80ad409ed1e326d04/main.tex" "main.pdf" "main" 1710427227 0
+  "/Users/willow/Projects/65cbcee80ad409ed1e326d04/main.tex" 1710427223 10276 e53d369ac08c942b85c7905ca7b11896 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
   "/usr/local/texlive/2023/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex8.tfm" 1246382020 988 bdf658c3bfc2d96d3c8b02cfc1c94c20 ""
@@ -111,10 +111,10 @@
   "erode4_speedup_over_opencv.png" 1710424142 129062 27f184fdea972f48224aecf287fecc12 ""
   "fill_speedup_over_opencv.png" 1710424142 122608 bfa43cdea3672b6543565d7c18a18f52 ""
   "hist_speedup_over_opencv.png" 1710424142 118478 b601a1306ef741c059e05faeb065fb66 ""
-  "main.aux" 1710424279 3489 1d7802af417e6f537319655435c3e9e7 "pdflatex"
-  "main.bbl" 1710424267 49 0eba253fc001332e731e8aba3f23127b "bibtex main"
-  "main.out" 1710424279 1698 0845882818da784c3d83cc09f77c6a4a "pdflatex"
-  "main.tex" 1710424278 7611 dcfb49fece111cbc734c756498d4daa0 ""
+  "main.aux" 1710427227 6747 f817765014543de728a647fa2df012ee "pdflatex"
+  "main.bbl" 1710427225 49 0eba253fc001332e731e8aba3f23127b "bibtex main"
+  "main.out" 1710427227 5721 946ffa4c5f540f94a496befedf9aa5a2 "pdflatex"
+  "main.tex" 1710427223 10276 e53d369ac08c942b85c7905ca7b11896 ""
   "spmv_performance_grouped.png" 1710424092 184143 a69105dee1a60246b539623c4ebe184d ""
   "spmv_performance_sorted_(faster_than_taco).png" 1710424092 116245 96d82de7db862f41b455ca99ae9e4eb6 ""
   "spmv_performance_sorted_(slower_than_taco).png" 1710424092 108554 31deacec5ba02515bc75b4acb2fd3c2a ""

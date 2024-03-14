@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.6.13)  14 MAR 2024 09:51
+This is pdfTeX, Version 3.141592653-2.6-1.40.25 (TeX Live 2023) (preloaded format=pdflatex 2023.6.13)  14 MAR 2024 10:40
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -366,10 +366,6 @@ LaTeX Font Info:    Trying to load font information for U+msb on input line 23.
  (/usr/local/texlive/2023/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
-Overfull \hbox (6.08907pt too wide) in paragraph at lines 44--45
-[]\OT1/cmr/m/n/10 The Finch ar-ray lan-guage, mir-ror-ing sim-ple for-loops with im-per-a-tive code blocks and if-conditions.
- []
-
 
 LaTeX Warning: `!h' float specifier changed to `!ht'.
 
@@ -378,68 +374,68 @@ LaTeX Warning: `!h' float specifier changed to `!ht'.
 
 [1
 
-{/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}]
-<spmv_performance_sorted_(faster_than_taco).png, id=66, 395.67825pt x 383.7537pt>
+{/usr/local/texlive/2023/texmf-var/fonts/map/pdftex/updmap/pdftex.map}] [2] [3]
+<spmv_performance_sorted_(faster_than_taco).png, id=187, 395.67825pt x 383.7537pt>
 File: spmv_performance_sorted_(faster_than_taco).png Graphic file (type png)
 <use spmv_performance_sorted_(faster_than_taco).png>
-Package pdftex.def Info: spmv_performance_sorted_(faster_than_taco).png  used on input line 112.
+Package pdftex.def Info: spmv_performance_sorted_(faster_than_taco).png  used on input line 185.
 (pdftex.def)             Requested size: 221.78923pt x 215.10555pt.
-<spmv_performance_sorted_(slower_than_taco).png, id=68, 395.67825pt x 413.74574pt>
+<spmv_performance_sorted_(slower_than_taco).png, id=189, 395.67825pt x 413.74574pt>
 File: spmv_performance_sorted_(slower_than_taco).png Graphic file (type png)
 <use spmv_performance_sorted_(slower_than_taco).png>
-Package pdftex.def Info: spmv_performance_sorted_(slower_than_taco).png  used on input line 116.
+Package pdftex.def Info: spmv_performance_sorted_(slower_than_taco).png  used on input line 189.
 (pdftex.def)             Requested size: 221.78923pt x 231.91699pt.
-<spmv_performance_grouped.png, id=69, 514.92375pt x 467.7475pt>
+<spmv_performance_grouped.png, id=190, 514.92375pt x 467.7475pt>
 File: spmv_performance_grouped.png Graphic file (type png)
 <use spmv_performance_grouped.png>
-Package pdftex.def Info: spmv_performance_grouped.png  used on input line 122.
+Package pdftex.def Info: spmv_performance_grouped.png  used on input line 195.
 (pdftex.def)             Requested size: 443.57848pt x 402.9473pt.
-<erode4_speedup_over_opencv.png, id=70, 867.24pt x 433.62pt>
+<erode4_speedup_over_opencv.png, id=191, 867.24pt x 433.62pt>
 File: erode4_speedup_over_opencv.png Graphic file (type png)
 <use erode4_speedup_over_opencv.png>
-Package pdftex.def Info: erode4_speedup_over_opencv.png  used on input line 132.
+Package pdftex.def Info: erode4_speedup_over_opencv.png  used on input line 205.
 (pdftex.def)             Requested size: 443.57848pt x 221.79169pt.
-<hist_speedup_over_opencv.png, id=71, 867.24pt x 433.62pt>
+<hist_speedup_over_opencv.png, id=192, 867.24pt x 433.62pt>
 File: hist_speedup_over_opencv.png Graphic file (type png)
 <use hist_speedup_over_opencv.png>
-Package pdftex.def Info: hist_speedup_over_opencv.png  used on input line 137.
+Package pdftex.def Info: hist_speedup_over_opencv.png  used on input line 210.
 (pdftex.def)             Requested size: 443.57848pt x 221.79169pt.
-<fill_speedup_over_opencv.png, id=72, 867.24pt x 433.62pt>
+<fill_speedup_over_opencv.png, id=193, 867.24pt x 433.62pt>
 File: fill_speedup_over_opencv.png Graphic file (type png)
 <use fill_speedup_over_opencv.png>
-Package pdftex.def Info: fill_speedup_over_opencv.png  used on input line 142.
+Package pdftex.def Info: fill_speedup_over_opencv.png  used on input line 215.
 (pdftex.def)             Requested size: 443.57848pt x 221.79169pt.
-<bfs_speedup_over_graphs.jl.png, id=73, 722.7pt x 433.62pt>
+<bfs_speedup_over_graphs.jl.png, id=194, 722.7pt x 433.62pt>
 File: bfs_speedup_over_graphs.jl.png Graphic file (type png)
 <use bfs_speedup_over_graphs.jl.png>
-Package pdftex.def Info: bfs_speedup_over_graphs.jl.png  used on input line 148.
+Package pdftex.def Info: bfs_speedup_over_graphs.jl.png  used on input line 221.
 (pdftex.def)             Requested size: 443.57848pt x 266.1487pt.
-<bellmanford_speedup_over_graphs.jl.png, id=74, 722.7pt x 433.62pt>
+<bellmanford_speedup_over_graphs.jl.png, id=195, 722.7pt x 433.62pt>
 File: bellmanford_speedup_over_graphs.jl.png Graphic file (type png)
 <use bellmanford_speedup_over_graphs.jl.png>
-Package pdftex.def Info: bellmanford_speedup_over_graphs.jl.png  used on input line 149.
+Package pdftex.def Info: bellmanford_speedup_over_graphs.jl.png  used on input line 222.
 (pdftex.def)             Requested size: 443.57848pt x 266.1487pt.
  (./main.bbl
 
 LaTeX Warning: Empty `thebibliography' environment on input line 3.
 
-) [2] [3 <./spmv_performance_sorted_(faster_than_taco).png> <./spmv_performance_sorted_(slower_than_taco).png>] [4 <./spmv_performance_grouped.png>] [5 <./erode4_speedup_over_opencv.png> <./hist_speedup_over_opencv.png>] [6 <./fill_speedup_over_opencv.png>] [7 <./bfs_speedup_over_graphs.jl.png> <./bellmanford_speedup_over_graphs.jl.png>] (./main.aux)
+) [4 <./spmv_performance_sorted_(faster_than_taco).png> <./spmv_performance_sorted_(slower_than_taco).png>] [5 <./spmv_performance_grouped.png>] [6 <./erode4_speedup_over_opencv.png> <./hist_speedup_over_opencv.png>] [7 <./fill_speedup_over_opencv.png>] [8 <./bfs_speedup_over_graphs.jl.png> <./bellmanford_speedup_over_graphs.jl.png>] (./main.aux)
 Package rerunfilecheck Info: File `main.out' has not changed.
-(rerunfilecheck)             Checksum: 0845882818DA784C3D83CC09F77C6A4A;1698.
+(rerunfilecheck)             Checksum: 946FFA4C5F540F94A496BEFEDF9AA5A2;5721.
  ) 
 Here is how much of TeX's memory you used:
- 11061 strings out of 476025
- 175616 string characters out of 5790017
- 1871388 words of memory out of 5000000
- 31319 multiletter control sequences out of 15000+600000
+ 11114 strings out of 476025
+ 176392 string characters out of 5790017
+ 1872388 words of memory out of 5000000
+ 31345 multiletter control sequences out of 15000+600000
  520757 words of font info for 65 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
- 75i,10n,76p,636b,535s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 75i,10n,76p,636b,540s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr12.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr17.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/cm/cmr9.pfb></usr/local/texlive/2023/texmf-dist/fonts/type1/public/amsfonts/symbols/msam10.pfb>
-Output written on main.pdf (7 pages, 848809 bytes).
+Output written on main.pdf (8 pages, 856853 bytes).
 PDF statistics:
- 171 PDF objects out of 1000 (max. 8388607)
- 128 compressed objects within 2 object streams
- 39 named destinations out of 1000 (max. 500000)
- 129 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 284 PDF objects out of 1000 (max. 8388607)
+ 239 compressed objects within 3 object streams
+ 66 named destinations out of 1000 (max. 500000)
+ 337 words of extra memory for PDF output out of 10000 (max. 10000000)
 
