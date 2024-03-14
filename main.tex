@@ -126,17 +126,24 @@ Examples that demonstrate performance engineering in a datastructure-driven mode
 
 \subsection{Programming over flexible data}
 
-\subsubsection{RLE Blur}
+\subsubsection{Image Morphology}
 
--Compare against the zip/unzip version
+\begin{figure}
+	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
+    \caption{Performance of Finch on erosion task (4 iterations).}
+\end{figure}
 
-- Which Datasets? Check taco-rle or looplets.
-(perhaps consider if a neural network is the right call here)
+\begin{figure}
+	\includegraphics[width=\linewidth]{hist_speedup_over_opencv.png}
+    \caption{Performance of Finch on masked histogram task.}
+\end{figure}
 
-\subsubsection{Histogram}
+\begin{figure}
+	\includegraphics[width=\linewidth]{fill_speedup_over_opencv.png}
+    \caption{Performance of Finch on flood fill task.}
+\end{figure}
 
-
-\subsubsection{Graph Applications}
+\subsubsection{Graph Analytics}
 \begin{figure}
 	\includegraphics[width=\linewidth]{bfs_speedup_over_graphs.jl.png}
 	\includegraphics[width=\linewidth]{bellmanford_speedup_over_graphs.jl.png}
