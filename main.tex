@@ -113,6 +113,7 @@
 \usepackage{graphicx}
 %\usepackage{amssymb}
 \usepackage{array}
+\usepackage{minted}
 %\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 \newcommand\teo[1]{\textcolor{red}{teo:#1}}
@@ -439,6 +440,11 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 	\includegraphics[width=\linewidth]{bellmanford_speedup_over_graphs.jl.png}
     \caption{Performance of graph apps across various tools.}
 \end{figure}
+
+Push-Pull BFS in Finch:
+\begin{minted}{julia}
+
+\end{minted}
 
 \subsection{Implementing Numpy Array API in Finch}
 \subsubsection{The Finch High-Level API (Needs a Name)}
