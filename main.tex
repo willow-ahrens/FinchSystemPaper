@@ -258,6 +258,75 @@ From FORTRAN to Numpy, arrays have revolutionized how we express computation.  A
 
 \section{Introduction}
 
+Arrays are the most fundamental abstraction in computer science. Arrays and lists are often the first-taught datastructure
+\cite[Chapter 2.2]{abelson_structure_1996}, \cite[Chapter 2.2]{knuth_art_1997}.
+Arrays are also universal across programming languages, from their introduction
+in Fortran in 1957 to present-day languages like Python
+\cite{backus_fortran_1957}, keeping more-or-less the same semantics. Modern
+array programming languages such as NumPy, SciPy, MatLab, TensorFlow, PyTorch,
+and Halide have pushed the limits of productive data processing with arrays,
+fueling breakthroughs in machine learning, scientific computing, image
+processing, and more.  \cite{harris_array_2020, virtanen_scipy_2020,
+moler_history_2020, abadi_tensorflow_2016,
+paszke_pytorch_2019,ragan-kelley_halide_2013}.  These frameworks have been the
+subject of extensive industry investment to enable performant implementations,
+and often operate at the peak capacity of the hardware they run on
+\cite{lo_roofline_2015}.
+
+The success and ubiquity of arrays is likely due to their simplicity. Since
+their introduction, multidimensional arrays have represented dense, rectilinear,
+integer grids of points. By \textbf{dense}, we mean that every entry the array
+represents is stored faithfully at a location determined by a simple row or
+column-major mapping from multidimensional space to linear memory. This
+simplicity enables extensive interoperability, convenience layers, and
+optimizations by breaking the abstraction barrier between array representation
+and array storage.  Compilers understand dense array computations across many
+programming constructs, such as for and while loops, breaks, parallelism,
+caching, prefetching, multiple outputs, scatters, gathers, vectoriation,
+loop-carry-dependencies, and more. Several optimizations have been developed for
+dense arrays, such as loop fusion, loop tiling, loop unrolling, and loop
+interchange.  However, while dense arrays are the easiest way to program, the
+world is not all dense.
+
+Our world is full of structured arrays.  Sparse arrays (which store only nonzero
+elements) can describe networks and simulations. Run-length encoding describes
+images and masks, geometry, and databases (such as a list of transactions with
+the date field all the same). Symmetry, bands, padding, and blocks are all
+natural matrix properties which arise in the course of scientific computing or
+simulations of the natural world. Operators, such as convolution, can be
+expressed as structured arrays. For example, a convolution with a filter can be
+expressed as a matrix multiplication with the toeplitz matrix of all the
+circular shifts of the filter.
+
+%Sparse arrays
+% - Networks (graphblas, graph frameworks)
+% - Simulations (BLAS, symblas, banded blas, etc)
+% - Databases (database engines)
+%Run-length encoding
+%Symmetry
+%Bands
+%Padding
+%Blocks
+
+
+
+%Bring in structure
+% - old arrays are Dense, rectilinear, integer grids
+% - The world is not like that
+% - Sparsity, runs of repeated values, symmetry
+% - Lots of citations, perhaps a few figures from my powerpoint
+
+%Existing solutions do not scale to the complexity of the problem
+% Must choose between program flexibility and datastructure flexibility
+% Dense arrays have tons of programming constructs
+% Sparse array frameworks have very limited functionality, discuss a few key related works
+
+% Finch Supports both! The combination of the two leads us to a new data-structure driven programming model.
+% In this model, we can search the space of programs more efficiently, and we can more efficiently search the space of datastructures.
+% Programs are specified separately from datastructures.
+% Certain concepts are expressed in programs, others in data
+% At a high level, whenever we need to match corresponding keys in a program, those keys become array indices, and the datastructure becomes a sparse array
+
 %- Fortran supported lots of control structures, no data structures, just dense arrays.
 %
 %- We tried to emulate complex data using only dense arrays but with complicated control structures.
@@ -267,8 +336,7 @@ From FORTRAN to Numpy, arrays have revolutionized how we express computation.  A
 %- We’re bringing these together, because if both of these can work together, we can more efficiently search the space of programs
 
 \textbf{Finch makes high-performance computing easier with compilers that adapt programs to the structure of data}.  Currently, experts must hand write variations of even the simplest kernels, like matrix multiply, for each data structure and architecture to get performance. This makes performance engineering an expensive, repetitive task. Several popular programs compute the same thing on different data. 
-
-\textbf{Unstructured data is the easiest way to program, but the world is full of structured data}. Multidimensional dense (unstructured) arrays are the most important abstraction in computer science. Since their introduction in the 1950s with Fortran and Lisp, the simplicity of dense arrays has enabled extensive innovation, from compiler optimizations to convenience layers. However, structure is everywhere. Sparse arrays (which store only nonzero elements) can describe networks and simulations. Run-length encoding describes images, geometry and databases (such as a list of transactions with the date field all the same). Symmetry, bands, padding, and blocks are all natural properties which arise in the course of scientific computing, simulating the world around us.
+\cite{ahrens_looplets_2023}.
 
 \textbf{Structured data support is fragmented and incomplete}. Programmers today must choose between program flexibility and datastructure flexibility. Hand-written solutions are collected in diverse libraries like MKL, OpenCV, or SciPy. However, libraries will only ever support a subset of programs on a subset of datastructure combinations. Special-purpose compilers like TACO or CoRa support a select subset of data structures (only sparse, or only ragged arrays) in highly constrained classes of programs such as tensor contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}.
 
@@ -609,12 +677,14 @@ Find an example where fusing the python interface gives a big speedup over non-f
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{bibliography.bib}
+\bibliography{FinchOOPSLA.bib}
 
 
 %%
 %% If your work has an appendix, this is the place to put it.
 \appendix
+
+\section Frequently Requested Finch kernels 
 
 \end{document}
 \endinput
