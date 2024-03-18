@@ -114,6 +114,16 @@
 %\usepackage{amssymb}
 \usepackage{array}
 \usepackage{minted}
+
+% Configuration for minted package
+\setminted{
+    style=colorful, % Set code style to colorful
+    fontsize=\scriptsize,
+    linenos, % Enable line numbers
+    breaklines, % Enable line breaks
+    breakanywhere, % Allow line breaks anywhere
+    autogobble,
+}
 %\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 \newcommand\teo[1]{\textcolor{red}{teo:#1}}
@@ -142,7 +152,7 @@
   \country{USA}}
 \email{willow@csail.mit.edu}
 
-\author{Teo Collins}
+\author{Teodoro Fields Collin}
 \affiliation{%
   \institution{MIT CSAIL}
   \city{Cambridge}
@@ -254,33 +264,46 @@ From FORTRAN to Numpy, arrays have revolutionized how we express computation.  A
 %
 %- Recently, people tried to build frameworks to support structured data, but gave up a lot of program side
 %
-%- We’re bringing these together, both need to work together.
+%- We’re bringing these together, because if both of these can work together, we can more efficiently search the space of programs
+
+\textbf{Finch makes high-performance computing easier with compilers that adapt programs to the structure of data}.  Currently, experts must hand write variations of even the simplest kernels, like matrix multiply, for each data structure and architecture to get performance. This makes performance engineering an expensive, repetitive task. Several popular programs compute the same thing on different data. 
+
+\textbf{Unstructured data is the easiest way to program, but the world is full of structured data}. Multidimensional dense (unstructured) arrays are the most important abstraction in computer science. Since their introduction in the 1950s with Fortran and Lisp, the simplicity of dense arrays has enabled extensive innovation, from compiler optimizations to convenience layers. However, structure is everywhere. Sparse arrays (which store only nonzero elements) can describe networks and simulations. Run-length encoding describes images, geometry and databases (such as a list of transactions with the date field all the same). Symmetry, bands, padding, and blocks are all natural properties which arise in the course of scientific computing, simulating the world around us.
+
+\textbf{Structured data support is fragmented and incomplete}. Programmers today must choose between program flexibility and datastructure flexibility. Hand-written solutions are collected in diverse libraries like MKL, OpenCV, or SciPy. However, libraries will only ever support a subset of programs on a subset of datastructure combinations. Special-purpose compilers like TACO or CoRa support a select subset of data structures (only sparse, or only ragged arrays) in highly constrained classes of programs such as tensor contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}.
+
+\textbf{Finch handles the two main challenges for structured array data}:
+\begin{itemize}
+\item \textbf{Optimizations are specific to the indirection and patterns in datastructures}: These structures break the simple mapping between array elements and where they are stored in memory. For example, sparse arrays store lists of which coordinates are nonzero, whereas run-length-encoded arrays map several pixels to the same color value. These zero regions or repeated regions are optimization opportunities. Here, we show how Finch combines programs with datastructure descriptions to generate efficient, datastructure-specific code. 
+
+\item \textbf{Performance is highly structure dependent: Structure aware kernels are dramatically faster than unstructured ones, but the landscape of implementation decisions is also dramatically unpredictable}. For example, sparse kernels don’t need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation. Finch allows you to search it more efficiently.
+\end{itemize}
+
+\subsection{Finch: Compiling Structured Data}
+The finch array programming language adapts complex programs to array datastructures to produce efficient code. Array programming is the core abstraction behind many of the modern miracles of computing (e.g. neural networks, scientific simulation, database processing). Finch supports \textit{both} flexible programming constructs and diverse data structures. Finch supports loops, statements, if conditions, breaks, etc, over a wide variety of array structures, such as sparsity, run-length-encoding, symmetry, triangles, padding, or blocks.
+
+Crucially, Finch is able to adapt simple, unstructured programs to the structure of the input data. It does this using Looplets, a new language that decomposes datastructure iterators hierarchically. Looplets represent the control-flow structures needed to iterate over them simultaneously with other structures in the program. Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation.
+
 \subsection{Contributions}
 
 \begin{enumerate}
+\item More complex array structures than ever before. A complete level-by-level
+structure-description language for expressing the structure of data
+hierarchically. The first such set of formats to efficiently capture banded,
+triangular, run-length-encoded, or sparse datasets, and any combination thereof.
 \item A rich structured array programming language with for-loops
 and complex control flow constructs at the same level of productivity
 of dense arrays. To our knowledge, the Finch programming language is the first
 to support if-conditions, early breaks, and multiple left hand sides over
 structured data, as well as complex accesses such as affine indexing or scatter/gather.
-\item More complex array structures than ever before. A complete level-by-level
-structure-description language for expressing the structure of data
-hierarchically. The first such set of formats to efficiently capture banded,
-triangular, run-length-encoded, or sparse datasets, and any combination thereof.
-\item The Finch compiler specializes programs to data structures in a
-predictable, deterministic approach, making it easier to search the complex
-space of programs and datastructures to find an appropriate fit for a given
-application. The tensor interface makes it easy to extend Finch to new level
-formats. A unique tensor lifecycle model enables polymorphism by analyzing the
-appropriate stages to insert simple, overloadable, interface functions such as
-initialization or finalization. 
-
+\item A compiler that specializes programs to data structures 
+predictably, facilitating an expressive language that makes it easier to search the complex
+space of algorithms and datastructures. It is easy to implement new datastructures with a simple interface; the compiler analyzes the tensor lifecycle and inserts insert simple, overloadable, interface functions such as
+initialization or finalization.
 \item We evaluate the productivity of our language in several case studies,
 showing that Finch can be used to accelerate a wide range of applications, 
-from classic operations such as spmv and spgemm, to more complex applications such as image processing and graph analytics.
-We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for
-operations such as map, broadcast, or reduce that can be compiled to efficient
-code using the previous loop-level abstractions.
+from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface.
+%We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
 %\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
 %\item Tensor lifecycles, a simple constraint on tensor reads and writes that elegantly restricts Finch programs to avoid complex data dependencies, and enables tensor polymorphism by providing implementers with well-defined functions to overload.
@@ -374,6 +397,22 @@ Ragged                   &            &            & \checkmark &            & \
 \subsection{Data-Driven Performance Engineering}
 \subsubsection{Sparse-Sparse Matrix Multiply}
 
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
+    \caption{Performance of Finch on erosion task (4 iterations).}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{spgemm_joel_speedup.png}
+    \caption{A comparison of several matrix multiplication algorithms between Finch and Taco smaller matrices, ordered from small to big dimension. Note that inner products necessarily requires $O(n^2)$ work and taco's outer products format is dense. Finch can use a sparse outer products format and thus has an asymptotic advantage that becomes evident as the output dimensions grow.}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{spgemm_joel_speedup.png}
+    \caption{A comparison of gustavson's algorithm between Finch and Taco on some larger matrices}
+\end{figure}
+
 Examples that demonstrate performance engineering in a datastructure-driven model
 
 \subsubsection{SpMV}
@@ -385,10 +424,64 @@ The sparse matrix-vector multiplication kernel is a common operation in sparse l
 
 We compare Finch’s performance to that of TACO, SuiteSparseGraphBLAS, and Julia’s standard library.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. In addition, we also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We depict the performance of SpMV across the aforementioned tools and compare to the fastest Finch format for that particular dataset in Figures 1 and 2. 
 
-\subsubsection{SparseList Format}
-\subsubsection{SparseVBL Format}
-The SparseVBL format is similar to the SparseList format, but contiguous fibers are stored together as blocks. Thus, it is most worthwhile to use when the matrix has a blocked structure—i.e. where there tend to be stretches of consecutive nonzero values. We found that the SparseVBL format performed the best for matrices with a clear block structure (list specific matrices) or an imperfect blocked structure (list specific matrices). 
-\subsubsection{Pattern Format}
+% TODO: make this be 3 columns
+\begin{figure}
+    \begin{minipage}[t]{0.315\textwidth}
+        \vspace{0pt} % Add this to ensure top alignment within minipage
+        \begin{minted}{julia}
+            @finch begin
+                y .= 0
+                for j = _, i = _
+                    y[i] += A[i, j] * x[j]
+                end
+                return y
+            end
+        \end{minted}
+    \end{minipage}%
+    \begin{minipage}[t]{0.315\textwidth}
+        \vspace{0pt} % Add this to ensure top alignment within minipage
+        \begin{minted}{julia}
+            @finch begin
+                y .= 0
+                for j = _, i = _
+                    y[j] += A[i, j] * x[i]
+                end
+                return y
+            end
+        \end{minted}
+    \end{minipage}
+    \begin{minipage}[t]{0.36\textwidth}
+        \vspace{0pt} % Add this to ensure top alignment within minipage
+        \begin{minted}{julia}
+            @finch begin
+                y .= 0
+                for j = _
+                    let x_j = x[j]
+                        y_j .= 0
+                        for i = _
+                            let A_ij = A[i, j]
+                                y[i] += x_j * A_ij
+                                y_j[] += A_ij * x[i]
+                            end
+                        end
+                        y[j] += y_j[] + diag[j] * x_j
+                    end
+                end
+                return y
+            end
+        \end{minted}
+    \end{minipage}
+    \caption{Performance of SpMV across various tools.}
+\end{figure}
+
+\subsubsection{Tensor Formats}
+We benchmarked the SpMV kernel using the Dense level format for the outer level and the SparseList, SparseVBL, SparseBand, and SparsePoint Finch levels for the inner level of the sparse matrix. To represent scalar values, we benchmarked with both the Element and Pattern levels. The SparseList, SparseVBL, and SparseBand formats were functional for all matrices, but the SparsePoint format was applicable only for the synthetic permutation matrices. The Element format was applicable to represent scalars in all matrices, while the Pattern level was applicable only for boolean matrices. 
+
+We found that the SpMV performance was superior for the level format that best paralleled the structure of the tensor. Namely, matrices with a clear blocked structure like $exdata\_1$, $TSOPF\_RS\_b678\_c1$, and $heart3$ performed notably well with the SparseVBL format in comparison to both TACO and the Finch SparseList formats (which we consider the closest analog to the sparse matrix format used in TACO and other libraries) with speedups of 2.16, X, and Y relative to TACO and of 1.47, X, and Y relative to the SparseList Finch SpMV implementation. Furthermore, the synthetic Toeplitz banded matrices we constructed performed the best with the SparseBand matrix, in particular with the $toeplitz\_large\_band$ and the $toeplitz\_medium\_band$ matrices having a speedup of A and B relative to TACO and a speedup of A and B relative to the SparseList Finch SpMV implementation. 
+
+There were also significant advantages of using the Pattern format instead of the Element format to represent scalar values in the matrices when these values were boolean. The matrices in the SNAP collection which represent graph datasets are boolean and had an average speedup of X over TACO and X over the same Finch program, but with an Element format.   
+
+
 \subsubsection{Symmetric SpMV}
 Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by providing the capabilities to reuse memory reads and insert control flow logic to restrict iterations to either the lower or upper triangle of the sparse matrix. We can apply this strategy with any level format. Every symmetric matrix in the SparseList and SparseList-Pattern formats has better performance when we use a Finch SpMV program that takes advantage of this symmetry. However, the regular Finch SpMV program has better performance for symmetric matrices than the symmetric Finch SpMV program for the other more specialized formats, likely because we need in-order accesses to fully capitalize on the specialized storage. Symmetric SpMV with the SparseList level format in Finch results in an average of 1.3x speedup over TACO and symmetric SpMV with the SparseList-Pattern format in Finch results in an average speedup of 1.15x over TACO . Notably, there is a 1.9x speedup for the HB/saylr4 matrix. 
 \subsubsection{4D Blocked SpMV}
@@ -414,10 +507,14 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
     \caption{Performance of SpMV by Finch format.}
 \end{figure}
 
-
 \subsection{Programming over flexible data}
 
 \subsubsection{Image Morphology}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{erode2_speedup_over_opencv.png}
+    \caption{Performance of Finch on erosion task (2 iterations).}
+\end{figure}
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
@@ -429,11 +526,6 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
     \caption{Performance of Finch on masked histogram task.}
 \end{figure}
 
-\begin{figure}
-	\includegraphics[width=\linewidth]{fill_speedup_over_opencv.png}
-    \caption{Performance of Finch on flood fill task.}
-\end{figure}
-
 \subsubsection{Graph Analytics}
 \begin{figure}
 	\includegraphics[width=\linewidth]{bfs_speedup_over_graphs.jl.png}
@@ -443,7 +535,48 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 
 Push-Pull BFS in Finch:
 \begin{minted}{julia}
+V = Tensor(Dense(Element(false)))
+P = Tensor(Dense(Element(0)))
+F = Tensor(SparseByteMap(Pattern()))
+_F = Tensor(SparseByteMap(Pattern()))
+A = Tensor(Dense(SparseList(Pattern())))
+AT = Tensor(Dense(SparseList(Pattern())))
 
+function finch_bfs_push_kernel(_F, F, A, V, P)
+    @finch begin
+        _F .= false
+        for j=_, k=_
+            if F[j] && A[k, j] && !(V[k])
+                _F[k] |= true
+                P[k] <<choose(0)>>= j #Only set the parent for this vertex
+            end
+        end
+        return _F
+    end
+end
+
+
+function finch_bfs_pull_kernel(_F, F, AT, V, P)
+    p = ShortCircuitScalar{0}()
+    @finch begin
+        _F .= false
+        for k=_
+            if !V[k]
+                p .= 0
+                for j=_
+                    if F[follow(j)] && AT[j, k]
+                        p[] <<choose(0)>>= j #Only set the parent for this vertex
+                    end
+                end
+                if p[] != 0
+                    _F[k] |= true
+                    P[k] = p[]
+                end
+            end
+        end
+        return _F
+    end
+end)
 \end{minted}
 
 \subsection{Implementing Numpy Array API in Finch}
