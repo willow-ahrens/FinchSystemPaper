@@ -428,7 +428,6 @@ familiar programming language of loops, statements, if conditions, breaks, etc,
 over a wide variety of array structures, such as sparsity, run-length-encoding,
 symmetry, triangles, padding, or blocks. The Finch compiler uses the structure
 of the data to generate efficient implementations of these programs.
-%It does this using Looplets, a new language that decomposes datastructure iterators hierarchically. Looplets represent the control-flow structures needed to iterate over them simultaneously with other structures in the program. Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation.
 
 \subsection{Contributions}
 
@@ -462,6 +461,10 @@ from classic operations such as spmv and spgemm, to more complex applications su
 
 \section{Background}
 \subsection{Looplets}
+Finch represents iteration patterns using Looplets, a language that decomposes datastructure iterators hierarchically. Looplets represent the control-flow structures needed to iterate over any given datastructure, or multiple datastructures simultaneously. In particular, looplets are good at lifting code to the highest loop level that it's needed and subdividing iteration hierarchically in coordinate space. Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation.
+
+We begin a formal description of looplets here:
+
 \begin{figure}
 	\includegraphics[width=\linewidth]{example_looplet_figure.png}
     \caption{Looplets visualized, along with their semantics}
@@ -512,14 +515,22 @@ from classic operations such as spmv and spgemm, to more complex applications su
 \subsection{Data-Driven Performance Engineering}
 \subsubsection{Sparse-Sparse Matrix Multiply}
 
+\help{The main points of this section are:}
 
-\begin{figure}
-	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
-    \caption{Performance of Finch on erosion task (4 iterations).}
-\end{figure}
+\help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
 
+
+\help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
+
+\help{3. Point out that TACO does not even support outer product because it does not support scatter into 2D workspace}
+
+\help{4. Take a look at the figure and point out that Finch is competitive with TACO on inner and gustavson, and that for outer product we see what we would expect from TACO: i.e. Finch Outer with dense performs similarly to TACO with dense, and Finch Outer with sparse performs much better as the matrix size increases.}
+
+\help{5. point out that for the large matrices finch is competitive with TACO for gustavson}.
+
+\help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
 \begin{figure}
-	\includegraphics[width=\linewidth]{spgemm_joel_speedup.png}
+	\includegraphics[width=\linewidth]{spgemm_small_speedup_log_scale.png}
     \caption{A comparison of several matrix multiplication algorithms between Finch and Taco smaller matrices, ordered from small to big dimension. Note that inner products necessarily requires $O(n^2)$ work and taco's outer products format is dense. Finch can use a sparse outer products format and thus has an asymptotic advantage that becomes evident as the output dimensions grow.}
 \end{figure}
 
@@ -626,6 +637,14 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 
 \subsubsection{Image Morphology}
 
+\help{In this section, explain what erosion is, link a few cool images that show erosion, and then explain what the finch kernel looks like. in particular, be sure to point out that we're doing unrolled convolution, and how that maps to the generated code (merging shifted sparse iterators).}
+
+\help{Explain the role of formats in this kernel, how sparseRLE(PAttern) is really the right thing to use here}
+
+\help{Explain that finch can support a bitwise version, and that finch can mask the bitwise kernel too to get performance with a small change to the code}
+
+\help{Point out that masks with SparseRLE can sometimes perform better because they lift the masking out of the inner loop. Talk about hist and also the fact that Finch supports scatter, here and in spgemm.}
+
 \begin{figure}
 	\includegraphics[width=\linewidth]{erode2_speedup_over_opencv.png}
     \caption{Performance of Finch on erosion task (2 iterations).}
@@ -642,6 +661,8 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 \end{figure}
 
 \subsubsection{Graph Analytics}
+\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
+
 \begin{figure}
 	\includegraphics[width=\linewidth]{bfs_speedup_over_graphs.jl.png}
 	\includegraphics[width=\linewidth]{bellmanford_speedup_over_graphs.jl.png}
@@ -691,7 +712,7 @@ function finch_bfs_pull_kernel(_F, F, AT, V, P)
         end
         return _F
     end
-end)
+end
 \end{minted}
 
 \subsection{Implementing Numpy Array API in Finch}
