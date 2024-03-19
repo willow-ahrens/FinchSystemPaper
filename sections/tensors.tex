@@ -18,7 +18,7 @@ Third, since Finch programs can read and write to the same data, multi-dimension
 
 To build our bridge, we embrace a set of abstractions: level formats/Fiber Trees, iteration context dependent instantiation of iterators, and tensor life cycles.
 %
-Our first abstraction mostly already exists in the literature: a manner of specifying a data structure for a multi-dimensional tensor out of data structures for single dimensional tensors~\cite{sze2017efficient,chou2022compilation, chou2018format}. 
+Our first abstraction mostly already exists in the literature: a manner of specifying a data structure for a multi-dimensional tensor out of data structures for single dimensional tensors~\cite{sze2017efficient,chou2022compilation, chou2018format, sparseTIR}. 
 %
 We recapitulate the essential details here.
 %
@@ -62,12 +62,4 @@ Our third abstraction limits our set of sparse tensor programs to accommodate a 
 \item ...
 \end{enumerate}
 
-
-
-\subsection{Wrapper Tensors}
-
-\subsection{Scalars}
-
-\subsubsection{Sparse Scalars}
-\subsubsection{Early Break Scalars}
 
