@@ -286,9 +286,7 @@ Since
 their introduction, multidimensional arrays have represented dense, rectilinear,
 integer grids of points. 
 %
-By \textbf{dense}, we mean that every entry the array
-represents is stored faithfully at a location determined by a simple row or
-column-major mapping from multidimensional space to linear memory.
+By \textbf{dense}, we mean that indices are mapped to value via a simple formula relating multidimensional space to linear memory.
 %
 This
 simplicity enables extensive interoperability, convenience layers, and
@@ -300,8 +298,9 @@ programming constructs, such as for and while loops, breaks, parallelism,
 caching, prefetching, multiple outputs, scatters, gathers, vectoriation,
 loop-carry-dependencies, and more. Several optimizations have been developed for
 dense arrays, such as loop fusion, loop tiling, loop unrolling, and loop
-interchange.  However, while dense arrays are the easiest way to program, the
-world is not all dense.
+interchange.
+%
+However, while dense arrays are the easiest way to program, the world is not all dense.
 
 %Bring in structure
 % - old arrays are Dense, rectilinear, integer grids
@@ -318,34 +317,59 @@ world is not all dense.
 %Padding
 %Blocks
 \help{This section needs citations, please help expand it and make it more
-convincing. A figure could be nice.} Our world is full of structured arrays.
+convincing. A figure could be nice.} 
+\begin{figure}
+	\includegraphics[width=\linewidth]{example_structures.png}
+    \caption{some example structures that might be nice to put into a figure}
+\end{figure}
+Our world is full of structured arrays.
+%
+
 Sparse arrays (which store only nonzero elements) describe networks and
-simulations. Run-length encoding describes images and masks, geometry, and
+simulations.
+%
+Run-length encoding describes images and masks, geometry, and
 databases (such as a list of transactions with the date field all the same)
 Symmetry, bands, padding, and blocks are all natural matrix properties which
 arise in the course of scientific computing or simulations of the natural world.
-Operators, such as convolution, can be expressed as structured arrays. For
+%
+
+Operators, such as convolution, can be expressed as structured arrays.
+%
+For
 example, a convolution with a filter can be expressed as a matrix multiplication
 with the toeplitz matrix of all the circular shifts of the filter.
 
 \help{This section needs citations}
 \textbf{Currently, support for structured data is fragmented and incomplete}.
+%
 Experts must hand write variations of even the simplest kernels, like matrix
 multiply, for each data structure and architecture to get performance.
+%
 Implementations must choose a small set of features to support well, resulting
 in a compromise between \textbf{program flexibility} and \textbf{datastructure
-flexibility}. Hand-written solutions are collected in diverse libraries like
-MKL, OpenCV, or SciPy. However, libraries will only ever support a subset of
+flexibility}.
+%
+Hand-written solutions are collected in diverse libraries like
+MKL, OpenCV, or SciPy. 
+%
+However, libraries will only ever support a subset of
 programs on a subset of datastructure combinations. Even the most advanced
 libraries, such as the GraphBLAS, which support a wide variety of sparse
 operations over various semirings always lack support for other features, such
-as tensors, fused outputs, or runs of repeated values. While dense array
+as tensors, fused outputs, or runs of repeated values. 
+%
+While dense array
 compilers support an enormous variety of program constructs like early break and
-multiple left hand sides, they only support dense arrays.  Special-purpose
+multiple left hand sides, they only support dense arrays.  
+%
+Special-purpose
 compilers like TACO or CoRa which support a select subset of structured data
 structures (only sparse, or only ragged arrays) must compromise by greatly
 constraining the classes of programs which they support, such as tensor
-contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}. This trade-off is
+contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}. 
+%
+This trade-off is
 visualized in figure \ref{fig:datavsprogram}.
 
 \begin{table}[h!]
@@ -438,6 +462,11 @@ from classic operations such as spmv and spgemm, to more complex applications su
 
 \section{Background}
 \subsection{Looplets}
+\begin{figure}
+	\includegraphics[width=\linewidth]{example_looplet_figure.png}
+    \caption{Looplets visualized, along with their semantics}
+\end{figure}
+
 \subsection{FiberTrees}
 
 \subsection{Concordant Iteration}
