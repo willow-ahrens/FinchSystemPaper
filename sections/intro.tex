@@ -1,0 +1,201 @@
+
+\section{Introduction}
+
+%Array programming is the core abstraction behind many of the modern miracles of computing (e.g. neural networks, scientific simulation, database processing). 
+Arrays are the most fundamental abstraction in computer science. Arrays and lists are often the first-taught datastructure
+\cite[Chapter 2.2]{abelson_structure_1996}, \cite[Chapter 2.2]{knuth_art_1997}.
+%
+Arrays are also universal across programming languages, from their introduction
+in Fortran in 1957 to present-day languages like Python
+\cite{backus_fortran_1957}, keeping more-or-less the same semantics.
+%
+Modern
+array programming languages such as NumPy, SciPy, MatLab, TensorFlow, PyTorch,
+and Halide have pushed the limits of productive data processing with arrays,
+fueling breakthroughs in machine learning, scientific computing, image
+processing, and more  \cite{harris_array_2020, virtanen_scipy_2020,
+moler_history_2020, abadi_tensorflow_2016,
+paszke_pytorch_2019,ragan-kelley_halide_2013}.
+%
+These frameworks have been the
+subject of extensive industry investment to enable performant implementations,
+and often operate at the peak capacity of the hardware they run on
+\cite{lo_roofline_2015}.
+
+The success and ubiquity of arrays is likely due to their simplicity. 
+%
+Since
+their introduction, multidimensional arrays have represented dense, rectilinear,
+integer grids of points. 
+%
+By \textbf{dense}, we mean that indices are mapped to value via a simple formula relating multidimensional space to linear memory.
+%
+This
+simplicity enables extensive interoperability, convenience layers, and
+optimizations by breaking the abstraction barrier between array representation
+and array storage.  
+%
+Compilers understand dense array computations across many
+programming constructs, such as for and while loops, breaks, parallelism,
+caching, prefetching, multiple outputs, scatters, gathers, vectoriation,
+loop-carry-dependencies, and more. Several optimizations have been developed for
+dense arrays, such as loop fusion, loop tiling, loop unrolling, and loop
+interchange.
+%
+However, while dense arrays are the easiest way to program, the world is not all dense.
+
+%Bring in structure
+% - old arrays are Dense, rectilinear, integer grids
+% - The world is not like that
+% - Sparsity, runs of repeated values, symmetry
+% - Lots of citations, perhaps a few figures from my powerpoint
+%Sparse arrays
+% - Networks (graphblas, graph frameworks)
+% - Simulations (BLAS, symblas, banded blas, etc)
+% - Databases (database engines)
+%Run-length encoding
+%Symmetry
+%Bands
+%Padding
+%Blocks
+\help{This section needs citations, please help expand it and make it more
+convincing. A figure could be nice.} 
+\begin{figure}
+	\includegraphics[width=\linewidth]{example_structures.png}
+    \caption{some example structures that might be nice to put into a figure}
+\end{figure}
+Our world is full of structured arrays.
+%
+
+Sparse arrays (which store only nonzero elements) describe networks and
+simulations.
+%
+Run-length encoding describes images and masks, geometry, and
+databases (such as a list of transactions with the date field all the same)
+Symmetry, bands, padding, and blocks are all natural matrix properties which
+arise in the course of scientific computing or simulations of the natural world.
+%
+
+Operators, such as convolution, can be expressed as structured arrays.
+%
+For
+example, a convolution with a filter can be expressed as a matrix multiplication
+with the toeplitz matrix of all the circular shifts of the filter.
+
+\help{This section needs citations}
+\textbf{Currently, support for structured data is fragmented and incomplete}.
+%
+Experts must hand write variations of even the simplest kernels, like matrix
+multiply, for each data structure and architecture to get performance.
+%
+Implementations must choose a small set of features to support well, resulting
+in a compromise between \textbf{program flexibility} and \textbf{datastructure
+flexibility}.
+%
+Hand-written solutions are collected in diverse libraries like
+MKL, OpenCV, or SciPy. 
+%
+However, libraries will only ever support a subset of
+programs on a subset of datastructure combinations. Even the most advanced
+libraries, such as the GraphBLAS, which support a wide variety of sparse
+operations over various semirings always lack support for other features, such
+as tensors, fused outputs, or runs of repeated values. 
+%
+While dense array
+compilers support an enormous variety of program constructs like early break and
+multiple left hand sides, they only support dense arrays.  
+%
+Special-purpose
+compilers like TACO or CoRa which support a select subset of structured data
+structures (only sparse, or only ragged arrays) must compromise by greatly
+constraining the classes of programs which they support, such as tensor
+contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}. 
+%
+This trade-off is
+visualized in figure \ref{fig:datavsprogram}.
+
+\begin{table}[h!]
+  \help{This table needs citations, as well as a little bit of double checking}
+  \centering
+  \begin{tabular}{l|ccccc}
+  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
+  \hline
+  Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  High-Level API           &            & \checkmark &            &            & \checkmark \\
+  Automatic API Fusion     &            &            &            &            & \checkmark \\
+%  Parallelism              & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  Multiple LHS             & \checkmark &            & \checkmark & \checkmark & \checkmark \\
+  Affine Indices           & \checkmark &            &            & \checkmark & \checkmark \\
+  Recurrence               & \checkmark &            &            &            &            \\
+  If-Conditions and Masks  & \checkmark & \checkmark &            & \checkmark & \checkmark \\
+  Scatter Gather           & \checkmark &            &            & \checkmark & \checkmark \\
+  Early Break              &            & \checkmark &            &   \checkmark         & \checkmark \\
+  \end{tabular}
+  \caption{Feature support across various tools.}
+  \label{tab:features}
+  \end{table}
+  
+  \begin{table}[h!]
+  \centering
+  \begin{tabular}{l|ccccc}
+  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
+  \hline
+  Dense                    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  Padded                   & \checkmark &            &            &            & \checkmark \\
+  One Sparse               &            & \checkmark &            & \checkmark & \checkmark \\
+  Sparse                   &            & \checkmark &            &            & \checkmark \\
+  Run-length               &            &            &            &            & \checkmark \\
+  Symmetric                &            &            &            &            & \checkmark \\
+  Regular Sparse Blocks    &            & \checkmark &            &            & \checkmark \\
+  Irregular Sparse Blocks  &            &            &            &            & \checkmark \\
+  Ragged                   &            &            & \checkmark &            & \checkmark \\
+  \end{tabular}
+  \caption{Support for various data structures across tools. Finch supports \textbf{both} complex programs and complex data structures.}
+  \label{tab:data_structures}
+\end{table}
+
+We see two main challenges to writing efficient code over structured data.
+
+\textbf{Optimizations are specific to the indirection and patterns in datastructures}: These structures break the simple mapping between array elements and where they are stored in memory. For example, sparse arrays store lists of which coordinates are nonzero, whereas run-length-encoded arrays map several pixels to the same color value. These zero regions or repeated regions are optimization opportunities, and we must adapt the program to avoid repetitive work on these regions by referencing the stored structure.
+
+\textbf{Performance is highly structure dependent}: Structure aware kernels are dramatically faster than unstructured ones, and the landscape of implementation decisions is dramatically unpredictable. For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
+
+In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code. In this model, performance engineers can more efficiently search the
+complex landscape of programs and datastructures to find the best implementation. In this programming model, we can express certain concepts in programs, and others in data. For example, if we wish to merge two sorted lists, we express this as two sparse vectors which are true whenever the list contains the key in question, and we iterate over the \textit{entire} space of keys, writing to the output list whenever either of the vectors are true.
+While the order in which we iterate over the data is expressed in the program, which datapoints are of interest and how to find them is expressed in the data.
+
+We develop a new array programming language, Finch, which supports \textit{both}
+flexible programming constructs and diverse data structures. Finch supports a
+familiar programming language of loops, statements, if conditions, breaks, etc,
+over a wide variety of array structures, such as sparsity, run-length-encoding,
+symmetry, triangles, padding, or blocks. The Finch compiler uses the structure
+of the data to generate efficient implementations of these programs.
+
+\subsection{Contributions}
+
+\begin{enumerate}
+\item More complex array structures than ever before. A complete level-by-level
+structure-description language for expressing the structure of data
+hierarchically. The first such set of formats to efficiently capture banded,
+triangular, run-length-encoded, or sparse datasets, and any combination thereof.
+\item A rich structured array programming language with for-loops
+and complex control flow constructs at the same level of productivity
+of dense arrays. To our knowledge, the Finch programming language is the first
+to support if-conditions, early breaks, and multiple left hand sides over
+structured data, as well as complex accesses such as affine indexing or scatter/gather.
+\item A compiler that specializes programs to data structures 
+predictably, facilitating an expressive language that makes it easier to search the complex
+space of algorithms and datastructures. It is easy to implement new datastructures with a simple interface; the compiler analyzes the tensor lifecycle and inserts insert simple, overloadable, interface functions such as
+initialization or finalization.
+\item We evaluate the productivity of our language in several case studies,
+showing that Finch can be used to accelerate a wide range of applications, 
+from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface.
+%We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
+%\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
+%\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
+%\item Tensor lifecycles, a simple constraint on tensor reads and writes that elegantly restricts Finch programs to avoid complex data dependencies, and enables tensor polymorphism by providing implementers with well-defined functions to overload.
+%\item Wrapper Tensors which modify existing datastructures and recombine them to support new patterns, such as affine indexing, padding, transposition, and slicing.
+%\item Wrapper Levels which modify existing datastructures and enabling complex features such as atomic updates or contiguous versus separate allocation.
+%\item We define the first mappings from the existing pydata/sparse array api high-level operations to low level finch notation
+%\item <Performance Contributions>
+\end{enumerate}
