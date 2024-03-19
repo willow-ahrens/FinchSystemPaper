@@ -127,6 +127,7 @@
 %\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 \newcommand\teo[1]{\textcolor{red}{teo:#1}}
+\newcommand\help[1]{\textcolor{green}{Help Needed:#1}}
 
 %%
 %% end of the preamble, start of the body of the document source.
@@ -258,6 +259,7 @@ From FORTRAN to Numpy, arrays have revolutionized how we express computation.  A
 
 \section{Introduction}
 
+%Array programming is the core abstraction behind many of the modern miracles of computing (e.g. neural networks, scientific simulation, database processing). 
 Arrays are the most fundamental abstraction in computer science. Arrays and lists are often the first-taught datastructure
 \cite[Chapter 2.2]{abelson_structure_1996}, \cite[Chapter 2.2]{knuth_art_1997}.
 Arrays are also universal across programming languages, from their introduction
@@ -288,16 +290,11 @@ dense arrays, such as loop fusion, loop tiling, loop unrolling, and loop
 interchange.  However, while dense arrays are the easiest way to program, the
 world is not all dense.
 
-Our world is full of structured arrays.  Sparse arrays (which store only nonzero
-elements) can describe networks and simulations. Run-length encoding describes
-images and masks, geometry, and databases (such as a list of transactions with
-the date field all the same). Symmetry, bands, padding, and blocks are all
-natural matrix properties which arise in the course of scientific computing or
-simulations of the natural world. Operators, such as convolution, can be
-expressed as structured arrays. For example, a convolution with a filter can be
-expressed as a matrix multiplication with the toeplitz matrix of all the
-circular shifts of the filter.
-
+%Bring in structure
+% - old arrays are Dense, rectilinear, integer grids
+% - The world is not like that
+% - Sparsity, runs of repeated values, symmetry
+% - Lots of citations, perhaps a few figures from my powerpoint
 %Sparse arrays
 % - Networks (graphblas, graph frameworks)
 % - Simulations (BLAS, symblas, banded blas, etc)
@@ -307,50 +304,94 @@ circular shifts of the filter.
 %Bands
 %Padding
 %Blocks
+\help{This section needs citations, please help expand it and make it more
+convincing. A figure could be nice.} Our world is full of structured arrays.
+Sparse arrays (which store only nonzero elements) describe networks and
+simulations. Run-length encoding describes images and masks, geometry, and
+databases (such as a list of transactions with the date field all the same)
+Symmetry, bands, padding, and blocks are all natural matrix properties which
+arise in the course of scientific computing or simulations of the natural world.
+Operators, such as convolution, can be expressed as structured arrays. For
+example, a convolution with a filter can be expressed as a matrix multiplication
+with the toeplitz matrix of all the circular shifts of the filter.
 
+\help{This section needs citations}
+\textbf{Currently, support for structured data is fragmented and incomplete}.
+Experts must hand write variations of even the simplest kernels, like matrix
+multiply, for each data structure and architecture to get performance.
+Implementations must choose a small set of features to support well, resulting
+in a compromise between \textbf{program flexibility} and \textbf{datastructure
+flexibility}. Hand-written solutions are collected in diverse libraries like
+MKL, OpenCV, or SciPy. However, libraries will only ever support a subset of
+programs on a subset of datastructure combinations. Even the most advanced
+libraries, such as the GraphBLAS, which support a wide variety of sparse
+operations over various semirings always lack support for other features, such
+as tensors, fused outputs, or runs of repeated values. While dense array
+compilers support an enormous variety of program constructs like early break and
+multiple left hand sides, they only support dense arrays.  Special-purpose
+compilers like TACO or CoRa which support a select subset of structured data
+structures (only sparse, or only ragged arrays) must compromise by greatly
+constraining the classes of programs which they support, such as tensor
+contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}. This trade-off is
+visualized in figure \ref{fig:datavsprogram}.
 
+\begin{table}[h!]
+  \help{This table needs citations, as well as a little bit of double checking}
+  \centering
+  \begin{tabular}{l|ccccc}
+  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
+  \hline
+  Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  High-Level API           &            & \checkmark &            &            & \checkmark \\
+  Automatic API Fusion     &            &            &            &            & \checkmark \\
+%  Parallelism              & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  Multiple LHS             & \checkmark &            & \checkmark & \checkmark & \checkmark \\
+  Affine Indices           & \checkmark &            &            & \checkmark & \checkmark \\
+  Recurrence               & \checkmark &            &            &            &            \\
+  If-Conditions and Masks  & \checkmark & \checkmark &            & \checkmark & \checkmark \\
+  Scatter Gather           & \checkmark &            &            & \checkmark & \checkmark \\
+  Early Break              &            & \checkmark &            &   \checkmark         & \checkmark \\
+  \end{tabular}
+  \caption{Feature support across various tools.}
+  \label{tab:features}
+  \end{table}
+  
+  \begin{table}[h!]
+  \centering
+  \begin{tabular}{l|ccccc}
+  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
+  \hline
+  Dense                    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  Padded                   & \checkmark &            &            &            & \checkmark \\
+  One Sparse               &            & \checkmark &            & \checkmark & \checkmark \\
+  Sparse                   &            & \checkmark &            &            & \checkmark \\
+  Run-length               &            &            &            &            & \checkmark \\
+  Symmetric                &            &            &            &            & \checkmark \\
+  Regular Sparse Blocks    &            & \checkmark &            &            & \checkmark \\
+  Irregular Sparse Blocks  &            &            &            &            & \checkmark \\
+  Ragged                   &            &            & \checkmark &            & \checkmark \\
+  \end{tabular}
+  \caption{Support for various data structures across tools. Finch supports \textbf{both} complex programs and complex data structures.}
+  \label{tab:data_structures}
+\end{table}
 
-%Bring in structure
-% - old arrays are Dense, rectilinear, integer grids
-% - The world is not like that
-% - Sparsity, runs of repeated values, symmetry
-% - Lots of citations, perhaps a few figures from my powerpoint
+We see two main challenges to writing efficient code over structured data.
 
-%Existing solutions do not scale to the complexity of the problem
-% Must choose between program flexibility and datastructure flexibility
-% Dense arrays have tons of programming constructs
-% Sparse array frameworks have very limited functionality, discuss a few key related works
+\textbf{Optimizations are specific to the indirection and patterns in datastructures}: These structures break the simple mapping between array elements and where they are stored in memory. For example, sparse arrays store lists of which coordinates are nonzero, whereas run-length-encoded arrays map several pixels to the same color value. These zero regions or repeated regions are optimization opportunities, and we must adapt the program to avoid repetitive work on these regions by referencing the stored structure.
 
-% Finch Supports both! The combination of the two leads us to a new data-structure driven programming model.
-% In this model, we can search the space of programs more efficiently, and we can more efficiently search the space of datastructures.
-% Programs are specified separately from datastructures.
-% Certain concepts are expressed in programs, others in data
-% At a high level, whenever we need to match corresponding keys in a program, those keys become array indices, and the datastructure becomes a sparse array
+\textbf{Performance is highly structure dependent}: Structure aware kernels are dramatically faster than unstructured ones, and the landscape of implementation decisions is dramatically unpredictable. For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
 
-%- Fortran supported lots of control structures, no data structures, just dense arrays.
-%
-%- We tried to emulate complex data using only dense arrays but with complicated control structures.
-%
-%- Recently, people tried to build frameworks to support structured data, but gave up a lot of program side
-%
-%- We’re bringing these together, because if both of these can work together, we can more efficiently search the space of programs
+In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code. In this model, performance engineers can more efficiently search the
+complex landscape of programs and datastructures to find the best implementation. In this programming model, we can express certain concepts in programs, and others in data. For example, if we wish to merge two sorted lists, we express this as two sparse vectors which are true whenever the list contains the key in question, and we iterate over the \textit{entire} space of keys, writing to the output list whenever either of the vectors are true.
+While the order in which we iterate over the data is expressed in the program, which datapoints are of interest and how to find them is expressed in the data.
 
-\textbf{Finch makes high-performance computing easier with compilers that adapt programs to the structure of data}.  Currently, experts must hand write variations of even the simplest kernels, like matrix multiply, for each data structure and architecture to get performance. This makes performance engineering an expensive, repetitive task. Several popular programs compute the same thing on different data. 
-\cite{ahrens_looplets_2023}.
-
-\textbf{Structured data support is fragmented and incomplete}. Programmers today must choose between program flexibility and datastructure flexibility. Hand-written solutions are collected in diverse libraries like MKL, OpenCV, or SciPy. However, libraries will only ever support a subset of programs on a subset of datastructure combinations. Special-purpose compilers like TACO or CoRa support a select subset of data structures (only sparse, or only ragged arrays) in highly constrained classes of programs such as tensor contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}.
-
-\textbf{Finch handles the two main challenges for structured array data}:
-\begin{itemize}
-\item \textbf{Optimizations are specific to the indirection and patterns in datastructures}: These structures break the simple mapping between array elements and where they are stored in memory. For example, sparse arrays store lists of which coordinates are nonzero, whereas run-length-encoded arrays map several pixels to the same color value. These zero regions or repeated regions are optimization opportunities. Here, we show how Finch combines programs with datastructure descriptions to generate efficient, datastructure-specific code. 
-
-\item \textbf{Performance is highly structure dependent: Structure aware kernels are dramatically faster than unstructured ones, but the landscape of implementation decisions is also dramatically unpredictable}. For example, sparse kernels don’t need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation. Finch allows you to search it more efficiently.
-\end{itemize}
-
-\subsection{Finch: Compiling Structured Data}
-The finch array programming language adapts complex programs to array datastructures to produce efficient code. Array programming is the core abstraction behind many of the modern miracles of computing (e.g. neural networks, scientific simulation, database processing). Finch supports \textit{both} flexible programming constructs and diverse data structures. Finch supports loops, statements, if conditions, breaks, etc, over a wide variety of array structures, such as sparsity, run-length-encoding, symmetry, triangles, padding, or blocks.
-
-Crucially, Finch is able to adapt simple, unstructured programs to the structure of the input data. It does this using Looplets, a new language that decomposes datastructure iterators hierarchically. Looplets represent the control-flow structures needed to iterate over them simultaneously with other structures in the program. Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation.
+We develop a new array programming language, Finch, which supports \textit{both}
+flexible programming constructs and diverse data structures. Finch supports a
+familiar programming language of loops, statements, if conditions, breaks, etc,
+over a wide variety of array structures, such as sparsity, run-length-encoding,
+symmetry, triangles, padding, or blocks. The Finch compiler uses the structure
+of the data to generate efficient implementations of these programs.
+%It does this using Looplets, a new language that decomposes datastructure iterators hierarchically. Looplets represent the control-flow structures needed to iterate over them simultaneously with other structures in the program. Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation.
 
 \subsection{Contributions}
 
@@ -381,42 +422,6 @@ from classic operations such as spmv and spgemm, to more complex applications su
 %\item <Performance Contributions>
 \end{enumerate}
 
-\begin{table}[h!]
-\centering
-\begin{tabular}{l|ccccc}
-\textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
-\hline
-Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-Parallelism             & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-Multiple LHS            & \checkmark &            & \checkmark & \checkmark & \checkmark \\
-Affine Indices          & \checkmark &            &            & \checkmark & \checkmark \\
-Recurrence              & \checkmark &            &            &            &            \\
-If-Conditions and Masks & \checkmark & \checkmark &            & \checkmark & \checkmark \\
-Scatter Gather          & \checkmark &            &            & \checkmark & \checkmark \\
-Early Break             &            & \checkmark &            &   \checkmark         & \checkmark \\
-\end{tabular}
-\caption{Feature support across various tools.}
-\label{tab:features}
-\end{table}
-
-\begin{table}[h!]
-\centering
-\begin{tabular}{l|ccccc}
-\textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
-\hline
-Dense                    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-Padded                   & \checkmark &            &            &            & \checkmark \\
-One Sparse               &            & \checkmark &            & \checkmark & \checkmark \\
-Sparse                   &            & \checkmark &            &            & \checkmark \\
-Run-length               &            &            &            &            & \checkmark \\
-Symmetric                &            &            &            &            & \checkmark \\
-Regular Sparse Blocks    &            & \checkmark &            &            & \checkmark \\
-Irregular Sparse Blocks  &            &            &            &            & \checkmark \\
-Ragged                   &            &            & \checkmark &            & \checkmark \\
-\end{tabular}
-\caption{Support for various data structures across tools.}
-\label{tab:data_structures}
-\end{table}
 
 \section{Background}
 \subsection{Looplets}
