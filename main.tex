@@ -262,27 +262,40 @@ From FORTRAN to Numpy, arrays have revolutionized how we express computation.  A
 %Array programming is the core abstraction behind many of the modern miracles of computing (e.g. neural networks, scientific simulation, database processing). 
 Arrays are the most fundamental abstraction in computer science. Arrays and lists are often the first-taught datastructure
 \cite[Chapter 2.2]{abelson_structure_1996}, \cite[Chapter 2.2]{knuth_art_1997}.
+%
 Arrays are also universal across programming languages, from their introduction
 in Fortran in 1957 to present-day languages like Python
-\cite{backus_fortran_1957}, keeping more-or-less the same semantics. Modern
+\cite{backus_fortran_1957}, keeping more-or-less the same semantics.
+%
+Modern
 array programming languages such as NumPy, SciPy, MatLab, TensorFlow, PyTorch,
 and Halide have pushed the limits of productive data processing with arrays,
 fueling breakthroughs in machine learning, scientific computing, image
-processing, and more.  \cite{harris_array_2020, virtanen_scipy_2020,
+processing, and more  \cite{harris_array_2020, virtanen_scipy_2020,
 moler_history_2020, abadi_tensorflow_2016,
-paszke_pytorch_2019,ragan-kelley_halide_2013}.  These frameworks have been the
+paszke_pytorch_2019,ragan-kelley_halide_2013}.
+%
+These frameworks have been the
 subject of extensive industry investment to enable performant implementations,
 and often operate at the peak capacity of the hardware they run on
 \cite{lo_roofline_2015}.
 
-The success and ubiquity of arrays is likely due to their simplicity. Since
+The success and ubiquity of arrays is likely due to their simplicity. 
+%
+Since
 their introduction, multidimensional arrays have represented dense, rectilinear,
-integer grids of points. By \textbf{dense}, we mean that every entry the array
+integer grids of points. 
+%
+By \textbf{dense}, we mean that every entry the array
 represents is stored faithfully at a location determined by a simple row or
-column-major mapping from multidimensional space to linear memory. This
+column-major mapping from multidimensional space to linear memory.
+%
+This
 simplicity enables extensive interoperability, convenience layers, and
 optimizations by breaking the abstraction barrier between array representation
-and array storage.  Compilers understand dense array computations across many
+and array storage.  
+%
+Compilers understand dense array computations across many
 programming constructs, such as for and while loops, breaks, parallelism,
 caching, prefetching, multiple outputs, scatters, gathers, vectoriation,
 loop-carry-dependencies, and more. Several optimizations have been developed for
