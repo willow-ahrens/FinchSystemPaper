@@ -16,6 +16,7 @@
     \finchaccess(tns \in T, idxs\ldots \in E) &:= \text{\mintinline{julia}{tns[idxs...]}} \\
     \finchfreeze(tns \in T) &:= \text{\mintinline{julia}{@freeze(tns)}} \\
     \finchthaw(tns \in T) &:= \text{\mintinline{julia}{@thaw(tns)}} \\
+    \finchmode(tns \in T) &:= \text{\mintinline{julia}{@mode(tns)}} \\
 \end{align*}
 \end{minipage}%
 \begin{minipage}{0.5\linewidth}
@@ -42,6 +43,45 @@
     \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
 \end{align*}
 
+\[
+    \frac{}{\langle\finchliteral(val), (e, t)\rangle \rightarrow val} \quad
+    \frac{}{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \langle ex, t \rangle} \quad
+\]
+\[
+    \frac{}{\langle\finchvar(name), (e, t)\rangle \rightarrow e(\finchvar(name))} \quad
+    \frac{}{\langle\finchindex(name), (e, t)\rangle \rightarrow e(\finchindex(name))}
+\]
+\[
+    \frac{\langle args_i, (e, t) \rangle \Rightarrow vals_i \quad \langle f, (e, t) \rangle \Rightarrow g}
+    {\langle\finchcall(f, args...), (e, t)\rangle \rightarrow \langle g(vals...), t \rangle}
+\]
+\[
+\frac{\langle head, s_1 \rangle \rightarrow s_2}
+{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle} \quad
+\frac{}{\langle\finchblock(), s\rangle \rightarrow s}
+\]
+\[
+\frac{\langle cond, s \rangle \Rightarrow true}
+{\langle\finchsieve(cond, body), s\rangle \rightarrow \langle body, s \rangle}\quad
+\frac{\langle cond, s \rangle \Rightarrow false}
+{\langle\finchsieve(cond, body), s\rangle \rightarrow s}
+\]
+\[
+\frac{\langle val, (e, t) \rangle \rightarrow val'}
+{\langle\finchdefine(var, val, body), (e, t)\rangle \rightarrow \langle body, (e[var \mapsto val'], t) \rangle}
+\]
+\[
+\frac{s = (e, t) \quad e(\finchmode(tns)) = read \quad e(tns) = tns' \quad  \langle init, s \rangle \rightarrow init' \quad  \langle dims_i, s \rangle \rightarrow dims_i'}
+{\langle\finchdeclare(tns, init, dims...), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle declare(tns', init', dims'...), t \rangle)}
+\]
+\[
+\frac{s = (e, t) \quad e(\finchmode(tns)) = read \quad e(tns) = tns'}
+{\langle\finchthaw(tns, init, dims...), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
+\]
+\[
+\frac{s = (e, t) \quad e(\finchmode(tns)) = update \quad e(tns) = tns'}
+{\langle\finchfreeze(tns, init, dims...), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
+\]
 
 \subsection{Wrapper Tensors}
 
