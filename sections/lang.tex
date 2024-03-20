@@ -3,78 +3,76 @@
 
 \subsection{Syntax and Semantics}
 
-\begin{align*}
-    \finchliteral := val \in \mathbb{V}
-\end{align*}
+\begin{minipage}{0.6\linewidth}
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchliteral(val \in \mathbb{V}) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    val
+    \end{minted}
+    \end{minipage}
 
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchliteral(val \in \mathbb{V}) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-name
-\end{minted}
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchvalue(ex \in \mathbb{S}, type \in \mathbb{T}) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    ex :: type
+    \end{minted}
+    \end{minipage}
+        
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchtensor(name \in \mathbb{S}) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    name
+    \end{minted}
+    \end{minipage}
+
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchindex(name \in \mathbb{S}) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    name
+    \end{minted}
+    \end{minipage}
+
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchvar(name \in \mathbb{S}) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    name
+    \end{minted}
+    \end{minipage}
+
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchextent(a \in E, b \in E) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    a : b
+    \end{minted}
+    \end{minipage}
+
+    \noindent\begin{minipage}{.5\linewidth}
+    \raggedleft $\finchcall(f \in E, args\ldots \in E) :=$~
+    \end{minipage}%
+    \begin{minipage}{.5\linewidth}
+    \begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+    f(args...)
+    \end{minted}
+    \end{minipage}
 \end{minipage}
 
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchvalue(ex \in \mathbb{S}, type \in \mathbb{T}) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-name
-\end{minted}
-\end{minipage}
-    
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchtensor(name \in \mathbb{S}) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-name
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchindex(name \in \mathbb{S}) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-name
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchvar(name \in \mathbb{S}) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-name
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchextent(a \in E, b \in E) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-a : b
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{.5\linewidth}
-\raggedleft $\finchcall(f \in E, args\ldots \in E) :=$~
-\end{minipage}%
-\begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-f(args...)
-\end{minted}
-\end{minipage}
-    
 \noindent\begin{minipage}{.5\linewidth}
 \raggedleft $\finchaccess(tns \in E, idxs\ldots \in E) :=$~
 \end{minipage}%
 \begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
+\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
 tns[idxs...]
 \end{minted}
 \end{minipage}
@@ -83,7 +81,7 @@ tns[idxs...]
 \raggedleft $\finchassign(lhs \in A, op \in E, rhs \in E) :=$~
 \end{minipage}%
 \begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
+\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
 tns[idxs...] <<op>>= rhs
 \end{minted}
 \end{minipage}
@@ -92,7 +90,7 @@ tns[idxs...] <<op>>= rhs
 \raggedleft $\finchloop(idx \in I, range \in E, body \in S) :=$~
 \end{minipage}%
 \begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
+\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
 for idx = range; body end
 \end{minted}
 \end{minipage}
@@ -101,7 +99,7 @@ for idx = range; body end
 \raggedleft $\finchdefine(var \in V, val \in E, body \in S) :=$~
 \end{minipage}%
 \begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
+\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
 let var = val; body end
 \end{minted}
 \end{minipage}
@@ -110,10 +108,8 @@ let var = val; body end
 \raggedleft $\finchsieve(cond \in E, body \in S) :=$~
 \end{minipage}%
 \begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
-if cond
-    body
-end
+\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
+if cond; body end
 \end{minted}
 \end{minipage}
 
@@ -121,7 +117,7 @@ end
 \raggedleft $\finchblock(bodies\ldots \in S) :=$~
 \end{minipage}%
 \begin{minipage}{.5\linewidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{latex}
+\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
 begin; bodies... end
 \end{minted}
 \end{minipage}
