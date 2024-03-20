@@ -2,7 +2,14 @@
 \section{Evaluation}
 
 \subsection{Data-Driven Performance Engineering}
-\subsubsection{Sparse-Sparse Matrix Multiply}
+\subsubsection{Sparse-Sparse Matrix Multiply (SpGEMM)}
+\changwan{
+Explain what is SpGEMM. why SpGEMM hard? (not sure)
+three approaches. Asym time complexity?
+}
+
+
+
 
 \help{The main points of this section are:}
 
@@ -99,9 +106,29 @@ There were also significant advantages of using the Pattern format instead of th
 
 \subsubsection{Symmetric SpMV}
 Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by providing the capabilities to reuse memory reads and insert control flow logic to restrict iterations to either the lower or upper triangle of the sparse matrix. We can apply this strategy with any level format. Every symmetric matrix in the SparseList and SparseList-Pattern formats has better performance when we use a Finch SpMV program that takes advantage of this symmetry. However, the regular Finch SpMV program has better performance for symmetric matrices than the symmetric Finch SpMV program for the other more specialized formats, likely because we need in-order accesses to fully capitalize on the specialized storage. Symmetric SpMV with the SparseList level format in Finch results in an average of 1.3x speedup over TACO and symmetric SpMV with the SparseList-Pattern format in Finch results in an average speedup of 1.15x over TACO . Notably, there is a 1.9x speedup for the HB/saylr4 matrix. 
+
 \subsubsection{4D Blocked SpMV}
+Finch also provides us the capability of writing an SpMV kernel [point to figure] that computes the output in blocks. Specifically, we rewrite an n x n matrix as a n/b x n/b x b x b 4-dimensional tensor and the vector as an n x n/b matrix where b is the block-size. We represent the blocked matrix with a SparseList as its second level (i.e. of format Dense(SparseList(Dense(Dense(Element(0.0)))))) so that only the non-zero blocks are stored. Then, we perform SpMV on each b x b block individually. Note that although SparseVBL already stores consecutive nonzeros in blocks, the benefit of a 4D-blocked kernel is that it additionally computes the output block by block. This method enables us to take advantage of spatial and temporal locality via register reuse [cite].
 
+We evaluated the 4D-blocked kernel on the Kronecker product of a neural network matrix with a blocked matrix of size 10x10 and a dense and randomly generated vector. We found a 1.04x speedup to TACO, indicating comparable performance, and a 1.35x speedup to computing a non-blocked SpMV with the SparseVBL format, the fastest performing 2D Finch format for this matrix. 
 
+Structured matrices with induced dense blocks of equivalent size commonly arise in machine learning applications. In feature extraction, the Kronecker product of image data and a smaller matrix is computed to extract relevant features. Graph adjacency matrices or Laplacian matrices may also exhibit dense blocks when certain subsets of nodes or edges are densely interconnected. For instance, the adjacency matrix of the Erdös-Renyi random graph has a real symmetric bxb random block at each non-vanishing entry [cite]. 
+
+\begin{minted}{julia}
+            @finch begin
+                for J = _
+                    for I = _
+                        for j = 1:10
+                            for i = 1:10
+                                let _i = (I - 1) * 10 + i
+                                    y[_i] += block_A[i, j, I, J] * block_x[j, J]
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+\end{minted}
 
 %Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
 
