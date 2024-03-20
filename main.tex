@@ -125,6 +125,7 @@
     breakanywhere, % Allow line breaks anywhere
     autogobble,
 }
+\setmintedinline{fontsize=\small}
 %\usepackage[colorlinks=true, allcolors=blue]{hyperref}
 
 
@@ -157,10 +158,12 @@
 \newcommand{\finchassign}{\ensuremath{\text{\textbf{assign}}}}
 \newcommand{\finchupdate}{\ensuremath{\text{\textbf{update}}}}
 \newcommand{\finchloop}{\ensuremath{\text{\textbf{loop}}}}
-\newcommand{\finchdeclare}{\ensuremath{\text{\textbf{declare}}}}
 \newcommand{\finchdefine}{\ensuremath{\text{\textbf{define}}}}
 \newcommand{\finchsieve}{\ensuremath{\text{\textbf{sieve}}}}
 \newcommand{\finchblock}{\ensuremath{\text{\textbf{block}}}}
+\newcommand{\finchdeclare}{\ensuremath{\text{\textbf{declare}}}}
+\newcommand{\finchfreeze}{\ensuremath{\text{\textbf{freeze}}}}
+\newcommand{\finchthaw}{\ensuremath{\text{\textbf{thaw}}}}
 \newcommand{\HIDE}[1]{}
 
 
@@ -173,7 +176,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Finch: A Datastructure-Driven Array Programming Language}
+\title{Finch: Sparse and Structured Array Programming with Control Flow}
 
 %%
 %% The "author" command and its associated commands are used to define

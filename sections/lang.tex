@@ -3,184 +3,45 @@
 
 \subsection{Syntax and Semantics}
 
-% Define variables for left and right minipage widths
-\newlength{\leftwidth}
-\setlength{\leftwidth}{.4\linewidth}
-\newlength{\rightwidth}
-\setlength{\rightwidth}{.6\linewidth}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\mathbb{V} :=$~
+\noindent % This ensures the minipages fill the page width
+\begin{minipage}{0.4\linewidth}
+\begin{align*}
+    \finchliteral(val \in \mathbb{V}) &:= \text{\mintinline{julia}{val}} \\
+    \finchvalue(ex \in \mathbb{S}, type \in \mathbb{T}) &:= \text{\mintinline{julia}{ex :: type}} \\
+    \finchtensor(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
+    \finchindex(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
+    \finchvar(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
+    \finchextent(a \in E, b \in E) &:= \text{\mintinline{julia}{a : b}} \\
+    \finchcall(f \in E, args\ldots \in E) &:= \text{\mintinline{julia}{f(args...)}} \\
+    \finchaccess(tns \in T, idxs\ldots \in E) &:= \text{\mintinline{julia}{tns[idxs...]}} \\
+    \finchfreeze(tns \in T) &:= \text{\mintinline{julia}{@freeze(tns)}} \\
+    \finchthaw(tns \in T) &:= \text{\mintinline{julia}{@thaw(tns)}} \\
+\end{align*}
 \end{minipage}%
-\begin{minipage}{\rightwidth}
-the set of all values.~
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\mathbb{S} :=$~
+\begin{minipage}{0.5\linewidth}
+\begin{align*}
+    \mathbb{V} &:= \text{the set of all values.} \\
+    \mathbb{S} &:= \text{the set of all symbols.} \\
+    \mathbb{T} &:= \text{the set of all types.} \\
+    I &:= \finchindex \\
+    A &:= \finchaccess \\
+    V &:= \finchvar \\
+    T &:= \finchtensor \\
+    E &:= \finchliteral \mid \finchvalue \mid \finchindex \\
+        &\quad \mid \finchvar \mid \finchextent \mid \finchcall \mid \finchaccess \\
+    S &:= \finchassign \mid \finchloop \mid \finchdefine \\
+        &\quad \mid \finchsieve \mid \finchblock \\
+\end{align*}
 \end{minipage}%
-\begin{minipage}{\rightwidth}
-the set of all symbols.
-\end{minipage}
+\begin{align*}
+    \finchdeclare(tns \in T, init \in E, dims\ldots \in E) &:= \text{\mintinline{julia}{tns .= init(dims...)}} \\
+    \finchassign(lhs \in A, op \in E, rhs \in E) &:= \text{\mintinline{julia}{lhs \texttt{<<op>>=} rhs}} \\
+    \finchloop(idx \in I, range \in E, body \in S) &:= \text{\mintinline{julia}{for idx = range; body end}} \\
+    \finchdefine(var \in V, val \in E, body \in S) &:= \text{\mintinline{julia}{let var = val; body end}} \\
+    \finchsieve(cond \in E, body \in S) &:= \text{\mintinline{julia}{if cond; body end}} \\
+    \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
+\end{align*}
 
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\mathbb{T} :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-the set of all types.
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $I :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-$\finchindex$
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $A :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-$\finchaccess$
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $V :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-$\finchvar$
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $E :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-$\finchliteral | \finchvalue | \finchindex | \finchvar | \finchextent | \finchcall | \finchaccess$
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $S :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-$\finchassign | \finchloop | \finchdefine | \finchsieve | \finchblock$
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchliteral(val \in \mathbb{V}) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-val
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchvalue(ex \in \mathbb{S}, type \in \mathbb{T}) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-ex :: type
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchtensor(name \in \mathbb{S}) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-name
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchindex(name \in \mathbb{S}) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-name
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchvar(name \in \mathbb{S}) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-name
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchextent(a \in E, b \in E) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-a : b
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchcall(f \in E, args\ldots \in E) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-f(args...)
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchaccess(tns \in E, idxs\ldots \in E) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-tns[idxs...]
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchassign(lhs \in A, op \in E, rhs \in E) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-lhs <<op>>= rhs
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchloop(idx \in I, range \in E, body \in S) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-for idx = range; body end
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchdefine(var \in V, val \in E, body \in S) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-let var = val; body end
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchsieve(cond \in E, body \in S) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-if cond; body end
-\end{minted}
-\end{minipage}
-
-\noindent\begin{minipage}{\leftwidth}
-\raggedleft $\finchblock(bodies\ldots \in S) :=$~
-\end{minipage}%
-\begin{minipage}{\rightwidth}
-\begin{minted}[autogobble, linenos=false, fontsize=\normalsize]{julia}
-begin; bodies... end
-\end{minted}
-\end{minipage}
 
 \subsection{Wrapper Tensors}
 
