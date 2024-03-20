@@ -160,7 +160,7 @@ We see two main challenges to writing efficient code over structured data.
 
 \textbf{Performance is highly structure dependent}: Structure aware kernels are dramatically faster than unstructured ones, and the landscape of implementation decisions is dramatically unpredictable. For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
 
-In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code. In this model, performance engineers can more efficiently search the
+In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code.\saman{Is this new? TACO did something similar?} In this model, performance engineers can more efficiently search the
 complex landscape of programs and datastructures to find the best implementation. In this programming model, we can express certain concepts in programs, and others in data. For example, if we wish to merge two sorted lists, we express this as two sparse vectors which are true whenever the list contains the key in question, and we iterate over the \textit{entire} space of keys, writing to the output list whenever either of the vectors are true.
 While the order in which we iterate over the data is expressed in the program, which datapoints are of interest and how to find them is expressed in the data.
 
@@ -176,7 +176,7 @@ of the data to generate efficient implementations of these programs.
 \begin{enumerate}
 \item More complex array structures than ever before. A complete level-by-level
 structure-description language for expressing the structure of data
-hierarchically. The first such set of formats to efficiently capture banded,
+hierarchically.\saman{level formats were done in TACO.} The first such set of formats to efficiently capture banded,
 triangular, run-length-encoded, or sparse datasets, and any combination thereof.
 \item A rich structured array programming language with for-loops
 and complex control flow constructs at the same level of productivity
