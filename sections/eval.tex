@@ -44,7 +44,7 @@ Structure in data arises both naturally, due to the chemical and physical proper
 
 The sparse matrix-vector multiplication kernel is a common operation in sparse linear algebra with many applications including conjugate gradients, graph algorithms, numerical analysis, and neural networks. The wide range of applications unsurprisingly results in a wide range of types of datasets making it an effective kernel to demonstrate the utility of having flexible data formats. In this case study, we highlight a few different Finch formats and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do.
 
-We compare Finch’s performance to that of TACO, SuiteSparseGraphBLAS, and Julia’s standard library. We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. In addition, we also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We depict the performance of SpMV across the aforementioned tools and compare to the fastest Finch format for that particular dataset in Figures 1 and 2. 
+We compare Finch’s performance to that of TACO, SuiteSparseGraphBLAS, and Julia’s standard library. We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. In addition, we also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We depict the performance of SpMV across the aforementioned tools and compare to the fastest Finch format for that particular dataset in Figures \ref{spmv_sorted} and \ref{spmv_grouped}. 
 
 % TODO: make this be 3 columns
 \begin{figure}
@@ -99,7 +99,7 @@ We compare Finch’s performance to that of TACO, SuiteSparseGraphBLAS, and Juli
 \subsubsection{Tensor Formats}
 We benchmarked the SpMV kernel using the Dense level format for the outer level and the SparseList, SparseVBL, SparseBand, and SparsePoint Finch levels for the inner level of the sparse matrix. To represent scalar values, we benchmarked with both the Element and Pattern levels. The SparseList, SparseVBL, and SparseBand formats were functional for all matrices, but the SparsePoint format was applicable only for the synthetic permutation matrices. The Element format was applicable to represent scalars in all matrices, while the Pattern level was applicable only for boolean matrices. 
 
-We found that the SpMV performance was superior for the level format that best paralleled the structure of the tensor. Namely, matrices with a clear blocked structure like $exdata\_1$, $TSOPF\_RS\_b678\_c1$, and $heart3$ performed notably well with the SparseVBL format in comparison to both TACO and the Finch SparseList formats (which we consider the closest analog to the sparse matrix format used in TACO and other libraries) with speedups of 2.16, X, and Y relative to TACO and of 1.47, X, and Y relative to the SparseList Finch SpMV implementation. Furthermore, the synthetic Toeplitz banded matrices we constructed performed the best with the SparseBand matrix, in particular with the $toeplitz\_large\_band$ and the $toeplitz\_medium\_band$ matrices having a speedup of A and B relative to TACO and a speedup of A and B relative to the SparseList Finch SpMV implementation. 
+We found that the SpMV performance was superior for the level format that best paralleled the structure of the tensor. Namely, matrices with a clear blocked structure like exdata\_1, TSOPF\_RS\_b678\_c1, and heart3 performed notably well with the SparseVBL format in comparison to both TACO and the Finch SparseList formats (which we consider the closest analog to the sparse matrix format used in TACO and other libraries) with speedups of 2.16, X, and Y relative to TACO and of 1.47, X, and Y relative to the SparseList Finch SpMV implementation. Furthermore, the synthetic Toeplitz banded matrices we constructed performed the best with the SparseBand matrix, in particular with the $toeplitz\_large\_band$ and the $toeplitz\_medium\_band$ matrices having a speedup of A and B relative to TACO and a speedup of A and B relative to the SparseList Finch SpMV implementation. 
 
 There were also significant advantages of using the Pattern format instead of the Element format to represent scalar values in the matrices when these values were boolean. The matrices in the SNAP collection which represent graph datasets are boolean and had an average speedup of X over TACO and X over the same Finch program, but with an Element format.   
 
@@ -142,11 +142,13 @@ Structured matrices with induced dense blocks of equivalent size commonly arise 
         \includegraphics[width=\linewidth]{spmv_performance_sorted_(slower_than_taco).png}
     \end{minipage}
     \caption{Performance of SpMV across various tools.}
+    \label{spmv_sorted}
 \end{figure}
 
 \begin{figure}
     \includegraphics[width=\linewidth]{spmv_performance_grouped.png}
     \caption{Performance of SpMV by Finch format.}
+    \label{spmv_grouped}
 \end{figure}
 
 \subsection{Programming over flexible data}
