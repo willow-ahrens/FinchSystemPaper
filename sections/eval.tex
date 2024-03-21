@@ -98,53 +98,27 @@ Structure in data arises both naturally, due to the chemical and physical proper
 \end{figure}
 
 \subsubsection{Tensor Formats}
-\willow{could this be a table?} We benchmarked the SpMV kernel using the Dense level format for the outer level and the SparseList, SparseVBL, SparseBand, and SparsePoint Finch levels for the inner level of the sparse matrix. To represent scalar values, we benchmarked with both the Element and Pattern levels. The SparseList, SparseVBL, and SparseBand formats were functional for all matrices, but the SparsePoint format was applicable only for the synthetic permutation matrices. The Element format was applicable to represent scalars in all matrices, while the Pattern level was applicable only for boolean matrices. We tested with both the row-major and the column-major implementations (labeled with a "R" and "C", respectively, where applicable in Figure \ref{spmv_grouped}) with Finch. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
+\willow{could this be a table?} We tested with both the row-major and the column-major implementations (labeled with a "R" and "C", respectively, where applicable in Figure \ref{spmv_grouped}) with Finch. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
 \begin{table}[htbp]
     \centering
-    \caption{SpMV Tensor Formats}
-    \begin{tabular}{|l|l|l|}
-        \hline
-        \textbf{Tensor Format} & \textbf{Style of Matrix} & \textbf{Evaluation Datasets} \\
-        \hline
-        SparseList & sparse matrices & Vuduc, Ahrens, TACO, SNAP, synthetic \\
-        \hline
-        SparseVBL & matrices with a clear blocked structure & Vuduc, Ahrens, TACO, SNAP, synthetic  \\
-        \hline 
-        SparseBand & matrices with a diagonal band & Vuduc, Ahrens, TACO, SNAP, synthetic \\ 
-        \hline 
-        SparsePoint & matrices with one value per row & synthetic \\
-        \hline
-        Element* & matrices with real values & Vuduc, Ahrens, TACO, synthetic \\
-        \hline
-        Pattern* & matrices with boolean values & SNAP  \\
-        \hline 
-    \end{tabular}
-    \footnotesize *Used in conjunction with aforementioned formats as the innermost level to represent scalar values.
-\end{table}
-
-\begin{table}[htbp]
-    \centering
+    \label{tensor_formats}
     \caption{SpMV Tensor Formats}
     \begin{tabular}{|l|l|l|l|}
         \hline
         \textbf{Outer Level} & \textbf{Inner Level} & \textbf{Scalar Values} & \textbf{Style of Matrix}\\
         \hline
-        \multirow{7}{*}{Dense} & \multirow{2}{*}{SparseList} & Element & sparse, real-valued matrices \\
+        \multirow{6}{*}{Dense} & \multirow{2}{*}{SparseList} & Element & sparse, real-valued matrices \\
         \cline{3-4} 
         & & Pattern & sparse, boolean-valued matrices \\
         \cline{2-4} 
-        & \multirow{2}{*}{SparseVBL} & Element & real-valued matrices with blocked structure \\
-        \cline{3-4} 
-        & & Pattern & boolean-valued matrices with blocked structure \\
+        & SparseVBL & Element & real-valued matrices with blocked structure \\
         \cline{2-4}
-        & \multirow{2}{*}{SparseBand} & Element & real-valued matrices with diagonal band \\
-        \cline{3-4} 
-        & & Pattern & boolean-valued matrices with diagonal band \\
+        & SparseBand & Element & real-valued matrices with diagonal band \\
         \cline{2-4}
         & \multirow{2}{*}{SparsePoint} & Element & real-valued matrices with one value per row \\
         \cline{3-4} 
-        & & Pattern & boolean-valued matrices with one value per row \\
+        & & Pattern & matrix with runs of true or false \\
         \hline 
     \end{tabular}
 
