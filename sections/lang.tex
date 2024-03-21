@@ -43,6 +43,9 @@
     \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
 \end{align*}
 
+the state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
+environment and another state $t$ corresponding to the embedding language.
+
 \[
     \frac{}{\langle\finchliteral(val), (e, t)\rangle \rightarrow val} \quad
     \frac{}{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \langle ex, t \rangle} \quad
@@ -92,21 +95,51 @@ $E$ is an evaluation context that applies anywhere in the syntax tree.
 
 \[
 \frac{}
-{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(sequence(phase(range, body), tail...), j..., i)]), s\rangle
-    }{\rightarrow \langle \finchblock(\finchloop(i, ext \cup range, E[\finchaccess(body, j..., i)]), \finchloop(i, ext, E[\finchaccess(sequence(tail...), j..., i)])), s\rangle}}
+{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(run(body), j..., i)]), s\rangle
+    }{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(body, j...)]), s\rangle}}
+\]
+
+\[
+\frac{e(i) = i' \quad \langle seek(i'), t \rangle \rightarrow t'}
+{\splitfrac{\langle E[\finchaccess(lookup(seek, body), j..., i)], (e, t)\rangle
+    }{\rightarrow \langle E[\finchaccess(body, j...)], (e, t')\rangle}}
+\]
+
+\[
+\frac{\langle cond, t \rangle \Rightarrow true}
+{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle
+    }{\rightarrow \langle E[\finchaccess(head, i...)], s\rangle}}
+\]
+
+\[
+\frac{\langle cond, t \rangle \Rightarrow false}
+{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle
+    }{\rightarrow \langle E[\finchaccess(tail, i...)], s\rangle}}
 \]
 
 \[
 \frac{}
-{\langle \finchloop(i, ext, E[\finchaccess(sequence(), j..., i)]), s\rangle \rightarrow \langle \finchblock(), s\rangle}
+{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle
+    }{\rightarrow \langle \finchloop(i, extent(max(a, c), min(b, d)), E[\finchaccess(body, j..., i)]), s\rangle}}
 \]
 
 \[
-\frac{}
-{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(next, body), j..., i)]), s\rangle
-    }{\rightarrow \langle \finchblock(\finchloop(i, ext \cup range, E[\finchaccess(body, j..., i)]), \finchloop(i, ext, E[\finchaccess(sequence(tail...), j..., i)])), s\rangle}}
+\frac{\langle \finchloop(i, ext, E[\finchaccess(head, j..., i)]), s\rangle \rightarrow s'}
+{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(sequence(head, tail), j..., i)]), s\rangle
+    }{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(tail, j..., i)]), s'\rangle}}
 \]
 
+\[
+\frac{\langle seek(a), t \rangle \rightarrow t' \quad }
+{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t)\rangle
+    }{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t')\rangle}}
+\]
+
+\[
+\frac{\langle \finchloop(i, ext, E[\finchaccess(body, j..., i)]), (e, t) \rangle \rightarrow (e', t') \quad \langle next, t' \rangle \rightarrow t''}
+{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle
+    }{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(thunk(next, stepper(body, next)), j..., i)]), (e', t'')\rangle}}
+\]
 
 
 \subsection{Wrapper Tensors}
