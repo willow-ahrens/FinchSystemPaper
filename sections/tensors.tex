@@ -18,7 +18,7 @@ Third, since Finch programs can read and write to the same data, multi-dimension
 
 To build our bridge, we embrace a set of abstractions: level formats/Fiber Trees, iteration context dependent instantiation of iterators, and tensor life cycles.
 %
-Our first abstraction mostly already exists in the literature: a manner of specifying a data structure for a multi-dimensional tensor out of data structures for single dimensional tensors~\cite{sze2017efficient ,chou2022compilation, chou2018format}. 
+Our first abstraction mostly already exists in the literature: a manner of specifying a data structure for a multi-dimensional tensor out of data structures for single dimensional tensors~\cite{sze2017efficient,chou2022compilation, chou2018format}. 
 %
 We recapitulate the essential details here.
 %
@@ -26,25 +26,14 @@ Our next two abstractions adds to to the first by providing a mechanism to use d
 %
 Previous efforts to compiler a greater variety of sparse array programs left these bridges untouched ~\cite{henry_compilation_2021, won2023unified, senanayake2020sparse}.
 %
+We introduce an interface to instatiate iterators in a variety of contexts in our programs and we introduce the lifecycle interface to manage when we read and write to multi-dimensional iterators.
 %
-% As we will see
-% \begin{enumerate}
-%     \item Compilation substitutes in different iterators depending on context, mainly the traversal pattern of the iterator (oh god).
-%     \item Less obviously, iterators have other state that needs to be tracked, such as when we write stuff.
-%     \item how do we ask for the right iterator and how do we change/manage their state?
-% \end{enumerate}
-% Need to Make these problems clear by this point, hope that read anticipate them.
-
-% Solutions:
-% \begin{enumerate}
-%     \item Einsum like: limit when state can change, leading to a natural lifecycle for a tensor.
-%     \item simple interface to go from an index expression into an iterator that decomposes in a way tensor compilers are used to.
-% \end{enumerate}
+These interfaces add to the level abstraction.
 
 \subsection{Level Abstraction}
     
 \begin{enumerate}
-\item fibers
+\item fibers and levels
 \item assembly
 \item reassembly
 \end{enumerate}
