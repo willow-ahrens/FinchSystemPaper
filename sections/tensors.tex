@@ -6,7 +6,7 @@ The Finch language provides descriptions of computations that iterate over a sub
 %
 At this point, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators, but Finch programs and data structures are sufficiently flexible that this impossible.
 %
-First, the Finch language interacts with multi-dimensional tensors whereas the Looplet abstraction is much easier to manage when considering a single dimensional iterator. 
+First, the Finch language interacts with multi-dimensional tensors whereas the Looplet abstraction is best suited towards iterators over a single dimension.
 %
 We require a bridge between the single dimensional iterators created from looplets and the mutli-dimensional abstractions common to tensor compilers.
 %
