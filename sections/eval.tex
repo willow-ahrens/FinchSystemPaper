@@ -98,11 +98,11 @@ Structure in data arises both naturally, due to the chemical and physical proper
 \end{figure}
 
 \subsubsection{Tensor Formats}
-\willow{could this be a table?} We tested with both the row-major and the column-major implementations (labeled with a "R" and "C", respectively, where applicable in Figure \ref{spmv_grouped}) with Finch. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
+For the tensor formats in Table \ref{spmv_tensor_formats}, we tested with both the row-major and the column-major implementations (labeled with a "R" and "C", respectively, where applicable in Figure \ref{spmv_grouped}) with Finch. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
 \begin{table}[htbp]
     \centering
-    \label{tensor_formats}
+    \label{spmv_tensor_formats}
     \caption{SpMV Tensor Formats}
     \begin{tabular}{|l|l|l|l|}
         \hline
