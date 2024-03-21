@@ -46,6 +46,10 @@
 the state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
 environment and another state $t$ corresponding to the embedding language.
 
+\begin{prooftree}
+\infer{3}[\langle\finchliteral(val), (e, t)\rangle \rightarrow val]
+\end{prooftree}
+
 \[
     \frac{}{\langle\finchliteral(val), (e, t)\rangle \rightarrow val} \quad
     \frac{}{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \langle ex, t \rangle} \quad
