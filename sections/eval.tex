@@ -102,13 +102,22 @@ Structure in data arises both naturally, due to the chemical and physical proper
 
 \begin{table}[htbp]
     \centering
-    \caption{Tensor Format, Style of Matrix, and Datasets}
+    \caption{SpMV Tensor Formats}
     \begin{tabular}{|l|l|l|}
         \hline
-        \textbf{Tensor Format} & \textbf{Style of Matrix} & \textbf{Datasets} \\
+        \textbf{Tensor Format} & \textbf{Style of Matrix} & \textbf{Evaluation Datasets} \\
         \hline
-        SparseList & sparse & Vuduc, Ahrens, TACO \\
+        SparseList & sparse matrices & Vuduc, Ahrens, TACO, synthetic \\
         \hline
+        SparseVBL & matrices with a clear blocked structure & Vuduc, Ahrens, TACO, synthetic  \\
+        \hline 
+        SparseBand & matrices with a diagonal band & Vuduc, Ahrens, TACO, synthetic \\ 
+        \hline 
+        SparsePoint & matrices with one value per row & synthetic \\
+        \hline
+        Pattern* & matrices with boolean values & SNAP collection \\
+        \hline 
+        \footnote{test}
     \end{tabular}
 \end{table}
 
