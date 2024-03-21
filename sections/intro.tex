@@ -71,17 +71,15 @@ Sparse arrays (which store only nonzero elements) describe networks and
 simulations.
 %
 Run-length encoding describes images and masks, geometry, and
-databases (such as a list of transactions with the date field all the same)
-Symmetry, bands, padding, and blocks are all natural matrix properties which
-arise in the course of scientific computing or simulations of the natural world.
+databases (such as a list of transactions with the date field all the same).
 %
-
+Symmetry, bands, padding, and blocks arise due to modeling choices in scientific computing as well as in intermediate structures in many linear solvers.
+%
 Operators, such as convolution, can be expressed as structured arrays.
 %
-For
-example, a convolution with a filter can be expressed as a matrix multiplication
-with the toeplitz matrix of all the circular shifts of the filter.
-
+For example, a convolution with a filter can be expressed as a matrix multiplication
+with the toeplitz matrix of all the circular shifts of the filter~\cite{sze2017efficient}.
+%
 \help{This section needs citations}
 \textbf{Currently, support for structured data is fragmented and incomplete}.
 %
