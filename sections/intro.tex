@@ -175,7 +175,8 @@ of the data to generate efficient implementations of these programs.
 \item 
 \teo{How about:
 A Looplet based level-format abstraction.
-Although many systems (TACO, Taichi, SPF, Ebb) features a flexible data structure description language for array-like computations, we show that we can describe more level formats than any other by a level format abstraction designed to target Looplets in the context of an array programming language with fine-grained control flow.
+Although many systems (TACO, Taichi, SPF, Ebb) features a flexible data structure description language for array-like computations, we show that we can describe more level formats than any other by a level format abstraction designed to target Looplets in the context of an array programming language with fine-grained control flow. The first such set of formats to efficiently capture banded,
+triangular, run-length-encoded, or sparse datasets, and any combination thereof.
 }
 
 More complex array structures than ever before. A complete level-by-level
@@ -184,16 +185,16 @@ hierarchically.\saman{level formats were done in TACO.} The first such set of fo
 triangular, run-length-encoded, or sparse datasets, and any combination thereof.
 \item A rich structured array programming language with for-loops
 and complex control flow constructs at the same level of productivity
-of dense arrays. To our knowledge, the Finch programming language is the first
+of dense arrays. To our knowledge, the Finch programming language is the first 
 to support if-conditions, early breaks, and multiple left hand sides over
-structured data, as well as complex accesses such as affine indexing or scatter/gather. \saman{for beyond dense...don't want to sound like we are the fist to do for dense. }
+structured data, as well as complex accesses such as affine indexing or scatter/gather. \saman{for beyond dense...don't want to sound like we are the fist to do for dense. } 
 \item A compiler that specializes programs to data structures 
 predictably,\saman{Interesting...can we back this claim up in the discription?} facilitating an expressive language that makes it easier to search the complex
-space of algorithms and datastructures. It is easy to implement new datastructures with a simple interface; the compiler analyzes the tensor lifecycle and inserts insert simple, overloadable, interface functions such as
+space of algorithms and data structures. It is easy to implement new data structures with a simple interface; the compiler analyzes the tensor lifecycle and inserts insert simple, overloadable, interface functions such as
 initialization or finalization.
 \item We evaluate the productivity of our language in several case studies,
 showing that Finch can be used to accelerate a wide range of applications, 
-from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface.
+from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface. \teo{Do we really want to say productivity here? What word do other similar papers use?}
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
 %\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
