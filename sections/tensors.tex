@@ -55,11 +55,8 @@ subfibers. The mapping $f$ from indices to subfibers is thus a mapping from an
 index and a position in a level to a subposition in a sublevel.
 Figure~\ref{fig:help} shows a simple example of a level as a fiber allocator.
 
-Our simplified view of a level is enabled by our use of looplets to represent
-the structure within each fiber. In fact, our level interface requires only
-5 highly general operations, described below:
-
-\paragraph[$declare(tns, init, dims...)$]
+Because the fibers are 
+\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
 
 \begin{enumerate}
 \item fibers and levels
@@ -67,10 +64,13 @@ the structure within each fiber. In fact, our level interface requires only
 \item reassembly
 \end{enumerate}
 
-\subsection{Instatiation Interface}
+\subsection{Instantiation Interface}
 
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
+Our simplified view of a level is enabled by our use of looplets to represent
+the structure within each fiber. In fact, our level interface requires only
+5 highly general operations, described below:
 
 \subsection{Core Level Language Primitives}
 \begin{enumerate}

@@ -49,29 +49,30 @@ environment and another state $t$ corresponding to the embedding language.
 
 \begin{figure}
     \centering
+    \small
+
     \begin{prooftree}  
     \hypo{s = (e, t)}
     \hypo{e(\finchmode(tns)) = read}
     \hypo{e(tns) = tns'}
-    \infer3{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
+    \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
     \end{prooftree}
-    \hfill
-    \vspace{2em}
+    \vspace{12pt}
     
     \begin{prooftree}  
     \hypo{s = (e, t)}
     \hypo{e(\finchmode(tns)) = update}
     \hypo{e(tns) = tns'}
-    \infer3{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
+    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
     \end{prooftree}
-      \vspace{2em}
+      \vspace{12pt}
       
     \begin{prooftree}  
     \hypo{s = (e, t)}
-    \hypo{tns\not\in e}
-    \hypo{\langle init, s \rangle \Rightarrow v}
-    \hypo{\forall d_{i}\in dims, \langle init, d_{i} \rangle \Rightarrow v_{i}}
-    \infer4{\langle\finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle \finchdeclare(tns, v, v_{0}, \dots)), t \rangle)}
+    \hypo{e(tns) = tns'}
+    \hypo{\langle init, s \rangle \Rightarrow init'}
+    \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
+    \infer4[$Declare$]{\langle\finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle \finchdeclare(tns', init', dims'...), t \rangle)}
     \end{prooftree}
     
     \caption{Rules for evaluating life cycle functions.}
@@ -80,91 +81,124 @@ environment and another state $t$ corresponding to the embedding language.
 
 \begin{figure}
     \centering
+    \small
+
     \begin{prooftree}
     \hypo{\langle val, (e, t) \rangle
     \rightarrow val'}
-    \infer1{\langle\finchdefine(var, val, body), (e, t)\rangle \rightarrow \langle body, (e[var \mapsto val'], t) \rangle}
+    \infer1[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t) \rangle}}
     \end{prooftree}
-    \vspace{2em}
+    \hfill
+    \begin{prooftree}
+        \hypo{\langle args_i, (e, t) \rangle \Rightarrow vals_i}
+        \hypo{\langle f, (e, t) \rangle \Rightarrow g}
+        \infer2[$Call$]{\langle\finchcall(f, args...), (e, t)\rangle \rightarrow \langle g(vals...), t \rangle}
+    \end{prooftree}
+    \vspace{12pt}
+
+    \begin{prooftree}
+        \hypo{}
+        \infer1[$Literal$]{\langle\finchliteral(val), (e, t)\rangle \rightarrow val}
+    \end{prooftree}
+    \hfill
+    \begin{prooftree}
+        \hypo{}
+        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \langle ex, t \rangle}
+    \end{prooftree}
+    \vspace{12pt}
+
+    \begin{prooftree}
+        \infer0[$Variable$]{\splitfrac{\langle\finchvar(name), (e, t)\rangle}{\rightarrow e(\finchvar(name))}}
+    \end{prooftree}
+    \hfill
+    \begin{prooftree}
+        \infer0[$Index$]{\splitfrac{\langle\finchindex(name), (e, t)\rangle}{\rightarrow e(\finchindex(name))}}
+    \end{prooftree}
+    \vspace{12pt}
+
+    \begin{prooftree}
+        \hypo{\langle head, s_1 \rangle \rightarrow s_2}
+        \infer1[$BlockHead$]{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle}
+    \end{prooftree}
+    \hfill
+    \begin{prooftree}
+        \infer0[$EmptyBlock$]{\langle\finchblock(), s\rangle \rightarrow s}
+    \end{prooftree}
+    \vspace{12pt}
+
+    \begin{prooftree}
+        \hypo{\langle cond, s \rangle \Rightarrow true}
+        \infer1[$SieveTrue$]{\langle\finchsieve(cond, body), s\rangle \rightarrow \langle body, s \rangle}
+    \end{prooftree}
+    \hfill
+    \begin{prooftree}
+        \hypo{\langle cond, s \rangle \Rightarrow false}
+        \infer1[$SieveFalse$]{\langle\finchsieve(cond, body), s\rangle \rightarrow s}
+    \end{prooftree}
+
     \caption{Basic Evaluation Rules}
     \label{fig:enter-label}
 \end{figure}
 
-\[
-    \frac{}{\langle\finchliteral(val), (e, t)\rangle \rightarrow val} \quad
-    \frac{}{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \langle ex, t \rangle} \quad
-\]
-\[
-    \frac{}{\langle\finchvar(name), (e, t)\rangle \rightarrow e(\finchvar(name))} \quad
-    \frac{}{\langle\finchindex(name), (e, t)\rangle \rightarrow e(\finchindex(name))}
-\]
-\[
-    \frac{\langle args_i, (e, t) \rangle \Rightarrow vals_i \quad \langle f, (e, t) \rangle \Rightarrow g}
-    {\langle\finchcall(f, args...), (e, t)\rangle \rightarrow \langle g(vals...), t \rangle}
-\]
-\[
-\frac{\langle head, s_1 \rangle \rightarrow s_2}
-{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle} \quad
-\frac{}{\langle\finchblock(), s\rangle \rightarrow s}
-\]
-\[
-\frac{\langle cond, s \rangle \Rightarrow true}
-{\langle\finchsieve(cond, body), s\rangle \rightarrow \langle body, s \rangle}\quad
-\frac{\langle cond, s \rangle \Rightarrow false}
-{\langle\finchsieve(cond, body), s\rangle \rightarrow s}
-\]
+
+
+\begin{figure}
+    \centering
+    \small
 
 $E$ is an evaluation context that applies anywhere in the syntax tree.
+\vspace{12pt}
+
+\begin{prooftree}
+    \infer0[$Run$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(run(body), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(body, j...)]), s\rangle}}
+\end{prooftree}
+\hfill
+\begin{prooftree}
+    \hypo{e(i) = i'}
+    \hypo{\langle seek(i'), t \rangle \rightarrow t'}
+    \infer2[$Lookup$]{\splitfrac{\langle E[\finchaccess(lookup(seek, body), j..., i)], (e, t)\rangle}{\rightarrow \langle E[\finchaccess(body, j...)], (e, t')\rangle}}
+\end{prooftree}
+\vspace{12pt}
+
+\begin{prooftree}
+    \hypo{\langle cond, t \rangle \Rightarrow true}
+    \infer1[]{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle}{\rightarrow \langle E[\finchaccess(head, i...)], s\rangle}}
+\end{prooftree}
+\hfill
+\begin{prooftree}
+    \hypo{\langle cond, t \rangle \Rightarrow false}
+    \infer1[$Switch$]{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle}{\rightarrow \langle E[\finchaccess(tail, i...)], s\rangle}}
+\end{prooftree}
+\vspace{12pt}
+
+\begin{prooftree}
+    \infer0[$Phase$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle}{\rightarrow \langle \text{\finchloop}(i, extent(max(a, c), min(b, d)), E[\text{\finchaccess}(body, j..., i)]), s\rangle}}
+\end{prooftree}
+\vspace{12pt}
+
+\begin{prooftree}
+    \hypo{\langle \finchloop(i, ext, E[\finchaccess(head, j..., i)]), s\rangle \rightarrow s'}
+    \infer1[$Sequence$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(sequence(head, tail), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(tail, j..., i)]), s'\rangle}}
+\end{prooftree}
+\vspace{12pt}
+
+\begin{prooftree}
+    \hypo{\langle seek(a), t \rangle \rightarrow t'}
+    \infer1[$StepperSeek$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t)\rangle}{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t')\rangle}}
+\end{prooftree}
+\vspace{12pt}
+
+\begin{prooftree}
+    \hypo{\langle \finchloop(i, ext, E[\finchaccess(body, j..., i)]), (e, t) \rangle \rightarrow (e', t')}
+    \hypo{\langle next, t' \rangle \rightarrow t''}
+    \infer2[$StepperNext$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), (e', t'')\rangle}}
+\end{prooftree}
+
+    \caption{Looplet Rules}
+    \label{fig:enter-label}
+\end{figure}
 
 
-
-\[
-\frac{}
-{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(run(body), j..., i)]), s\rangle
-    }{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(body, j...)]), s\rangle}}
-\]
-
-\[
-\frac{e(i) = i' \quad \langle seek(i'), t \rangle \rightarrow t'}
-{\splitfrac{\langle E[\finchaccess(lookup(seek, body), j..., i)], (e, t)\rangle
-    }{\rightarrow \langle E[\finchaccess(body, j...)], (e, t')\rangle}}
-\]
-
-\[
-\frac{\langle cond, t \rangle \Rightarrow true}
-{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle
-    }{\rightarrow \langle E[\finchaccess(head, i...)], s\rangle}}
-\]
-
-\[
-\frac{\langle cond, t \rangle \Rightarrow false}
-{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle
-    }{\rightarrow \langle E[\finchaccess(tail, i...)], s\rangle}}
-\]
-
-\[
-\frac{}
-{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle
-    }{\rightarrow \langle \finchloop(i, extent(max(a, c), min(b, d)), E[\finchaccess(body, j..., i)]), s\rangle}}
-\]
-
-\[
-\frac{\langle \finchloop(i, ext, E[\finchaccess(head, j..., i)]), s\rangle \rightarrow s'}
-{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(sequence(head, tail), j..., i)]), s\rangle
-    }{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(tail, j..., i)]), s'\rangle}}
-\]
-
-\[
-\frac{\langle seek(a), t \rangle \rightarrow t' \quad }
-{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t)\rangle
-    }{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t')\rangle}}
-\]
-
-\[
-\frac{\langle \finchloop(i, ext, E[\finchaccess(body, j..., i)]), (e, t) \rangle \rightarrow (e', t') \quad \langle next, t' \rangle \rightarrow t''}
-{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle
-    }{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(thunk(next, stepper(body, next)), j..., i)]), (e', t'')\rangle}}
-\]
 
 
 \subsection{Wrapper Tensors}
