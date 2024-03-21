@@ -43,10 +43,6 @@
     \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
 \end{align*}
 
-\begin{prooftree}
-\infer{0}[\langle\finchliteral(val), (e, t)\rangle \rightarrow val]
-\end{prooftree}
-
 the state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
 environment and another state $t$ corresponding to the embedding language.
 
