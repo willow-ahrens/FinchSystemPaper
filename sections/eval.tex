@@ -130,17 +130,21 @@ Structure in data arises both naturally, due to the chemical and physical proper
         \hline
         \textbf{Outer Level} & \textbf{Inner Level} & \textbf{Scalar Values} & \textbf{Style of Matrix}\\
         \hline
-        \multirow{6}{*}{Dense} & \multirow{2}{*}{SparseList} & Element & sparse, real-valued matrices \\
+        \multirow{7}{*}{Dense} & \multirow{2}{*}{SparseList} & Element & sparse, real-valued matrices \\
         \cline{3-4} 
         & & Pattern & sparse, boolean-valued matrices \\
         \cline{2-4} 
-        & \multirow{2}{*}{SparseVBL} & Element & real-valued matrices with a blocked structure \\
+        & \multirow{2}{*}{SparseVBL} & Element & real-valued matrices with blocked structure \\
         \cline{3-4} 
-        & & Pattern & boolean-valued matrices with a blocked structure \\
+        & & Pattern & boolean-valued matrices with blocked structure \\
         \cline{2-4}
-        & \multirow{2}{*}{SparseBand} & Element & real-valued matrices with a diagonal band \\
+        & \multirow{2}{*}{SparseBand} & Element & real-valued matrices with diagonal band \\
         \cline{3-4} 
-        & & Pattern & boolean-valued matrices with a diagonal band \\
+        & & Pattern & boolean-valued matrices with diagonal band \\
+        \cline{2-4}
+        & \multirow{2}{*}{SparsePoint} & Element & real-valued matrices with one value per row \\
+        \cline{3-4} 
+        & & Pattern & boolean-valued matrices with one value per row \\
         \hline 
     \end{tabular}
 
