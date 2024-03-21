@@ -47,6 +47,48 @@ the state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
 environment and another state $t$ corresponding to the embedding language.
 
 
+\begin{figure}
+    \centering
+    \begin{prooftree}  
+    \hypo{s = (e, t)}
+    \hypo{e(\finchmode(tns)) = read}
+    \hypo{e(tns) = tns'}
+    \infer3{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
+    \end{prooftree}
+    \hfill
+    \vspace{2em}
+    
+    \begin{prooftree}  
+    \hypo{s = (e, t)}
+    \hypo{e(\finchmode(tns)) = update}
+    \hypo{e(tns) = tns'}
+    \infer3{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
+    \end{prooftree}
+      \vspace{2em}
+      
+    \begin{prooftree}  
+    \hypo{s = (e, t)}
+    \hypo{tns\not\in e}
+    \hypo{\langle init, s \rangle \Rightarrow v}
+    \hypo{\forall d_{i}\in dims, \langle init, d_{i} \rangle \Rightarrow v_{i}}
+    \infer4{\langle\finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle \finchdeclare(tns, v, v_{0}, \dots)), t \rangle)}
+    \end{prooftree}
+    
+    \caption{Rules for evaluating life cycle functions.}
+    \label{fig:enter-label}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{prooftree}
+    \hypo{\langle val, (e, t) \rangle
+    \rightarrow val'}
+    \infer1{\langle\finchdefine(var, val, body), (e, t)\rangle \rightarrow \langle body, (e[var \mapsto val'], t) \rangle}
+    \end{prooftree}
+    \vspace{2em}
+    \caption{Basic Evaluation Rules}
+    \label{fig:enter-label}
+\end{figure}
 
 \[
     \frac{}{\langle\finchliteral(val), (e, t)\rangle \rightarrow val} \quad
@@ -71,29 +113,10 @@ environment and another state $t$ corresponding to the embedding language.
 \frac{\langle cond, s \rangle \Rightarrow false}
 {\langle\finchsieve(cond, body), s\rangle \rightarrow s}
 \]
-\[
-\frac{\langle val, (e, t) \rangle \rightarrow val'}
-{\langle\finchdefine(var, val, body), (e, t)\rangle \rightarrow \langle body, (e[var \mapsto val'], t) \rangle}
-\]
-\[
-\frac{s = (e, t) \quad e(\finchmode(tns)) = read \quad e(tns) = tns' \quad  \langle init, s \rangle \rightarrow init' \quad  \langle dims_i, s \rangle \rightarrow dims_i'}
-{\langle\finchdeclare(tns, init, dims...), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle declare(tns', init', dims'...), t \rangle)}
-\]
-\[
-\frac{s = (e, t) \quad e(\finchmode(tns)) = read \quad e(tns) = tns'}
-{\langle\finchthaw(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
-\]
-\[
-\frac{s = (e, t) \quad e(\finchmode(tns)) = update \quad e(tns) = tns'}
-{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
-\]
 
 $E$ is an evaluation context that applies anywhere in the syntax tree.
 
-\[
-\frac{e(tns) = tns' \langle unfurl(tns'), t\rangle \rightarrow \langle tns'', t'\rangle}
-{\langle \finchloop(i, ext, E[\finchaccess(tns, j..., i)]), (e, t)\rangle \rightarrow \langle \finchloop(i, ext, E[\finchaccess(tns'', j..., i)]), (e, t')\rangle}
-\]
+
 
 \[
 \frac{}
