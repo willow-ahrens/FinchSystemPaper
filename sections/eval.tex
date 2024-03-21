@@ -128,19 +128,9 @@ Structure in data arises both naturally, due to the chemical and physical proper
     \caption{SpMV Tensor Formats}
     \begin{tabular}{|l|l|l|l|l|}
         \hline
-        \textbf{Tensor Format} & \textbf{Style of Matrix} & \textbf{Evaluation Datasets} \\
+        \textbf{Outer Level} & \textbf{Inner Level} & \textbf{Scalar Values} & \textbf{Style of Matrix} & \textbf{Evaluation Datasets} \\
         \hline
-        SparseList & sparse matrices & Vuduc, Ahrens, TACO, SNAP, synthetic \\
-        \hline
-        SparseVBL & matrices with a clear blocked structure & Vuduc, Ahrens, TACO, SNAP, synthetic  \\
-        \hline 
-        SparseBand & matrices with a diagonal band & Vuduc, Ahrens, TACO, SNAP, synthetic \\ 
-        \hline 
-        SparsePoint & matrices with one value per row & synthetic \\
-        \hline
-        Element* & matrices with real values & Vuduc, Ahrens, TACO, synthetic \\
-        \hline
-        Pattern* & matrices with boolean values & SNAP  \\
+        \multirow{2}{*}{Dense} & \multirow{2}{*}{SparseL} & Element & sparse matrices & Vuduc, Ahrens, TACO, SNAP, synthetic 
         \hline 
     \end{tabular}
     \footnotesize *Used in conjunction with aforementioned formats as the innermost level to represent scalar values.
