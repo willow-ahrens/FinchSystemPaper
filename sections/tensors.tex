@@ -1,6 +1,5 @@
 \section{Bridging Looplets and Finch: The Tensor Interface}
-\teo{I am doing stuff in this section.}
-Looplets provide descriptions of iterators. 
+
 %
 The Finch language provides descriptions of computations that iterate over a subset of a regular grid that is lexicographically ordered.
 %
@@ -15,6 +14,7 @@ Second, since the iteration order of a Finch program might not match that of a d
 So we require a bridge that can provide different iteration orders depending on the context.
 %
 Third, since Finch programs can read and write to the same data, multi-dimensional tensors need to provide iterators for reading and writing as well as machinery to manage transition between these states.
+
 
 To build our bridge, we embrace a set of abstractions: level formats/Fiber Trees, iteration context dependent instantiation of iterators, and tensor life cycles.
 %
@@ -31,7 +31,8 @@ We introduce an interface to instatiate iterators in a variety of contexts in ou
 These interfaces add to the level abstraction.
 
 \subsection{Level Abstraction}
-    
+    \teo{I am doing stuff in this section.}
+Looplets provide descriptions of iterators. 
 \begin{enumerate}
 \item fibers and levels
 \item assembly
