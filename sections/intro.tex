@@ -60,54 +60,59 @@ However, while dense arrays are the easiest way to program, the world is not all
 %Blocks
 \help{This section needs citations, please help expand it and make it more
 convincing. A figure could be nice.} 
+\teo{I Added citations/heft but we maybe need to improve the figure?}
 \begin{figure}
 	\includegraphics[width=\linewidth]{example_structures.png}
     \caption{some example structures that might be nice to put into a figure}
 \end{figure}
 Our world is full of structured arrays.
 %
-
-Sparse arrays (which store only nonzero elements) describe networks and
-simulations.
+Sparse arrays (which store only nonzero elements) describe networks, databases, and simulations~\cite{abhyankarpetsc, bell2007lessons, mcauley2013hidden, balay2020petsc}.
 %
 Run-length encoding describes images and masks, geometry, and
-databases (such as a list of transactions with the date field all the same).
+databases (such as a list of transactions with the date field all the same)~\cite{shi2020column,golomb1966run}.
 %
-Symmetry, bands, padding, and blocks arise due to modeling choices in scientific computing as well as in intermediate structures in many linear solvers.
+Symmetry, bands, padding, and blocks arise due to modeling choices in scientific computing (e.g. higher order FEMs) as well as in intermediate structures in many linear solvers (e.g. GMRES)~\cite{ded, saad2003iterative, o2009scientific}.
+%
+In the context of machine learning, combinations of sparse and blocked matrices are increasingly under consideration~\cite{dao2022monarch}.
 %
 Operators, such as convolution, can be expressed as structured arrays.
 %
 For example, a convolution with a filter can be expressed as a matrix multiplication
 with the toeplitz matrix of all the circular shifts of the filter~\cite{sze2017efficient}.
+
+
 %
 \help{This section needs citations}
 \textbf{Currently, support for structured data is fragmented and incomplete}.
 %
 Experts must hand write variations of even the simplest kernels, like matrix
-multiply, for each data structure and architecture to get performance.
+multiply, for each data structure/data set and architecture to get performance.
 %
 Implementations must choose a small set of features to support well, resulting
-in a compromise between \textbf{program flexibility} and \textbf{datastructure
+in a compromise between \textbf{program flexibility} and \textbf{data structure
 flexibility}.
 %
 Hand-written solutions are collected in diverse libraries like
-MKL, OpenCV, or SciPy. 
+MKL, OpenCV, LAPACK or SciPy~\cite{ bradski2000opencv, anderson1999lapack, virtanen2020scipy, psarras2022linear}. 
 %
 However, libraries will only ever support a subset of
-programs on a subset of datastructure combinations. Even the most advanced
+programs on a subset of data structure combinations.
+%
+Even the most advanced
 libraries, such as the GraphBLAS, which support a wide variety of sparse
-operations over various semirings always lack support for other features, such
-as tensors, fused outputs, or runs of repeated values. 
+operations over various semi-rings always lack support for other features, such
+as tensors, fused outputs, or runs of repeated values~\cite{bulucc2017design, mattson2019lagraph}.
 %
 While dense array
 compilers support an enormous variety of program constructs like early break and
-multiple left hand sides, they only support dense arrays.  
+multiple left hand sides, they only support dense arrays~\cite{ragan-kelley_halide_2013,grosser2012polly}.  
 %
 Special-purpose
-compilers like TACO or CoRa which support a select subset of structured data
+compilers like TACO, Taichi, StructTensor, or CoRa which support a select subset of structured data
 structures (only sparse, or only ragged arrays) must compromise by greatly
 constraining the classes of programs which they support, such as tensor
-contractions \cite{kjolstad_tensor_2019, fegade_cora_2022}. 
+contractions \cite{kjolstad_tensor_2019, hu_taichi_2019, ghorbani2023compiling, fegade_cora_2022}. 
 %
 This trade-off is
 visualized in figure \ref{fig:datavsprogram}.
