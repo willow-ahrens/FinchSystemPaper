@@ -84,6 +84,15 @@ instead relying on initialization to reset the fiber if it needs to be reused.
 \paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
 \paragraph{$freeze(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
 
+%What needs to be said about the tensors? It's basically a few main points:
+%1. What is the level abstraction
+%2. We have identified 8 key level structures to represent most combinations of runs or pinpoints.
+%2. a. beautiful figure with datas as rows of larger structures
+%2. b. How do we write to each of these, in order? Randomly? random access? several important datastructures that show up along the way.
+%3. What is "Unfurling"? and how does it help us represent each structure? refer to looplet decompositions of each case in the earlier figure
+%4. What are lifecycles? How do lifecycles help us keep sane? Why are they necessary for correctness?
+
+
 \subsection{Core Level Language Primitives}
 \begin{enumerate}
 \item SparseList
