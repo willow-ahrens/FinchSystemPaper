@@ -277,19 +277,14 @@ To get a sense of the Python Array API, we provide a few examples of required fu
 
 
 \begin{align*}
-    \finchquery(alias, expr)
-    \finchreorder(expr, idxs...)
-    \finchrelabel(expr, idxs...)
-    \finch
+    \finchplan(queries...)\\
+    \finchquery(name, expr)\\
+    \finchreorder(expr, idxs...)\\
+    \finchrelabel(expr, idxs...)\\
+    \finchmapjoin(op, exprs...)\\
+    \finchaggregate(op, expr)\\
+    \finchtable(tns, idxs...)\\
 \end{align*}
-
-\newcommand{\finchplan}{\ensuremath{\text{\textbf{plan}}}}
-\newcommand{\finchquery}{\ensuremath{\text{\textbf{query}}}}
-\newcommand{\finchtable}{\ensuremath{\text{\textbf{table}}}}
-\newcommand{\finchmapjoin}{\ensuremath{\text{\textbf{mapjoin}}}}
-\newcommand{\finchaggregate}{\ensuremath{\text{\textbf{aggregate}}}}
-\newcommand{\finchrelabel}{\ensuremath{\text{\textbf{relabel}}}}
-\newcommand{\finchreorder}{\ensuremath{\text{\textbf{reorder}}}}
 
 \subsubsection{Finch Interpreter}
 
