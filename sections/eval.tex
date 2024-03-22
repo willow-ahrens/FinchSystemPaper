@@ -275,16 +275,13 @@ To get a sense of the Python Array API, we provide a few examples of required fu
 
 \subsubsection{Finch Logic}
 
-
 \begin{align*}
-    \finchplan(queries...)\\
-    \finchquery(name, expr)\\
-    \finchreorder(expr, idxs...)\\
-    \finchrelabel(expr, idxs...)\\
-    \finchmapjoin(op, exprs...)\\
-    \finchaggregate(op, expr)\\
-    \finchtable(tns, idxs...)\\
+    \finchplan(queries...) &  \finchquery(name, expr) & \finchreorder(expr, idxs...)\\
+    \finchrelabel(expr, idxs...)& \finchmapjoin(op, exprs...) & \finchaggregate(op, expr)\\
+    & \finchtable(tns, idxs...) & \\
 \end{align*}
+
+
 
 \subsubsection{Finch Interpreter}
 
