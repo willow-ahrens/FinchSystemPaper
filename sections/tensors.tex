@@ -30,6 +30,14 @@ These interfaces add to the level abstraction, expanding the types of data that 
 %
 Previous efforts to compile a greater variety of sparse array programs left these bridges untouched ~\cite{henry_compilation_2021, won2023unified, senanayake2020sparse}.
 
+%What needs to be said about the tensors? It's basically a few main points:
+%1. (DONE) What is the level abstraction 
+%2. (Done) We have identified 8 key level structures to represent most combinations of runs or pinpoints.
+%2. a. beautiful figure with datas as rows of larger structures
+%2. b. How do we write to each of these, in order? Randomly? random access? several important datastructures that show up along the way.
+%3. What is "Unfurling"? and how does it help us represent each structure? refer to looplet decompositions of each case in the earlier figure
+%4. What are lifecycles? How do lifecycles help us keep sane? Why are they necessary for correctness?
+
 \subsection{Level Abstraction}
 Fiber-tree style tensor abstractions have been the subject of extensive study
 \cite{sze2017efficient, chou2022compilation, chou2018format}.  The underlying
@@ -45,6 +53,21 @@ sparse vectors as sets of represented points. Since our fiber-tree
 represesentation must handle other kinds of structure, such as diagonal,
 repeated, or constant values, we instead view each fiber as a mapping from
 indices into a space of subfibers.
+
+%From the docs:
+%Finch represents tensors hierarchically in a tree, where each node in the tree is a vector of subtensors and the leaves are the elements. Thus, a matrix is analogous to a vector of vectors, and a 3-tensor is analogous to a vector of vectors of vectors. The vectors at each level of the tensor all have the same structure, which can be selected by the user.
+%In a Finch tensor tree, the child of each node is selected by an array index. All of the children at the same level will use the same format and share the same storage. Finch is column major, so in an expression A[i_1, ..., i_N], the rightmost dimension i_N corresponds to the root level of the tree, and the leftmost dimension i_1 corresponds to the leaf level.
+%We refer to a node in the tree as a subfiber. All of the nodes at the same level are stored in the same datastructure, and disambiguated by an integer position. in the above example, there are three levels: the rootmost level contains only one subfiber, the root. The middle level has 3 subfibers, one for each column. The leafmost level has 12 subfibers, one for each element of the array. For example, the first level is A_fbr.lvl, and we can represent it's third position as SubFiber(A_fbr.lvl.lvl, 3). The second level is A_fbr.lvl.lvl, and we can access it's 9th position as SubFiber(A_fbr.lvl.lvl.lvl, 9). For instructional purposes, you can use parentheses to call a subfiber on an index to select among children of a subfiber.
+%When we print the tree in text, positions are numbered from top to bottom. However, if we visualize our tree with the root at the top, positions range from left to right:
+%Dense Format Index Tree
+%Because our array is sparse, (mostly zero, or another fill value), it would be more efficient to store only the nonzero values. In Finch, each level is represented with a different format. A sparse level only stores non-fill values. This time, we'll use a tensor constructor with sl (for "SparseList of nonzeros") instead of d (for "Dense"):
+%CSC Format Index Tree
+%Our Dense(SparseList(Element(0.0))) format is also known as "CSC" and is equivalent to SparseMatrixCSC. The Tensor function will perform a zero-cost copy between Finch fibers and sparse matrices, when available. CSC is an excellent general-purpose representation when we expect most of the columns to have a few nonzeros. However, when most of the columns are entirely fill (a situation known as hypersparsity), it is better to compress the root level as well:
+%DCSC Format Index Tree
+%Here we see that the entirely zero column has also been compressed. The SparseList(SparseList(Element(0.0))) format is also known as "DCSC".
+%The COO format is compact and straightforward, but doesn't support random access. For random access, one should use the SparseHash format. A full listing of supported formats is described after a rough description of shared common internals of level, relating to types and storage.
+%All levels have a postype, typically denoted as Tp in the constructors, used for internal pointer types but accessible by the function:
+%postype(lvl)
 
 Instead of storing the data for each subfiber separately, most sparse tensor
 formats such as CSR, DCSR, and COO usually store the data for all fibers in a
@@ -69,6 +92,78 @@ unique data associated with $fiber(l, p)$ is the position $p$.
     \label{fig:levelsvsfibers}
 \end{figure}
 
+\subsection{The 8 Key Level Structures}
+    The main benefits of specializing to structure come from the following properties of the data:
+    \begin{enumerate}
+        \item[Sparsity] Sparse data is data that is mostly zero, or some other
+        fill value. When we specialize on this data, we can use annihilation ($x
+        * 0 = 0$), identity ($x * 1 = 1$), and other constant propagation
+        * properties ($ifelse(false, x, y) = y$) to simplify the computation and avoid
+        redundant work.
+        
+        \item[Blocks] Blocked data is a subset of sparse data where the nonzeros
+        are clustered and occur adjacent to one another. This provides us with
+        two opportunities: We can avoid storing the locations of the nonzeros
+        individually, and we can use a much more efficient randomly accessible
+        iterators within the block. \cite{im_optimizing_2001, vuduc_performance_2002, ahrens_looplets_2023}.
+
+        \item[Runs] Runs of repeated values may occur in dense or sparse code,
+        cutting down on storage and allowing us to use integration rules such as 
+        \mintinline{julia}{for i = 1:n; s += x; end} $\rightarrow$
+        \mintinline{julia}{s += n * x} or code motion to lift operations out of loops. 
+
+        \item[Singletons] When we have only one non-fill region in sparse data,
+        we can use this fact to avoid a loop and instead just compile code for
+        only the single region \cite{ahrens_looplets_2023, ghorbani2023compiling}.
+    \end{enumerate}
+
+    In Finch, we have identified 8 key level structures that can represent all
+    of the relevant combinations of these properties, summarized in Table
+    \ref{tab:TypesOfStructure}. We examine each structure in turn, describing
+    some of the key properties and potential use cases of each. In this sense,
+    the structures we consider are exhaustive. We can represent a wide variety
+    of hierarchical tensor structures by combining these level structures in a
+    tree, as shown in Figure~\ref{fig:levels}.
+    \begin{table}
+        \centering
+        \begin{tabular}{|c|c|c|c|l|}
+            \hline
+            \textbf{Sparse} & \textbf{Blocked} & \textbf{Runs} & \textbf{Singletons} & \textbf{Corresponding Format} \\
+            \hline
+             &  &  &  & Dense \\
+            \hline
+             &  & \checkmark &  & DenseRLE \\
+            \hline
+            \checkmark &  &  &  & Sparse \\
+            \hline
+            \checkmark &  &  & \checkmark & SparsePinpoint \\
+            \hline
+            \checkmark &  & \checkmark &  & SparseRLE \\
+            \hline
+            \checkmark &  & \checkmark & \checkmark & SparseInterval \\
+            \hline
+            \checkmark & \checkmark &  &  & SparseVBL \\
+            \hline
+            \checkmark & \checkmark &  & \checkmark & SparseBand \\
+            \hline
+        \end{tabular}
+        \caption{All combinations of relevant structural properties and their
+        corresponding formats.  Note that blocks and runs need not be considered
+        together because we must store a run length for each run, and so there
+        isn't a significant storage benefit to combining them. Blocks and
+        singletons only make sense in the contex of sparsity, so we don't
+        consider them together either. We omit such combinations
+        from the exhaustive table.}
+        \label{tab:TypesOfStructure}
+    \end{table}
+
+    \begin{figure}
+        \centering
+        %\includegraphics[width=0.45\linewidth]{structuraldiversity.png}\hfill%
+        \caption{This figure is a placeholder, but will eventually contain some very beguiling trees of levels.}
+        \label{fig:structuraldiversity}
+    \end{figure}
+
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
 Our simplified view of a level is enabled by our use of looplets to represent
@@ -83,14 +178,6 @@ instead relying on initialization to reset the fiber if it needs to be reused.
 \paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
 \paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
 \paragraph{$freeze(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
-
-%What needs to be said about the tensors? It's basically a few main points:
-%1. What is the level abstraction
-%2. We have identified 8 key level structures to represent most combinations of runs or pinpoints.
-%2. a. beautiful figure with datas as rows of larger structures
-%2. b. How do we write to each of these, in order? Randomly? random access? several important datastructures that show up along the way.
-%3. What is "Unfurling"? and how does it help us represent each structure? refer to looplet decompositions of each case in the earlier figure
-%4. What are lifecycles? How do lifecycles help us keep sane? Why are they necessary for correctness?
 
 
 \subsection{Core Level Language Primitives}
