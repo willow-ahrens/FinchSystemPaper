@@ -9,3 +9,8 @@ file=Looplets # File name excluding extension
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 5 --output "$file-phase.png" "$file.drawio"
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 6 --output "$file-switch.png" "$file.drawio"
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 7 --output "$file-thunk.png" "$file.drawio"
+
+file=LevelsVsFibers # File name excluding extension
+
+/Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 0 --output "$file-tensor.png" "$file.drawio"
+/Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 1 --output "$file-matrix.png" "$file.drawio"
