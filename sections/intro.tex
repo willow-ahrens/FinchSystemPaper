@@ -116,7 +116,7 @@ contractions \cite{kjolstad_tensor_2019, hu_taichi_2019, ghorbani2023compiling, 
 %
 This trade-off is visualized in figure \ref{fig:datavsprogram}.
 %
-We hypothesize that 
+
 
 \begin{table}[h!]
   \help{This table needs citations, as well as a little bit of double checking}
@@ -158,11 +158,14 @@ We hypothesize that
   \label{tab:data_structures}
 \end{table}
 
+
 We see two main challenges to writing efficient code over structured data.
 
 \textbf{Optimizations are specific to the indirection and patterns in datastructures}: These structures break the simple mapping between array elements and where they are stored in memory. For example, sparse arrays store lists of which coordinates are nonzero, whereas run-length-encoded arrays map several pixels to the same color value. These zero regions or repeated regions are optimization opportunities, and we must adapt the program to avoid repetitive work on these regions by referencing the stored structure.
 
 \textbf{Performance is highly structure dependent}: Structure aware kernels are dramatically faster than unstructured ones, and the landscape of implementation decisions is dramatically unpredictable. For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
+
+\teo{Data structure driven array program performance engineering?}
 
 In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code.\saman{Is this new? TACO did something similar?} In this model, performance engineers can more efficiently search the
 complex landscape of programs and datastructures to find the best implementation. In this programming model, we can express certain concepts in programs, and others in data. For example, if we wish to merge two sorted lists, we express this as two sparse vectors which are true whenever the list contains the key in question, and we iterate over the \textit{entire} space of keys, writing to the output list whenever either of the vectors are true.
