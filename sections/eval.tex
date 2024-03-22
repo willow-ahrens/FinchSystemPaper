@@ -43,7 +43,7 @@ The sparse matrix-vector multiplication kernel (SpMV) is a common operation in s
 In this case study, we highlight a few different Finch formats, as specified in Table \ref{spmv_tensor_formats}, and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do. Finch also provides the control flow necessary to manipulate data reads and writes, enabling exploitation of multiple structural patterns concurrently (e.g. sparsity \textit{and} symmetry). 
 
 
-We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested a wide variety of Finch formats; the performance displayed for Finch on each dataset is the fastest among the formats we tested.
+We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset in Figure \ref{spmv_grouped} is the fastest among the formats and programs we tested. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
 % TODO: make this be 3 columns
 \begin{figure}
@@ -92,11 +92,11 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
             end
         \end{minted}
     \end{minipage}
-    \caption{Performance of SpMV across various tools.}
+    \caption{Finch SpMV Programs}
+    \label{spmv_programs}
 \end{figure}
 
-\subsubsection{Tensor Formats}
-For the tensor formats in Table \ref{spmv_tensor_formats}, we tested with both the row-major and the column-major implementations with Finch. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
+
 
 \begin{table}[htbp]
     \centering
@@ -119,13 +119,27 @@ For the tensor formats in Table \ref{spmv_tensor_formats}, we tested with both t
         & & Pattern & matrix with runs of true or false \\
         \hline 
     \end{tabular}
-
 \end{table}
 
+
+
+\subsubsection{Tensor Formats}
 We found that the SpMV performance was superior for the level format that best paralleled the structure of the tensor. Namely, matrices with a clear blocked structure like exdata\_1, TSOPF\_RS\_b678\_c1, and heart3 performed notably well with the SparseVBL format in comparison to both TACO and the Finch SparseList formats (which we consider the closest analog to the sparse matrix format used in TACO and other libraries) with speedups of 2.16, 1.55, and 1.30 relative to TACO and of 1.47, 2.13, and 1.42 relative to the fastest SparseList Finch SpMV implementation. Furthermore, the synthetic Toeplitz banded matrices we constructed performed the best with the SparseBand matrix, in particular with the toeplitz\_large\_band and the toeplitz\_medium\_band matrices having a speedup of 1.98 and 1.64 relative to TACO and a speedup of 1.47 and 1.24 relative to the fastest SparseList Finch SpMV implementation. 
 
 There were also significant advantages of using the Pattern format instead of the Element format to represent scalar values in the matrices when these values were boolean, such as matrices in the SNAP collection which represent graph datasets are boolean. For example, Finch Pattern SpMV had a speedup of 2.51 over TACO for SNAP/email-Eu-core and a speedup of X over the same Finch program, but with an Element format.   
 
+\begin{table}[htbp]
+    \centering
+    \caption{SpMV Tensor Formats}
+    \label{spmv_tensor_formats}
+    \begin{tabular}{|l|l|l|}
+        \hline
+        \textbf{Spy} & \textbf{Group / Name} & \textbf{Dimensions}\\
+        \hline
+        & HB/saylr4 & 3,564 x 3,564 (22316) \\
+        \hline 
+    \end{tabular}
+\end{table}
 
 \subsubsection{Symmetric SpMV}
 Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by providing the capabilities to reuse memory reads and insert control flow logic to restrict iterations to either the lower or upper triangle of the sparse matrix. We can apply this strategy with any level format. Every symmetric matrix in the SparseList and SparseList-Pattern formats has better performance when we use a Finch SpMV program that takes advantage of this symmetry. However, the regular Finch SpMV program has better performance for symmetric matrices than the symmetric Finch SpMV program for the other more specialized formats, likely because we need in-order accesses to fully capitalize on the specialized storage. Symmetric SpMV with the SparseList level format in Finch results in an average of 1.30x speedup over TACO and symmetric SpMV with the SparseList-Pattern format in Finch results in an average speedup of 1.15x over TACO. Notably, there is a 1.90x speedup for the HB/saylr4 matrix over TACO. 
@@ -258,14 +272,16 @@ function finch_bfs_pull_kernel(_F, F, AT, V, P)
 end
 \end{minted}
 
-\subsection{Implementing Numpy Array API in Finch}
-In the past decade, the adoption of the Python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this API for structured data suffer from either incompleteness or inefficiency. They generally either limit the dimensionality to vectors and matrices or only support tabular representations in order to reduce the complexity of interactions between different formats. Further, existing work doesn't support the fusion of arbitrary operators which can have a drastic impact on performance as we show in Fig. (\kyle{PUT FIG HERE}). We believe that a flexible, online compiler like Finch which can manage the complexity of arbitrary operations between inputs with a wide variety of formats is the secret ingredient needed to make the array API performant for structured data.
+\subsection{Implementing Numpy's Array API in Finch}
+In the past decade, the adoption of the Numpy Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this API for structured data suffer from either incompleteness or inefficiency. They generally either limit the dimensionality to vectors and matrices or only support tabular representations in order to reduce the complexity of interactions between different formats. Further, existing work doesn't support the fusion of arbitrary operators which can have a drastic impact on performance as we show in Fig. (\kyle{PUT FIG HERE}). We believe that a flexible, online compiler like Finch which can manage the complexity of arbitrary operations between inputs with a wide variety of formats is the secret ingredient needed to make the array API performant for structured data.
 
 There is a gap between the expressiveness of the purely declarative Array API and the Finch language which defines both the output and the algorithm. The naive approach to solving this would be to explicitly define a mapping from each function in the API to a Finch program which eagerly produces the output. This approach results in a simple translation procedure but misses crucial opportunities for optimization across a chain of function calls and needlessly materializes large intermediate results. To avoid this, we have implemented a lazy evaluation approach that collects API calls and then computes output when requested by the user. This is implemented through 1) Finch Logic, a minimal, high-level language for expressing array operations and 2) the Finch Interpreter, which lowers Finch Logic programs to one or more Finch programs while making heuristic decisions about output format, loop ordering, and protocols.
 
 \subsubsection{The Finch High-Level API (Needs a Name)}
 
+
 \subsubsection{Finch Logic}
+
 
 \begin{align*}
     \finchreorder(name, idxs...) := 
