@@ -160,21 +160,6 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 
 % Structured matrices with induced dense blocks of equivalent size commonly arise in machine learning applications. In feature extraction, the Kronecker product of image data and a smaller matrix is computed to extract relevant features [cite]. Graph adjacency matrices or Laplacian matrices may also exhibit dense blocks when certain subsets of nodes or edges are densely interconnected. For instance, the adjacency matrix of the Erdös-Renyi random graph has a real symmetric bxb random block at each non-vanishing entry [cite]. 
 
-\begin{minted}{julia}
-            @finch begin
-                for J = _
-                    for I = _
-                        for j = 1:10
-                            for i = 1:10
-                                let _i = (I - 1) * 10 + i
-                                    y[_i] += block_A[i, j, I, J] * block_x[j, J]
-                                end
-                            end
-                        end
-                    end
-                end
-            end
-\end{minted}
 
 %Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
 
