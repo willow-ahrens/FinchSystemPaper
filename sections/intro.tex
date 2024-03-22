@@ -114,25 +114,26 @@ structures (only sparse, or only ragged arrays) must compromise by greatly
 constraining the classes of programs which they support, such as tensor
 contractions \cite{kjolstad_tensor_2019, hu_taichi_2019, ghorbani2023compiling, fegade_cora_2022}. 
 %
-This trade-off is
-visualized in figure \ref{fig:datavsprogram}.
+This trade-off is visualized in figure \ref{fig:datavsprogram}.
+%
+We hypothesize that 
 
 \begin{table}[h!]
   \help{This table needs citations, as well as a little bit of double checking}
   \centering
   \begin{tabular}{l|ccccc}
-  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Taichi} & \textbf{Finch} \\
+  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{StructTensor} & \textbf{Finch} \\
   \hline
-  Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-  High-Level API           &            & \checkmark &            &            & \checkmark \\
-  Automatic API Fusion     &            &            &            &            & \checkmark \\
-%  Parallelism              & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-  Multiple LHS             & \checkmark &            & \checkmark & \checkmark & \checkmark \\
-  Affine Indices           & \checkmark &            &            & \checkmark & \checkmark \\
-  Recurrence               & \checkmark &            &            &            &            \\
-  If-Conditions and Masks  & \checkmark & \checkmark &            & \checkmark & \checkmark \\
-  Scatter Gather           & \checkmark &            &            & \checkmark & \checkmark \\
-  Early Break              &            & \checkmark &            &   \checkmark         & \checkmark \\
+  Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  High-Level API           &            & \checkmark &            &            &            & \checkmark \\
+  Automatic API Fusion     &            &            &            &            &            & \checkmark \\
+%  Parallelism             & \checkmark & \checkmark & \checkmark & \checkmark&           & \checkmark \\
+  Multiple LHS             & \checkmark &            & \checkmark & \checkmark &            & \checkmark \\
+  Affine Indices           & \checkmark &            &            & \checkmark & \checkmark & \checkmark \\
+  Recurrence               & \checkmark &            &            &            &            &           \\
+  If-Conditions and Masks  & \checkmark & \checkmark &            & \checkmark &            & \checkmark \\
+  Scatter Gather           & \checkmark &            &            & \checkmark &            &\checkmark \\
+  Early Break              &            & \checkmark &            & \checkmark &         & \checkmark \\
   \end{tabular}
   \caption{Feature support across various tools.}
   \label{tab:features}
@@ -141,17 +142,17 @@ visualized in figure \ref{fig:datavsprogram}.
   \begin{table}[h!]
   \centering
   \begin{tabular}{l|ccccc}
-  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{Finch} \\
+  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{StructTensor} & \textbf{Finch} \\
   \hline
-  Dense                    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-  Padded                   & \checkmark &            &            &            & \checkmark \\
-  One Sparse               &            & \checkmark &            & \checkmark & \checkmark \\
-  Sparse                   &            & \checkmark &            &            & \checkmark \\
-  Run-length               &            &            &            &            & \checkmark \\
-  Symmetric                &            &            &            &            & \checkmark \\
-  Regular Sparse Blocks    &            & \checkmark &            &            & \checkmark \\
-  Irregular Sparse Blocks  &            &            &            &            & \checkmark \\
-  Ragged                   &            &            & \checkmark &            & \checkmark \\
+  Dense                    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+  Padded                   & \checkmark &            &            &            &            & \checkmark \\
+  One Sparse               &            & \checkmark &            & \checkmark &            &\checkmark \\
+  Sparse                   &            & \checkmark &            &            &            &\checkmark \\
+  Run-length               &            &            &            &            &            & \checkmark \\
+  Symmetric                &            &            &            &            & \checkmkar & \checkmark \\
+  Regular Sparse Blocks    &            & \checkmark &            &            &            & \checkmark \\
+  Irregular Sparse Blocks  &            &            &            &            &            &\checkmark \\
+  Ragged                   &            &            & \checkmark &            &            & \checkmark \\
   \end{tabular}
   \caption{Support for various data structures across tools. Finch supports \textbf{both} complex programs and complex data structures.}
   \label{tab:data_structures}
