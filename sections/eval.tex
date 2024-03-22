@@ -271,7 +271,7 @@ In the past decade, the adoption of the Python Array API \cite{harris_array_2020
 There is a gap between the expressiveness of the purely declarative Array API and the Finch language which defines both the output and the algorithm. The naive approach to solving this would be to explicitly define a mapping from each function in the API to a Finch program which eagerly produces the output. This approach results in a simple translation procedure but misses crucial opportunities for optimization across a chain of function calls and needlessly materializes large intermediate results. To avoid this, we have implemented a lazy evaluation approach that collects API calls and then computes output when requested by the user. This is implemented through 1) Finch Logic, a minimal, high-level language for expressing array operations and 2) the Finch Interpreter, which lowers Finch Logic programs to one or more Finch programs while making heuristic decisions about output format, loop ordering, and protocols.
 
 \subsubsection{Finch Logic}
-The Finch Logic language takes inspiration relational algebra 
+The Finch Logic language takes inspiration from relational algebra while incorporating the ordered nature of dimensions in sparse tensors. In this analogy, 
 
 \begin{align*}
     \finchplan(queries...) &  \quad\quad\quad \finchquery(name, expr) & \finchreorder(expr, idxs...)\\
