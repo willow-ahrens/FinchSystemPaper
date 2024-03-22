@@ -55,15 +55,10 @@ subfibers. The mapping $f$ from indices to subfibers is thus a mapping from an
 index and a position in a level to a subposition in a sublevel.
 Figure~\ref{fig:help} shows a simple example of a level as a fiber allocator.
 
-Our view of a level as a fiber allocator implies an allocation function $assemble(tns, pos_start:pos_stop)$
-
-\begin{enumerate}
-\item fibers and levels
-\item assembly
-\item reassembly
-\end{enumerate}
-
-\subsection{Instantiation Interface}
+Our view of a level as a fiber allocator implies an allocation function
+$assemble(tns, pos_start:pos_stop)$, which allocates fibers at positions
+$pos_start:pos_stop$ in the level. We don't specify a de-allocation function,
+instead relying on initialization to reset the fiber if it needs to be reused.
 
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
