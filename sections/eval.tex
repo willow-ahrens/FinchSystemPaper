@@ -259,11 +259,20 @@ end
 \end{minted}
 
 \subsection{Implementing Numpy Array API in Finch}
+In the past decade, the adoption of the python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this API for structured data suffer from either incompleteness or inefficiency. They generally either limit the dimensionality to vectors and matrices or only support tabular representations in order to reduce the complexity of interactions between different formats. Further, existing work doesn't support the fusion of arbitrary operators which can have a drastic impact on performance as we show in Fig. (\kyle{PUT FIG HERE}). We believe that a flexible, online compiler like Finch which can manage the complexity of arbitrary operations between inputs with a wide variety of formats is the secret ingredient needed to make the array API performant for structured data.
 
+However, there is a gap between the expressiveness of the purely declarative Array API and the Finch language which defines both outputs and the algorithm used to produce those outputs. The naive approach to solving this would be to explicitly define a mapping from each function in the API to a Finch program which eagerly produces the output. Unfortu
+
+
+Due to the wide variety of formats and protocols supported by Finch, it allows for a large array of potential impleme
 
 \subsubsection{The Finch High-Level API (Needs a Name)}
 
 \subsubsection{Finch Logic}
+
+\begin{align*}
+    \finchreorder(name, idxs...) := 
+\end{align*}
 
 \subsubsection{Finch Interpreter}
 
