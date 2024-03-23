@@ -43,7 +43,7 @@ The sparse matrix-vector multiplication kernel (SpMV) is a common operation in s
 In this case study, we highlight a few different Finch formats as specified in Table \ref{spmv_tensor_formats}, and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do. Finch also provides the control flow necessary to manipulate data reads and writes, enabling exploitation of multiple structural patterns concurrently (e.g. sparsity \textit{and} symmetry). 
 
 
-We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface [cite], Ahrens et al. to test a variable block row format partitioning strategy [cite], and Kjolstad et al. to test the TACO library [cite]. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset in Figure \ref{spmv_grouped} is the fastest among the formats and programs we tested. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
+We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset in Figure \ref{spmv_grouped} is the fastest among the formats and programs we tested. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
 % TODO: make this be 3 columns
 \begin{figure}
@@ -271,21 +271,29 @@ In the past decade, the adoption of the Python Array API \cite{harris_array_2020
 There is a gap between the expressiveness of the purely declarative Array API and the Finch language which defines both the output and the algorithm. The naive approach to solving this would be to explicitly define a mapping from each function in the API to a Finch program which eagerly produces the output. This approach results in a simple translation procedure but misses crucial opportunities for optimization across a chain of function calls and needlessly materializes large intermediate results. To avoid this, we have implemented a lazy evaluation approach that collects API calls and then computes output when requested by the user. This is implemented through 1) Finch Logic, a minimal, high-level language for expressing array operations and 2) the Finch Interpreter, which lowers Finch Logic programs to one or more Finch programs while making heuristic decisions about output format, loop ordering, and protocols.
 
 \subsubsection{Finch Logic}
-The logical language takes inspiration from relational algebra while incorporating the ordered nature of dimensions in sparse tensors. This means that every operator in the language (with the exception of $\finchtable$ which is analagous to the scan operator in RA) takes in an indexed tensor and outputs an indexed tensor. The uniformity of types within this language allows for straightfor
+The expression fragment of the logical language takes inspiration from relational algebra while incorporating an ordering on the dimensions of a tensor. This means that every operator (with the exception of $\finchtable$ and $\finchalias$ which are analogous to the scan operator in RA) takes in an indexed tensor and outputs an indexed tensor. Conceptually, an indexed tensor can be thought of as a relation with an ordering on the attributes, and we include the $\finchreorder$ operator to manipulate the order of these attributes. This ordering is necessary for two reasons 1) the outputs of a function in the Array API must match a defined order on the dimensions based on the order of the inputs' dimensions 2) to benefit from concordant iteration we must ensure that the operands to a mapjoin have compatible index orders. 
+
+To express materialization, reuse of common sub-expressions, and multiple outputs, we define queries and plans. A query is the assignment of the output of an expression to a name. We use this assignment to denote that we materialize an expression in memory. Later queries can then access the result of earlier queries through the alias operator which allows multiple queries to benefit from a shared computation. A plan is a sequence of queries and it produces a set of tensors as output. 
 
 \begin{align*}
-    \finchplan(queries...) &  \quad\quad\quad \finchquery(name, expr) & \finchreorder(expr, idxs...)\\
-    \finchrelabel(expr, idxs...)& \quad\quad\quad \finchmapjoin(op, exprs...)  & \finchaggregate(op, expr)\\
-    \quad\quad\quad & \quad\quad\quad \finchtable(tns, idxs...)\quad\quad\quad  & \quad\quad\quad \\
+    \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
+    \finchrelabel(expr, idxs...) \quad\quad\quad \finchmapjoin(op, exprs...) \quad\quad\quad \finchaggregate(op, expr)\\
+    \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
+     expr:= \finchreorder | \finchrelabel |\finchmapjoin | \finchaggregate | \finchtable | \finchalias\quad\quad
 \end{align*}
 
+Given this language, we now describe how to define a few example functions from the API as Finch Logic expressions, 
+\begin{align*}
+\text{sum(M, dims=[2])} &\rightarrow \finchplan(\finchquery(out,\finchaggregate(\finchrelabel(M, i_1,\ldots,i_d), i_2)), out)\\
+\text{matmul(A, B)} &\rightarrow \finchplan(\finchquery(out,\finchaggregate(\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)), out)\\
+\end{align*}
 
+\subsubsection{Finch Interpreter} 
+\textbf{Lowering}
+
+\textbf{Heuristic Optimization}
 
 \subsubsection{Finch Interpreter}
-
-\subsubsection{Lowering}
-
-\subsubsection{Heuristic Optimization}
 
 Find an example where fusing the python interface gives a big speedup over non-fused kernels.
 
