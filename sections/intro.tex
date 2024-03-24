@@ -157,15 +157,40 @@ This trade-off is visualized in figure \ref{fig:datavsprogram}.
   \caption{Support for various data structures across tools. Finch supports \textbf{both} complex programs and complex data structures.}
   \label{tab:data_structures}
 \end{table}
-
-
-We see two main challenges to writing efficient code over structured data.
+\teo{ New paragraph:
+Many of these special purpose compilers build on some conception of an iteration space: TACO has merge lattices, Polyhedral compilers rely on the polyhedral model, Halide and Corra uses rectangular intervals, and so on.
+%
+And we believe the limitations of these systems can be traced back to this conception.
+%
+For example, each modification to expressions that TACO could support required modifying the merge lattice algorithms\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse} and several programs could not be supported in Halide, but could be in Tiramisu due to the limitations of a rectangular iteration space~\cite{baghdadi2019tiramisu}.
+%
+And many iteration space concepts simply don't allow for skipping work that isn't simply the complement of an interval.
+%
+In our work, we will show how we can use Looplets as our main tool to manage the iteration spaces of our computations and data structures.
+%
+However, to support as many data structures and iteration spaces as is implied above, we face two challenges if we want to also produce efficient code over structured data.
+}
+%We see two main challenges to writing efficient code over structured data.
 
 \textbf{Optimizations are specific to the indirection and patterns in datastructures}: These structures break the simple mapping between array elements and where they are stored in memory. For example, sparse arrays store lists of which coordinates are nonzero, whereas run-length-encoded arrays map several pixels to the same color value. These zero regions or repeated regions are optimization opportunities, and we must adapt the program to avoid repetitive work on these regions by referencing the stored structure.
 
 \textbf{Performance is highly structure dependent}: Structure aware kernels are dramatically faster than unstructured ones, and the landscape of implementation decisions is dramatically unpredictable. For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
 
 \teo{Data structure driven array program performance engineering?}
+
+%% Modification: We don't propose to fix these directly, but we do propose a programming model where they can be dealt with 
+%% By supporting the features above, 
+
+\teo{Proposed new paragraph: We don't propose to solve these problems automatically, but we do propose a new programming model where these issues are solvable.
+%
+By combining many data structures and iteration spaces into a single language, a performance engineer could use a sufficiently predicable and fine grained compiler to find efficient programs.
+%
+We dub this model, ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, but then can reasonably iterate on the two with a compiler that predicable combines them, leading to efficient code eventually.
+%
+(Note quite sure how much comes after this)
+(We should say the predicability is generating only the non-zeros! We leverage the intiial stuff of Finch to say we will in order generate the code that only grabs the non-zeros, modified in certain ways based on the fine grained ordering of computation)
+(Use the below comment as an example - where the old paragraph talked about merging two lists.)
+}
 
 In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code.\saman{Is this new? TACO did something similar?} In this model, performance engineers can more efficiently search the
 complex landscape of programs and datastructures to find the best implementation. In this programming model, we can express certain concepts in programs, and others in data. For example, if we wish to merge two sorted lists, we express this as two sparse vectors which are true whenever the list contains the key in question, and we iterate over the \textit{entire} space of keys, writing to the output list whenever either of the vectors are true.
