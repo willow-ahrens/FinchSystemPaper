@@ -14,3 +14,6 @@ file=LevelsVsFibers # File name excluding extension
 
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 0 --output "$file-tensor.png" "$file.drawio"
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 1 --output "$file-matrix.png" "$file.drawio"
+
+file=Structures # File name excluding extension
+/Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 0 --output "$file.png" "$file.drawio"
