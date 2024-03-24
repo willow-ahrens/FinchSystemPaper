@@ -160,9 +160,9 @@ This trade-off is visualized in figure \ref{fig:datavsprogram}.
 \teo{ New paragraph:
 Many of these special purpose compilers build on some conception of an iteration space: TACO has merge lattices, Polyhedral compilers rely on the polyhedral model, Halide and Corra uses rectangular intervals, and so on.
 %
-And we believe the limitations of these systems can be traced back to this conception.
+And we believe the limitations of these systems can be traced back to this conception.} \willow{I agree with what this sentence is saying, but I'm concerned that the sentiment is unclear, because here it may seem like we say "iteration space bad" and later say "iteration space good". Can we perhaps adjust here to say may of these special purpose compilers use overly restrictive models of the iteration space of the program, but that Finch is good because it uses general control flow to express a wider variety of iteration spaces. At a high level, we need to define "iteration space" or "control flow" or "Looplets" if we want to use them in the intro, and depending on how much we want to use these words we may want to avoid them here.}
 %
-For example, each modification to expressions that TACO could support required modifying the merge lattice algorithms\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse} and several programs could not be supported in Halide, but could be in Tiramisu due to the limitations of a rectangular iteration space~\cite{baghdadi2019tiramisu}.
+\teo{For example, each modification to expressions that TACO could support required modifying the merge lattice algorithms\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse} and several programs could not be supported in Halide, but could be in Tiramisu due to the limitations of a rectangular iteration space~\cite{baghdadi2019tiramisu}.
 %
 And many iteration space concepts simply don't allow for skipping work that isn't simply the complement of an interval.
 %
