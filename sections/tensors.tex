@@ -245,13 +245,103 @@ or bytemaps) may support reassembly.
 
 \subsection{Level Formats}
 Having described the 8 basic level structures and the functions that define a
-level format, we can now detail the key level structures that we support, some
-of the challenges in their implementation, and how we overcome them.
+level format, we can describe the concrete level formats supported by Finch,
+some of the challenges in their implementation, and how we overcome them. Note
+that these formats are not meant to be exhaustive; we will later give
+recommendations for additional level formats to be implemented and explain how
+users can also add their own custom formats. Note that all of the levels below store their shape and a sublevel.
 
 \begin{enumerate}
-\item SparseList
-\item SparseDict
-\item ...
+\item[Dense]
+    The dense format is the simplest format, and simply maps $fiber(l, p)[i]
+    \rightarrow fiber(l.lvl, p * l.shape + i)$. This format is used to store dense data,
+    and is often a convenient format for the root level of a tensor. Because
+    of its simplicity, freezing and thawing the level are no-ops.
+\item[DenseRLE]
+    The DenseRLE format is used to represent runs of repeated values. Notice
+    that a challenge arises when trying to write to a level with runs: it is
+    difficult to merge duplicate runs. Such a scenario might arise when merging
+    runs of subfibers of length 3, representing colors in an image.  Ideally, we
+    would be able to detect duplicate subfibers and merge them on the fly, but
+    we cannot determine which subfibers are equal because we cannot read them
+    while the sublevel is in update-only mode. Instead, we merge the duplicates
+    during the freeze phase. We $freeze$ the main sublevel, $declare$ a separate
+    sublevel as a buffer to store the deduplicated subfibers, and we can then
+    compare each of the subfibers in the main level, copying the deduplicated
+    subfibers into the buffer:
+    \begin{enumerate}
+        \item[$right$] A vector of indices corresponding to the end of each run in the level
+        \item[$ptr$] A vector of delimiters such that $right[ptr[p]:ptr[p+1] - 1]$ is the set of delimiters in the subfiber at position $p$.
+        \item[$buf$] A duplicate sublevel, used to store deduplicated subfibers during $freeze$.
+    \end{enumerate}
+\item[SparseList]
+    The sparse list format is the simplest sparse format, and is used to
+    construct the popular CSR, CSC, DCSR, DCSC, and CSF formats. The sparse list
+    format consists of the following fields:
+    \begin{enumerate}
+        \item[$idx$] A vector of nonzero indices in the level
+        \item[$ptr$] A vector of delimiters such that $idx[ptr[p]:ptr[p+1] - 1]$ is the set of nonzero indices in the subfiber at position $p$.
+    \end{enumerate}
+    All of Finch's sparse formats use a dirty bit during writing to determine
+    whether the sublevel has been modified from it's default fill value and
+    thus, whether it needs to be stored.
+\item[SparsePinpoint]
+    Because the SparsePinpoint format will only ever store one nonzero in each subfiber,
+    we do not need the $ptr$ field.
+    \begin{enumerate}
+        \item[$idx$] A vector of nonzero indices in the level, one for each subfiber
+    \end{enumerate}
+\item[SparseRLE]
+    Similar to the DenseRLE level, but because the runs are stored on top of a background of fill values, we must also store the start of each run.
+    \begin{enumerate}
+        \item[$left$] A vector of indices corresponding to the beginning of each run in the level
+        \item[$right$] A vector of indices corresponding to the end of each run in the level
+        \item[$ptr$] A vector of delimiters such that $left[ptr[p]:ptr[p+1] - 1]$ and $right[ptr[p]:ptr[p+1] - 1]$ are the set of delimiters in the subfiber at position $p$.
+        \item[$buf$] A duplicate sublevel, used to store deduplicated subfibers during $freeze$.
+    \end{enumerate}
+\item[SparseInterval]
+    Similar to the SparseRLE level, but $ptr$ is redundant because we only store
+    one run. We also don't bother with deduplication here as we cannot store any
+    intermediate results with duplicates.
+    \begin{enumerate}
+        \item[$left$] A vector of indices corresponding to the beginning of each run in the level
+        \item[$right$] A vector of indices corresponding to the end of each run in the level
+    \end{enumerate}
+\item[SparseVBL]
+    The SparseVBL format is used to represent blocked data. The format consists
+    of the following fields:
+    \begin{enumerate}
+        \item[$idx$] A vector of indices at the end of each nonzero block in the level
+        \item[$ptr$] A vector of delimiters such that $idx[ptr[p]:ptr[p+1] - 1]$ is the set of block terminals in the subfiber at position $p$.
+        \item[$ofs$] A vector of delimiters such that $ofs[ptr[p] + q]:ofs[ptr[p] + q + 1] - 1$ are the subpositions of block $q$ in subfiber $p$.
+    \end{enumerate}
+\item[SparseBand]
+    Like SparseVBL, but only one block is stored in each subfiber.
+        \item[$idx$] The index at the end of the block in the level
+        \item[$ofs$] A vector of delimiters such that $ofs[p]:ofs[p + 1] - 1$ are the subpositions of the block in subfiber $p$.
 \end{enumerate}
 
+\help{we need also to talk about pattern and element}
 
+\subsection{Flexible Level Formats}
+The levels we described in the previous section are all oriented towards bulk,
+sequential creation of formats. However, when users want to be able to write out
+of order (which is a common requirement arising from loop order or from the
+problem itself, it occurs in our spgemm algorithms and our histogram example in
+the evaluation section), we must use more complicated datastructures like hash
+tables and trees to support the random access. Because these datastructures are
+more complex and have a higher implementation burden and performance overhead,
+we only support random access construction of sparse or dense structures.  We
+can use these two more general structures as intermediates to convert to our
+more specialized structures later.
+
+%Future
+%work might involve supporting random access construction for additional
+%structures, especially those with asymptotic benefits such as SparseRLE, with
+%the understanding that we can use more general structures as intermediates to
+%convert to more specialized structures later.
+
+
+
+
+%This leave
