@@ -287,7 +287,7 @@ Given this language, we now describe how to define a few example functions from 
 \text{sum(M, dims=[2])} &\rightarrow \finchplan(\finchquery(out,\finchaggregate(\finchrelabel(M, i_1,\ldots,i_d), i_2)), out)\\
 \text{matmul(A, B)} &\rightarrow \finchplan(\finchquery(out,\finchaggregate(\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)), out)\\
 \end{align*}
-Notably, these plans do not specify 
+Notably, these plans do not specify important details about the computation such as the format of intermediates and the order of the loops. In the following discussion, we provide sensible heuristics and show that they provide good performance on important kernels. However, for larger or more complex programs, it would be important to apply a cost-based optimization
 
 
 \subsubsection{Finch Interpreter} 
