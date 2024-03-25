@@ -30,6 +30,11 @@ integer grids of points.
 %
 By \textbf{dense}, we mean that indices are mapped to value via a simple formula relating multidimensional space to linear memory.
 %
+\teo{Since the gap between the array storage and the array representation is minimal, dense arrays offer extensive compiler optimizations and extensive convenience.
+%
+Compilers understand dense array computation over
+}
+%
 This
 simplicity enables extensive interoperability, convenience layers, and
 optimizations by breaking the abstraction barrier between array representation
@@ -58,9 +63,7 @@ However, while dense arrays are the easiest way to program, the world is not all
 %Bands
 %Padding
 %Blocks
-\help{This section needs citations, please help expand it and make it more
-convincing. A figure could be nice.} 
-\teo{I Added citations/heft but we maybe need to improve the figure?}
+
 \begin{figure}
 	\includegraphics[width=\linewidth]{example_structures.png}
     \caption{some example structures that might be nice to put into a figure}
@@ -158,9 +161,27 @@ This trade-off is visualized in figure \ref{fig:datavsprogram}.
   \label{tab:data_structures}
 \end{table}
 \teo{ New paragraph:
-Many of these special purpose compilers build on some conception of an iteration space: TACO has merge lattices, Polyhedral compilers rely on the polyhedral model, Halide and Corra uses rectangular intervals, and so on.
+Note: This first sentence is still problematic - we need to say something other than tightly integrated so that we can be different from that. But I am not sure what.
+
+Many of these special purpose compilers represent a program's control flow via a specialized data structure that is tightly integrated with the class of supported data structures.
 %
-And we believe the limitations of these systems can be traced back to this conception.} \willow{I agree with what this sentence is saying, but I'm concerned that the sentiment is unclear, because here it may seem like we say "iteration space bad" and later say "iteration space good". Can we perhaps adjust here to say may of these special purpose compilers use overly restrictive models of the iteration space of the program, but that Finch is good because it uses general control flow to express a wider variety of iteration spaces. At a high level, we need to define "iteration space" or "control flow" or "Looplets" if we want to use them in the intro, and depending on how much we want to use these words we may want to avoid them here.}
+For example, TACO's merge lattices allows it to represent iterations over subsets of rectangular grids where non-zero values are produced whereas the polyhedral model allows various compilers to represent dense computations on irregular regions~\cite{kjolstad_tensor_2017, grosser2012polly}.
+%
+Taichi represents general control flow with specialized instruction for accessing a single sparse structure drawn from a particular class, which is why it supports the most control flow for a single sparse structure~\cite{hu_taichi_2019}.
+%
+Furthermore, the limits of a DSL can be traced to the tight coupling of a program's control flow with the data structure: many new TACO features required modifying algorithms that worked with TACO's merge lattices and Tiramisu can express programs that Halide can't because Tiramisu uses a polyhedral model as opposed to a model built on iterating over regular grids~\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse, baghdadi2019tiramisu}.
+%
+In this work, we will choose find a new representation of a program's data structures and control flows that covers a wide range of programs.
+%
+However, before introducing this, we must discuss performance: if we want to also produce efficient code for structured data, we face two challenges.
+
+
+}
+
+
+%build on some conception of an iteration space: TACO has merge lattices, Polyhedral compilers rely on the polyhedral model, Halide and Corra uses rectangular intervals, and so on.
+%
+%And we believe the limitations of these systems can be traced back to their specific conceptions.} \willow{I agree with what this sentence is saying, but I'm concerned that the sentiment is unclear, because here it may seem like we say "iteration space bad" and later say "iteration space good". Can we perhaps adjust here to say may of these special purpose compilers use overly restrictive models of the iteration space of the program, but that Finch is good because it uses general control flow to express a wider variety of iteration spaces. At a high level, we need to define "iteration space" or "control flow" or "Looplets" if we want to use them in the intro, and depending on how much we want to use these words we may want to avoid them here.}
 %
 \teo{For example, each modification to expressions that TACO could support required modifying the merge lattice algorithms\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse} and several programs could not be supported in Halide, but could be in Tiramisu due to the limitations of a rectangular iteration space~\cite{baghdadi2019tiramisu}.
 %
