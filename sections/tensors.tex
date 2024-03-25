@@ -122,7 +122,7 @@ unique data associated with $fiber(l, p)$ is the position $p$.
     some of the key properties and potential use cases of each. In this sense,
     the structures we consider are exhaustive. We can represent a wide variety
     of hierarchical tensor structures by combining these level structures in a
-    tree, as shown in Figure~\ref{fig:levels}.
+    tree, as shown in Figure~\ref{fig:structuraldiversity}.
     \begin{table}
         \centering
         \begin{tabular}{|c|c|c|c|l|}
@@ -158,28 +158,96 @@ unique data associated with $fiber(l, p)$ is the position $p$.
 
     \begin{figure}
         \centering
-        %\includegraphics[width=0.45\linewidth]{structuraldiversity.png}\hfill%
-        \caption{This figure is a placeholder, but will eventually contain some very beguiling trees of levels.}
+        \includegraphics[width=\linewidth]{Structures.png}\hfill%
+        \caption{Several examples of matrix structures represented using the
+        level structures identified in Table~\ref{tab:TypesOfStructure}.
+        Comparing this figure to \cite[Figure 3]{ahrens_looplets_2023}, we see
+        that a level-by-level structural decomposition is diagrammed together
+        with the Looplets.}
         \label{fig:structuraldiversity}
     \end{figure}
 
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
 Our simplified view of a level is enabled by our use of looplets to represent
-the structure within each fiber. In fact, our level interface requires only
-5 highly general operations, described below:
+the structure within each fiber. In fact, our level interface requires only 5
+highly general operations, described below.
+
+The first three of these functions, declare, freeze, and thaw, have to do with
+managing when tensors can be assumed mutable or immutable. As we use Looplets to
+represent iteration over a tensor, we must restrict the mutability of tensors
+while we iterate over them. For example, if a tensor declares it has a constant
+region from $i = 2:5$, but some other part of the computation modifies the
+tensor at $i = 3$, this would result in incorrect behavior. It is much easier to
+write correct Looplet code if we can assume that the tensor is immutable while
+we are reading from it. Thus, we introduce the notion that a tensor can be in
+read-only mode or update-only mode.  In read-only mode, the tensor may only
+appear in the right-hand side of assignments. In update-only mode, the tensor
+may only appear in the left-hand side of an assignment, either being overwritten
+or incremented by some operator.  We can switch between these modes using freeze
+and thaw functions. The declare function is used to allocate a tensor,
+initialize it to some specified size and value, and leave it in update-only
+mode. 
+
+The unfurl function is used to manage iteration over a subfiber. At the point
+when it comes time to iterate over a tensor, be in on the left or right hand
+side of an assignment, we call the unfurl function to precompute whatever state
+and datastructures are necessary to return a looplet nest that would iterate
+over that level of a tensor. The unfurl function is called directly before
+iterating over the corresponding loop, so it has access to any state variables introduced
+by freezing or thawing the tensor.
 
 Our view of a level as a fiber allocator implies an allocation function
 $assemble(tns, pos_{start}:pos_{stop})$, which allocates fibers at positions
-$pos_{start}:pos_{stop}$ in the level. We don't specify a de-allocation function,
-instead relying on initialization to reset the fiber if it needs to be reused.
+$pos_{start}:pos_{stop}$ in the level. We don't specify a de-allocation
+function, instead relying on initialization to reset the fiber if it needs to be
+reused. While all of the previous functions are used to manage the lifecycle and
+iteration over a general tensor, the assemble function is quite specific to the
+level abstraction, and the notion of positions within sublevels. Note: it was an
+intentional choice to hold the parent level responsible for managing the
+data of the sublevels, which positions they allocate, etc. This allows the parent
+level to reuse allocation logic from internal index datastructures. For example,
+a sparse level might use a list of indices to store which nonzeros are present,
+and when it comes time to resize that list, it could also call assemble to resize the
+sublevel, reducing the number of branches in the code. The assemble function
+lends itself particularly to a "vector doubling" allocation approach, which we
+have found to be effective and flexible when managing the allocation
+of sparse left hand sides. This benefit is made clear in our evaluation section,
+where we see that prior systems like TACO do not support all possible loop
+orderings and format combinations for sparse matrix multiply because they do
+not have a flexible enough allocation strategy, instead using a two-phase approach
+which requires computing a complicated closed-form kernel to iterate over the
+data twice to determine the number of required output nonzeros.
 
-\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
-\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
-\paragraph{$freeze(lvl, init, dims...)$} Declares the level to hold subtensors of size $dims$ and an initial value of $init$. 
+\begin{figure}
+    \raggedright
+\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors
+of size $dims$ and an initial value of $init$. Requires the level to be in
+read-only mode.
+\paragraph{$freeze(lvl)$} Finalizes the updates in the level, and readies the
+level for reading. Requires the level to be in update-only mode.
+\paragraph{$thaw(lvl)$} Prepares the level to accept updates. Requires the level
+to be in read-only mode.
+\paragraph{$unfurl(fiber(lvl, pos), ext, mode)$} Unfurls the fiber at position
+$pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
+returns a looplet nest over the values in the read-only fiber.  When $mode =
+\finchupdate$, returns a looplet nest over mutable subfibers in the update-only
+fiber. Often, skipping over mutable locations allows the level to know which
+locations must be stored. Additionally, a dirty bit may be used to communicate
+whether the mutable subfiber has been written to, which allows the parent fiber
+to know whether the subfiber must be stored explicitly.
+\paragraph{$assemble(lvl, pos_{start}, pos_{stop})$} Allocates subfibers in the
+level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
+only ever called on unassembled positions, but some levels (such as dense levels
+or bytemaps) may support reassembly.
+\caption{The five functions that define a level.}
+\end{figure}
 
+\subsection{Level Formats}
+Having described the 8 basic level structures and the functions that define a
+level format, we can now detail the key level structures that we support, some
+of the challenges in their implementation, and how we overcome them.
 
-\subsection{Core Level Language Primitives}
 \begin{enumerate}
 \item SparseList
 \item SparseDict
