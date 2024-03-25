@@ -3,6 +3,9 @@
 
 \subsection{Syntax and Semantics}
 
+The syntax of Finch is displayed in Figure \ref{fig:syntax}. We
+
+\begin{figure}
 \noindent % This ensures the minipages fill the page width
 \begin{minipage}{0.4\linewidth}
 \begin{align*}
@@ -42,6 +45,13 @@
     \finchsieve(cond \in E, body \in S) &:= \text{\mintinline{julia}{if cond; body end}} \\
     \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
 \end{align*}
+\caption{The syntax of the finch language. Note that instead of a classic EBNF
+form, we have constrained the classes of subterms on the left hand side to allow
+for descriptive names of the arguments. Compare this grammar to the Concrete
+Index Notation of TACO \cite[Figure~3]{kjolstad_tensor_2019}, noting the
+addition of multiple left hand sides through code blocks, and the explicit
+initialization and finalization of tensors.}\label{fig:syntax}
+\end{figure}
 
 the state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
 environment and another state $t$ corresponding to the embedding language.
