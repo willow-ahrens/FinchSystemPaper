@@ -277,16 +277,18 @@ To express materialization, reuse of common sub-expressions, and multiple output
 
 \begin{align*}
     \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
-    \finchrelabel(expr, idxs...) \quad\quad\quad \finchmapjoin(op, exprs...) \quad\quad\quad \finchaggregate(op, expr)\\
-    \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
-     expr:= \finchreorder | \finchrelabel |\finchmapjoin | \finchaggregate | \finchtable | \finchalias\quad\quad
+     \finchrelabel(expr, idxs...) \quad\quad\quad \finchreformat(expr, format) \quad\quad\quad \finchmapjoin(op, exprs...) \\
+    \finchaggregate(op, expr)\quad\quad\quad\quad \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
+     expr:= \finchreorder | \finchrelabel | \finchreformat |\finchmapjoin | \finchaggregate | \finchtable | \finchalias \quad\quad
 \end{align*}
 
-Given this language, we now describe how to define a few example functions from the API as Finch Logic expressions, 
+Given this language, we now describe how to define a few example functions from the API as plans in the Finch Logic language,
 \begin{align*}
 \text{sum(M, dims=[2])} &\rightarrow \finchplan(\finchquery(out,\finchaggregate(\finchrelabel(M, i_1,\ldots,i_d), i_2)), out)\\
 \text{matmul(A, B)} &\rightarrow \finchplan(\finchquery(out,\finchaggregate(\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)), out)\\
 \end{align*}
+Notably, these plans do not specify 
+
 
 \subsubsection{Finch Interpreter} 
 \textbf{Lowering}
