@@ -300,6 +300,24 @@ Notably, these plans do not specify important details about the computation such
 
 Find an example where fusing the python interface gives a big speedup over non-fused kernels.
 
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{triangle_count_speedup_over_duckdb.png}
+    \caption{Performance of Finch on triangle counting.}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{elementwise_speedup_over_duckdb.png}
+    \caption{Performance of Finch on elementwise (A+B)*C kernel.}
+\end{figure}
+
+\begin{figure}
+	\includegraphics[width=\linewidth]{sddmm_speedup_over_duckdb.png}
+    \caption{Performance of Finch on SDDMM.}
+\end{figure}
+
+
+
 %matmul, mttkrp, repeated ttm, triangle counting, multiple pointwise,
 %in-place.
 %dot((v^t .* u), w)) vs. 
