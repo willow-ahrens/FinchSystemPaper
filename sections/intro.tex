@@ -161,15 +161,14 @@ This trade-off is visualized in figure \ref{fig:datavsprogram}.
   \label{tab:data_structures}
 \end{table}
 \teo{ New paragraph:
-Note: This first sentence is still problematic; we need to say something other than tightly integrated so that we can be different from that. But I am not sure what.
 %
-Many of these special purpose compilers represent a program's control flow via a specialized data structure that is tightly integrated with the class of supported data structures.
+Many of these special purpose compilers represent a program's control flow via a specialized data structure that is tightly integrated with a narrow class of supported data structures.
 %
 For example, TACO's merge lattices allows it to represent iterations over subsets of rectangular grids where non-zero values are produced whereas the polyhedral model allows various compilers to represent dense computations on irregular regions~\cite{kjolstad_tensor_2017, grosser2012polly}.
 %
 Taichi represents general control flow with specialized instruction for accessing a single sparse structure drawn from a particular class, which is why it supports the most control flow for a single sparse structure~\cite{hu_taichi_2019}.
 %
-Furthermore, the limits of a DSL can be traced to the tight coupling of a program's control flow with the data structure: many new TACO features required modifying algorithms that worked with TACO's merge lattices and Tiramisu can express programs that Halide can't because Tiramisu uses a polyhedral model as opposed to a model built on iterating over regular grids~\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse, baghdadi2019tiramisu}.
+Furthermore, the limits and advantages of a DSL can be traced to the specific coupling of a program's control flow with the data structure: many new TACO features required modifying algorithms that worked with TACO's merge lattices and Tiramisu can express programs that Halide can't because Tiramisu uses a polyhedral model as opposed to a model built on iterating over regular grids~\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse, baghdadi2019tiramisu}.
 %
 In this work, we will choose find a new representation of a program's data structures and control flows that covers a wide range of programs.
 %

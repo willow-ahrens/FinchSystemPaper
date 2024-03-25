@@ -289,17 +289,17 @@ Given this language, we now describe how to define a few example functions from 
 \end{align*}
 Notably, these plans do not specify important details about the computation such as the format of intermediates and the order of the loops. In the following discussion, we provide sensible heuristics and show that they provide good performance on important kernels. However, for larger or more complex programs, it would be important to apply a cost-based optimization strategy which we leave for future work.
 
+\subsubsection{Standardizing \& Heuristic Optimization}
+Before a plan in Finch Logic can be interpreted, it must be converted to a standard form which resolves the above questions about loop ordering and output formatting. This standard form has a few syntactic requirements, but the semantically important requirements are 1) all inputs (i.e. tables and alias operators) in a query's RHS must conform to a common ordering of the indices 2) the outermost operator of each query's RHS must be a reformat 3) the expression within the reformat must be a pointwise expression, optionally wrapped in an aggregate operator. The former allows the interpreter to identify the loop order for each kernel. The second determines the output format for each intermediate. The last one guarantees that the innermost expression can be computed as a single kernel.
+
+During the standardization process, a concordization pass is performed which examines each query in order and selects a loop order based on a heuristic which loops over intersecting variables first. Then, each query is examined again and a transposition query is inserted for each input which doesn't match the loop order and then the input is replaced with an alias. At this point, the first semantic requirement is satisfied. Next, a formatting pass is performed which examines each query and selects a level format for each output index based on the formats of the inputs and whether random writes are required. The procedure for this is a simple set of rules which attempts to aggressively preserve the structure present in the input tensors.
+
+
 \subsubsection{Finch Interpreter} 
+Once the Finch Logic program has been converted to the standard form, the Finch Interpreter can execute each query, in order, through a straightforward lowering process. First, the output format is identified by unpacking the outer $\finchreformat$ statement. Next, the inner expression of the is unpacked to identify the aggregate operator and to convert the pointwise expression into a Finch expression. At this point, any aliases to the result of previous queries are replaced with an access to the actual tensor. Lastly, the concordant loop order is identified and instantiated. At this point, the lowered query can be compiled and executed with the Finch compiler, and the result is assigned to $name$ in the plan's scope before proceeding to the next query in the plan. 
 
 
-\textbf{Lowering}
-
-\textbf{Heuristic Optimization}
-
-\subsubsection{Finch Interpreter}
-
-Find an example where fusing the python interface gives a big speedup over non-fused kernels.
-
+\subsubsection{The Benefits of Kernel Fusion}
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{triangle_count_speedup_over_duckdb.png}
@@ -308,7 +308,7 @@ Find an example where fusing the python interface gives a big speedup over non-f
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{elementwise_speedup_over_duckdb.png}
-    \caption{Performance of Finch on elementwise (A+B)*C kernel.}
+    \caption{Performance of Finch on elementwise (A+B)*C kernel as the sparsity of C varies.}
 \end{figure}
 
 \begin{figure}
@@ -322,3 +322,5 @@ Find an example where fusing the python interface gives a big speedup over non-f
 %in-place.
 %dot((v^t .* u), w)) vs. 
 %(v^t .* dot(u, w))
+
+\willow{Note: I may want to explain format inference somewhere in here, but I'll have to get to it a little later, perhaps after the paper deadline}
