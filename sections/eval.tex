@@ -277,7 +277,7 @@ To express materialization, reuse of common sub-expressions, and multiple output
 
 \begin{align*}
     \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
-    \finchreformat(expr, format) \quad\quad\quad \finchrelabel(expr, idxs...) \quad\quad\quad \finchmapjoin(op, exprs...) \\
+     \quad\quad\quad \finchrelabel(expr, idxs...) \quad\quad\quad \finchmapjoin(op, exprs...) \\
     \finchaggregate(op, expr)\quad\quad\quad\quad \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
      expr:= \finchreorder | \finchrelabel |\finchmapjoin | \finchaggregate | \finchtable | \finchalias \quad\quad\quad\quad\quad
 \end{align*}
