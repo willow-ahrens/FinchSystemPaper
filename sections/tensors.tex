@@ -335,13 +335,38 @@ we only support random access construction of sparse or dense structures.  We
 can use these two more general structures as intermediates to convert to our
 more specialized structures later.
 
-%Future
-%work might involve supporting random access construction for additional
-%structures, especially those with asymptotic benefits such as SparseRLE, with
-%the understanding that we can use more general structures as intermediates to
-%convert to more specialized structures later.
+\begin{enumerate}
+\item[SparseHash]
+    The sparse hash format uses a hash table to store the locations of nonzeros,
+    and sorts the unique indices for iteration during the freeze phase. This
+    allows for efficient random access, but not incremental construction, as the
+    freeze phase runs in time proportional to the number of nonzeros in the
+    entire level.
+    \begin{enumerate}
+        \item[$idx$] A vector of nonzero indices in the level
+        \item[$ptr$] A vector of delimiters such that $idx[ptr[p]:ptr[p+1] - 1]$ is the set of nonzero indices in the subfiber at position $p$.
+        \item[$tbl$] A hash table used for construction of the level.
+    \end{enumerate}
+\item[SparseBytemap]
+    The SparseBytemap format uses a bytemap to store which locations have been
+    written to. Unlike the SparseHash format, the bytemap assembles the entire
+    space of possible subfibers. This accelerates random access in the format,
+    but requires a high memory overhead. Because we don't want to reallocate all
+    of the memory in each iteration, the declaration of this format instead
+    re-assembles only the dirty locations in the tensor. This format is
+    analogous to the default workspace format used by TACO.
+    \begin{enumerate}
+        \item[$idx$] A vector of nonzero indices in the level
+        \item[$ptr$] A vector of delimiters such that $idx[ptr[p]:ptr[p+1] - 1]$ is the set of nonzero indices in the subfiber at position $p$.
+        \item[$tbl$] A dense array of booleans used to mark dirty locations in the tensor.
+    \end{enumerate}
+\end{enumerate}
 
-
-
-
-%This leave
+As future work, we also recommend the implementation of a tree-based format, as
+this would enable incremental construction. Currently, the cost of freezing and
+thawing is usually proportional to the number of stored fibers, so an operation
+that sets a single value in a tensor would be prohibitively expensive (i.e.
+$A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an
+intermediate randomly accessible structure, because (unlike blocks or
+singletons), runs have asymptotic benefits. However, these cases were not
+necessary for our case studies.
