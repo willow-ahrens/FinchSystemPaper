@@ -235,6 +235,39 @@ Finch supports a similar programming language of loops, statements, if condition
 The Finch compiler uses the structure
 of the data to generate efficient implementations of these programs by predictably converting the control flow into the same representation as the data, Looplets~\cite{ahrens_looplets_2023}.}
 
+\begin{figure}
+    \centering
+    \begin{subfigure}[b][0.3\textwidth]
+        \begin{minted}{julia}
+    for i = _
+        if i % 2 == 0
+            c[i] = a[i] * b[i]
+        end
+    end
+        \end{minted}
+        \caption{}
+        \label{fig:inter1}
+    \end{subfigure}
+        \begin{subfigure}[b][0.3\textwidth]
+        \begin{minted}{julia}
+    for i = _
+        if i % 2 == 0
+            ap[i] = a[i] * b[i]
+        end
+    end
+    for i = _
+        if i % 2 == 0
+            c[i] = a[i] * b[i]
+        end
+    end
+        \end{minted}
+        \caption{}
+        \label{fig:inter1}
+    \end{subfigure}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+
 %% Many variations of this problem.
 %By combining many data structures and control flows into a single language, a performance engineer could use a sufficiently predicable and fine grained compiler to find efficient programs.
 %
