@@ -32,7 +32,10 @@ By \textbf{dense}, we mean that indices are mapped to value via a simple formula
 %
 \teo{Since the gap between the array storage and the array representation is minimal, dense arrays offer extensive compiler optimizations and extensive convenience.
 %
-Compilers understand dense array computation over
+Compilers understand dense array computation over cross many
+programming constructs, such as for and while loops, breaks, parallelism,
+caching, prefetching, multiple outputs, scatters, gathers, vectorization,
+loop-carry-dependencies, and more.
 }
 %
 This
@@ -42,7 +45,7 @@ and array storage.
 %
 Compilers understand dense array computations across many
 programming constructs, such as for and while loops, breaks, parallelism,
-caching, prefetching, multiple outputs, scatters, gathers, vectoriation,
+caching, prefetching, multiple outputs, scatters, gathers, vectorization,
 loop-carry-dependencies, and more. Several optimizations have been developed for
 dense arrays, such as loop fusion, loop tiling, loop unrolling, and loop
 interchange.
@@ -122,6 +125,7 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
 
 \begin{table}[h!]
   \centering
+  \scriptsize
   \begin{tabular}{l|cccccc}
   \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{StructTensor} & \textbf{Finch} \\
   \hline
@@ -214,10 +218,10 @@ For example, sparse kernels don't need to compute on zeros, but this means that 
 
 
 \teo{Proposed new paragraph:}
-
+\teo{Add: }
 \teo{We don't propose to solve these problems automatically, but we do propose a new programming language where these issues are solvable, by virtue of the precise manner in which we combine structured data and control flow.}
 %
-\teo{Our language, Finch, combines structured data and control flow in a predictable manner by lowering both of them into an abstraction: Looplets~\cite{ahrens_looplets_2023}, which combines structured iterators into a single control flow that only produces the relevant portions of the output.}
+\teo{Our language, Finch, combines structured data and control flow in a predictable manner by lowering both of them into a single abstraction} Looplets~\cite{ahrens_looplets_2023}, which combines structured iterators into a single control flow that only produces the relevant portions of the output.}
 %
 \teo{For example, if a programmer wanted to merge the even indices of two sorted arrays, a programmer could represent by point-wise multiplying two sparse vectors to produce another sparse vector and then set the even indices two zero or the programmer could only point-wise multiply the two sparse vectors under an if condition that selects even indices. (This crucial part needs improvement)}
 %
@@ -345,9 +349,7 @@ We observe that this strategy naturally extends the dense solution.
 \item Extensibility of the language and cmopiler with respect to data structures and control flow: (Maybe put stuff about the data structure extensibility here?)
 }
 
-\item We evaluate the productivity of our language in several case studies,
-showing that Finch can be used to accelerate a wide range of applications, 
-from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface. \teo{Do we really want to say productivity here? What word do other similar papers use?}
+\item We evaluate the efficiency, flexibility, and expressability of our language in several case studies, showing that Finch can be used to accelerate a wide range of applications,  from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface. 
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
 %\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
