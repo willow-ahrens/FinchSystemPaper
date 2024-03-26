@@ -190,11 +190,56 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     does not set the dimension of y, and y does not participate in dimensionalization.
     
 \subsection{Concordization}
-    Finch uses 
+    After wrapperization, all arrays are normalized to column-major ordering and
+    the unrecognized expressions are left in the access expressions. At that
+    point, we run a pass over the code to make the program concordant.
+    
+    We make expressions concordant by inserting loops with one iteration. For example, the following expression can be made concordant by adding a loop for the out of order access to \texttt{i}.
+    \begin{minted}{julia}
+        @finch begin
+        for i = _
+            for j = _
+                for k = _
+                    s[] += A[i, k, j]
+                end
+            end
+        end
+    \end{minted}
 
+    \begin{minted}{julia}
+        @finch begin
+        for i = _
+            for j = _
+                for k = _
+                    for l = _
+                        if i == l #diagonal mask
+                            s[] += A[l, k, j]
+                        end
+                    end
+                end
+            end
+        end
+    \end{minted}
+
+    We can concordize unrecognized index expressions using a similar approach:
+
+    \begin{minted}{julia}
+        for i = _
+            A[I[i]] += 1
+        end
+    \end{minted}
+
+    \begin{minted}{julia}
+        for i = _
+            for j = _
+                if j == I[i]
+                    A[j] += 1
+                end
+            end
+        end
+    \end{minted}
 
 \subsection{Life Cycles and Scopes}
-
 
 \subsection{Simplification and Algebraic Transformations}
 
