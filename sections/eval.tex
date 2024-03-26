@@ -15,6 +15,7 @@ Outer product computes the product of all pairs of elements from the input matri
 More detailed explanation is available in Section 2.2 of ~\cite{} \changwan{gamma}.
 \changwan{Inner, asym bad, }
 
+Figure~\ref{spgemm_small} 
 TACO does not support outer product due to its lack of support for scatter into a 2D workspace. 
 
 
@@ -33,11 +34,13 @@ TACO does not support outer product due to its lack of support for scatter into 
 
 \help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
 \begin{figure}
+    \label{spgemm_small}
 	\includegraphics[width=\linewidth]{spgemm_small_speedup_log_scale.png}
     \caption{A comparison of several matrix multiplication algorithms between Finch and Taco smaller matrices, ordered from small to big dimension. Note that inner products necessarily requires $O(n^2)$ work and taco's outer products format is dense. Finch can use a sparse outer products format and thus has an asymptotic advantage that becomes evident as the output dimensions grow.}
 \end{figure}
 
 \begin{figure}
+\label{spgemm_large}
 	\includegraphics[width=\linewidth]{spgemm_joel_speedup.png}
     \caption{A comparison of gustavson's algorithm between Finch and Taco on some larger matrices}
 \end{figure}
