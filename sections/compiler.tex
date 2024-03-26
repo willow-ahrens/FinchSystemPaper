@@ -1,16 +1,136 @@
 \section{The Finch Compiler}
 
-\subsection{Dimensionalization}
+\subsection{Finch Normal Form}
 
-\subsection{Concordization}
+Our semantics in Figure
+\ref{fig:semantics_core,fig:semantics_lifecycle,fig:semantics_looplets} is only
+well-defined on some programs. We define a particular class of programs on which
+our semantics are well-defined, and refer to it as \textbf{Finch Normal Form}.
+The properties of such a program are as follows:
+\begin{enumerate}
+    \item[Access with Indices] Though Finch allows general expressions in an
+    access (i.e. `A[i + j]` or `A[I[i]]`), the normal form restricts to allow only indices in 
+    accesses (i.e. `A[i]`), rather than more general expressions.
+    \item[Evaluable Dimensions] Loop dimensions and declaration dimensions must
+    be evaluable at the time we compile them, so we restrict the normal form to
+    programs whose loop dimensions and declaration dimensions are extents with
+    limits defined in the scope of the corresponding loop or declaration
+    statement.
+    \item[Concordant] Finch is column-major by default, and the normal form
+    requires the order of indices in an access to match the order in which loops
+    are nested around it.  For example,
+    \mintinline{julia}{for j = _; for i = _; s[] += A[i, j] end end}
+    is concordant but
+    \mintinline{julia}{for i = _; for j = _; s[] += A[i, j] end end} is not.
+    \item[Lifecycle Constraints] Tensors in read mode may appear on the right
+    hand side only. Tensors in update mode may appear on the left hand side
+    only. To make it easier to statically analyze lifecycle constraints, we
+    restrict tensors to only change modes in the same scope in which they were
+    defined.
+\end{enumerate}
 
-\subsection{Life Cycles and Scopes}
+The subsequent sections will explain how programs that violate each of these
+constraints can be rewritten to programs that satisfy them, and thus how we can
+support such a wide variety of programs. For example, we can write nonconcordant
+programs like  \mintinline{julia}{for i = _; for j = _; s[] += A[i, j] end end}
+by adding a loop to randomly access \mintinline{julia}{A} or adjusting the
+storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
 
 \subsection{Wrapperization}
 
-\subsubsection{Wrapper Tensors}
+    Many fancy operations on indices can be resolved by introducing equivalent
+    \textbf{wrapper arrays} which modify the behavior of the tensors they wrap,
+    or by introducing \textbf{mask arrays} which replace index expressions like
+    \mintinline{julia}{i == j} with their equivalent masks (in this case, a
+    diagonal mask tensor).
 
-\subsection{Normal Form}
+    All wrapper arrays are eventually unwrapped by the compiler as we lower
+    them, some earlier than others. For example, the $swizzle$ array wraps a
+    tensor and permutes the indices of an access when it is unwrapped during the
+    wrapperization pass. On the other hand, the $offset$ array wraps a tensor
+    and shifts all of the ranges declared in Figure \ref{fig:semantics_looplets} by one.
+    The implementation burden for a wrapper tensor is to implement a suitable
+    program modification during the wrapperization procedure and then unwrap the wrapper, or to 
+    implement the looplet functions of \ref{fig:semantics_looplets} with some minor modifications
+    to shift dimensions, for example. Wrapper arrays are summarized in Table \ref{tab:wrappers}
+
+    Mask arrays have a more straightforward implementation using static looplets
+    that are constructed during the unfurl step. They are summarized in table \ref{tab:masks}. Mask tensors
+    allow us to lift computations with masks to the level of the loop, without modifying the loop directly.
+
+    For example, \begin{minted}{julia}
+    for i=_, j=_
+        if i <= j
+            s[] += A[i, j]
+        end
+    end
+    \end{minted}
+
+    would likely compile to something like
+
+    \begin{minted}{julia}
+    for i = 1:n
+        for j = 1:i
+            s[] += A[i, j]
+        end
+    end
+    \end{minted}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{|>{\raggedright\arraybackslash}p{0.2\linewidth}|>{\raggedright\arraybackslash}p{0.8\linewidth}|}
+        \hline
+        \textbf{Transformation Example} & \textbf{Description} \\
+        \hline
+        A[i + a] $\rightarrow$ offset(A, 1)[i] & Creates an OffsetArray such that \texttt{offset(tns, delta...)[i...] == tns[i .+ delta...]}. \\
+        \hline
+        A[i + x] $\rightarrow$ toeplitz(A, 1)[i, x] & Creates a ToeplitzArray, adding a dimension that shifts another dimension of the original tensor. The added dimensions are produced during a call to Unfurl, when a lookup looplet is emitted for the first dimension. \\
+        \hline
+        A[(a:b)(i)] $\rightarrow$ window(A, a:b)[i] & Creates a WindowedArray, representing a view into another tensor. This wrapper returns a different size of tensor. \\
+        \hline
+        A[\~i] $\rightarrow$ permissive(A)[i] & Creates a PermissiveArray, allowing for out-of-bounds access or padding. This tensor returns no dimensions as its size. \\
+        \hline
+        A[p(i)] $\rightarrow$ protocolize(A, p)[i] & Accesses dimension n with protocol protos[n], allowing for advanced iteration protocols. \\
+        \hline
+        A[p(i)] $\rightarrow$ swizzle(A, perm)[i] & A lazily transposed array, swizzle(A, perm)[idx...] is transformed to A[idx[perm]...] during wrapperization. \\
+        \hline
+        \end{tabular}
+        \caption{Wrapper arrays and some example indexing sugar they enable.}
+    \label{table:wrappers}
+    \end{table}
+
+    \begin{table}[h]
+        \centering
+        \begin{tabular}{|>{\raggedright\arraybackslash}p{0.5\linewidth}|>{\raggedright\arraybackslash}p{0.5\linewidth}|}
+        \hline
+        \textbf{Transformation Example} & \textbf{Description} \\
+        \hline
+        $i < j \rightarrow$ UpTriMask()[i, j - 1] & Upper triangular mask, true if $i < j$. \\
+        \hline
+        $i \geq j \rightarrow$ LoTriMask()[i, j] & Lower triangular mask, true if $i \geq j$. \\
+        \hline
+        $l \leq i < j \rightarrow$ Bandmask()[i, l, h - 1] & Banded mask, true for elements within a specified band. \\
+        \hline
+        $i == j \rightarrow$ DiagMask()[i, j] & Diagonal mask, true if $i == j$. \\
+        \hline
+        $i \neq j \rightarrow$ !(DiagMask()[i, j]) & Inverse diagonal mask, true if $i \neq j$. \\
+        \hline
+        chunkmask(b) & Chunk mask, for chunked tensor access. True if $b \times (j - 1) < i \leq b \times j$. \\
+        \hline
+        \end{tabular}
+        \caption{Mask tensors and some example cases they are inserted.}
+        \label{table:masks}
+    \end{table}
+    
+\subsection{Dimensionalization}
+    Looplets typically require the dimension of the loop extent to match the
+    dimensions of the tensor. 
+
+\subsection{Concordization}
+
+
+\subsection{Life Cycles and Scopes}
+
 
 \subsection{Simplification and Algebraic Transformations}
 
