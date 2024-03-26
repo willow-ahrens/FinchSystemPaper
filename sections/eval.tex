@@ -214,7 +214,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 \help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
 
 \changwan{
-To evaluate the capabilities of Finch in graph applications, we its performance for BFS and Bellman-Ford single-source shortest path. 
+To evaluate the capabilities of Finch in graph applications, we its performance for two fundamantal graph applications: Breadth-first search (BFS) and Bellman-Ford single-source shortest path. For scale-free graphs where the distribution of node degrees follows a power-law distribution and a diameter is very short, direction-optimization~\cite{} is crucial to achiceve high-performance. Direction-optimized BFS uses push and pull traversal to efficiently explore graphs. Push traversal starts from the source node, pushing neighboring nodes into the queue. Pull traversal starts from the target node, exploring predecessors (parents).
 
 }
 
