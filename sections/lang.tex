@@ -1,9 +1,53 @@
 
 \section{The Finch Language}
 
-\subsection{Syntax and Semantics}
+\subsection{Syntax}
 
-The syntax of Finch is displayed in Figure \ref{fig:syntax}. We
+The syntax of Finch is displayed in Figure \ref{fig:syntax}. The Finch syntax
+mirrors most imperative languages with for-loops and control flow. Notable
+inclusions to the language include \mintinline{julia}{for},
+\mintinline{julia}{let}, blocks of code with \mintinline{julia}{if}, and 
+the lifecycle functions that let us declare, freeze, and thaw tensors.
+
+Finch uses looplets to lower \mintinline{julia}{for}-loops, though a sparse
+program with complicated looplets should produce output tensors with the same
+semantic value as a dense program with ordinary for-loops.  We include the
+semantics of how looplets are lowered as it affects the structure of the results
+and the asymptotic complexity of the program. Some applications view the
+structure of tensors as semantically meaningful.
+
+The \mintinline{julia}{let} statement (marked by the \finchdefine AST node)
+allows us to define tensor variables and reuse their value in multiple
+subexpressions without passing the variable through a tensor. Although it is too
+complex in this work to propagate constants through tensors, we can propagate
+constants (including 0) through a define statement. This allows the compiler to
+build up complicated functions of known operators and infer annihilation
+properties through them.It also allows use to eliminate common subexpressions,
+or tensor accesses, by reusing a tensor value in multiple places (such as the
+symmetric spmv in Figure \ref{fib:spmv_programs}). As another example, in the
+following program we don't need to define sparsity and annihilator properties of
+$f(a + b) * (a - b)$, as we can derive this from the more basic operators, and
+the code only reads from $A$ and $B$ once.
+\begin{minted}{julia}
+    let a = A[i, j]
+        let b = B[i, j]
+            C[i, j] = (a + b) * (a - b)
+        end
+    end
+\end{minted}
+
+We allow the use of blocks of code to describe multiple operations. This allows
+us to support both multiple outputs and temporary tensors, seen most prominently
+in our implementation of gustavson's algorithm for sparse-sparse matrix multiply
+and breadth-first-search. Our breadth-first seach also uses an
+\mintinline{julia}{if} statement to avoid operating on vertices outside the
+frontier. We have found that \mintinline{julia}{if} is particularly useful in
+our model for masking to avoid work.
+
+Finally, we add some explicit functions to advance the lifecycle of a tensor.
+Note that the user would not typically write \mintinline{julia}{@freeze} or
+\mintinline{julia}{@thaw} explicitly as those can be inferred through a separate
+pass.
 
 \begin{figure}
 \noindent % This ensures the minipages fill the page width
@@ -53,41 +97,21 @@ addition of multiple left hand sides through code blocks, and the explicit
 initialization and finalization of tensors.}\label{fig:syntax}
 \end{figure}
 
-the state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
-environment and another state $t$ corresponding to the embedding language.
+\subsection{Semantics}
 
+We break our description of the semantics of Finch into three parts, those
+relating to lowering the language itself in Figure~\ref{fig:semantics_core},
+those pertaining to the lifecycle of tensors in
+Figure~\ref{fig:semantics_lifecycle}, and the semantics of the looplets in
+Figure~\ref{fig:semantics_looplets}. Note that in addition to the rules seen
+here, we also apply extensive symbolic simplification of the program whenever we
+can. In the implementaiton of the language we have heuristics for when to run a
+simplification pass, but for the purposes of understanding the semantics of the
+language we should understand simplification rules as occuring whenever possible
+before continuing to execute the program as normal.
 
-\begin{figure}
-    \centering
-    \small
-
-    \begin{prooftree}  
-    \hypo{s = (e, t)}
-    \hypo{e(\finchmode(tns)) = read}
-    \hypo{e(tns) = tns'}
-    \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
-    \end{prooftree}
-    \vspace{12pt}
-    
-    \begin{prooftree}  
-    \hypo{s = (e, t)}
-    \hypo{e(\finchmode(tns)) = update}
-    \hypo{e(tns) = tns'}
-    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
-    \end{prooftree}
-      \vspace{12pt}
-      
-    \begin{prooftree}  
-    \hypo{s = (e, t)}
-    \hypo{e(tns) = tns'}
-    \hypo{\langle init, s \rangle \Rightarrow init'}
-    \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \infer4[$Declare$]{\langle\finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle \finchdeclare(tns', init', dims'...), t \rangle)}
-    \end{prooftree}
-    
-    \caption{Rules for evaluating life cycle functions.}
-    \label{fig:enter-label}
-\end{figure}
+Note that both Looplets and Finch are designed to be embedded into a larger
+language, and a separate state variable is introduced for this language.  
 
 \begin{figure}
     \centering
@@ -146,17 +170,57 @@ environment and another state $t$ corresponding to the embedding language.
         \infer1[$SieveFalse$]{\langle\finchsieve(cond, body), s\rangle \rightarrow s}
     \end{prooftree}
 
-    \caption{Basic Evaluation Rules}
-    \label{fig:enter-label}
+    \caption{Basic evaluation semantics, roughly defining most of these language
+    constructs to function similarly to their classical definitions. Note that
+    The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
+    environment and another state $t$ corresponding to the state in the
+    host language. Several Looplets introduce variables into the embedding
+    language, which may be read when evaluating the \finchvalue node.}
+    \label{fig:semantics_core}
 \end{figure}
-
-
 
 \begin{figure}
     \centering
     \small
 
-$E$ is an evaluation context that applies anywhere in the syntax tree.
+      
+    \begin{prooftree}  
+    \hypo{s = (e, t)}
+    \hypo{e(tns) = tns'}
+    \hypo{\langle init, s \rangle \Rightarrow init'}
+    \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
+    \infer4[$Declare$]{\langle\finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle \finchdeclare(tns', init', dims'...), t \rangle)}
+    \end{prooftree}
+    \vspace{12pt}
+    
+    \begin{prooftree}  
+    \hypo{s = (e, t)}
+    \hypo{e(\finchmode(tns)) = update}
+    \hypo{e(tns) = tns'}
+    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
+    \end{prooftree}
+    \vspace{12pt}
+
+    \begin{prooftree}  
+    \hypo{s = (e, t)}
+    \hypo{e(\finchmode(tns)) = read}
+    \hypo{e(tns) = tns'}
+    \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
+    \end{prooftree}
+    
+    \caption{Lifecycle evaluation semantics. The state $s$ of the finch compiler
+    is a tuple $(e, t)$ of a variable value environment and another state $t$
+    corresponding to the state in the host language. All of the lifecycle
+    functions are designed to be implemented and executed in the host language,
+    but these semantics enforce that each of these functions may update state in
+    the host language and flip the mode of the tensor between read and update.}
+    \label{fig:semantics_lifecycle}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \small
+
 \vspace{12pt}
 
 \begin{prooftree}
@@ -190,6 +254,11 @@ $E$ is an evaluation context that applies anywhere in the syntax tree.
     \hypo{\langle \finchloop(i, ext, E[\finchaccess(head, j..., i)]), s\rangle \rightarrow s'}
     \infer1[$Sequence$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(sequence(head, tail), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(tail, j..., i)]), s'\rangle}}
 \end{prooftree}
+\hfill
+\begin{prooftree}
+    \hypo{\langle node, algebra \rangle \rightarrow node'}
+    \infer1[$Simplify$]{\langle E[node], s\rangle \rightarrow \langle E[node'], s\rangle}
+\end{prooftree}
 \vspace{12pt}
 
 \begin{prooftree}
@@ -204,17 +273,28 @@ $E$ is an evaluation context that applies anywhere in the syntax tree.
     \infer2[$StepperNext$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), (e', t'')\rangle}}
 \end{prooftree}
 
-    \caption{Looplet Rules}
-    \label{fig:enter-label}
+
+    \caption{Looplet evaluation semantics. 
+    The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
+    environment and another state $t$ corresponding to the state in the host
+    language.  Note that $E$ is an evaluation context that applies anywhere in
+    the syntax tree. The nonlocal evaluations of Looplets are what allow looplets to
+    hoist conditions and subranges out of loops. However, this also means we must specify
+    the priority in which we apply looplet rules, which is as follows:
+    $Phase > Switch > Simplify > Run > Spike > Sequence > StepperSeek > StepperNext > Lookup$
+    Many looplets, most notably the thunk looplet, introduce variables into the
+    host language environment.  While variables introduced by a looplet may be
+    modified by the looplet itself (steppers often increment some state
+    variables), we forbid child looplets from modifying any state variables that
+    they didn't introduce. This allows us to treat the \finchvalue node as a
+    constant.
+    %
+    Note: the $Simplify$ rule references $algebra$, which is our variable
+    defining a set of straightforward simplification rules. These rules include
+    simple properties like $x * 0 \rightarrow 0$ to more complicated ones such
+    as constant propagation. We omit the full set of rules for brevity, but
+    point the curious reader to \cite[Figure 5]{ahrens_looplets_2023} for some examples}
+    \label{fig:semantics_looplets}
 \end{figure}
 
-
-
-
-\subsection{Wrapper Tensors}
-
-\subsection{Scalars}
-
-\subsubsection{Sparse Scalars}
-\subsubsection{Early Break Scalars}
 
