@@ -45,21 +45,6 @@ interchange.
 %
 However, while dense arrays are the easiest way to program for performance, the world is not all dense.
 
-%Bring in structure
-% - old arrays are Dense, rectilinear, integer grids
-% - The world is not like that
-% - Sparsity, runs of repeated values, symmetry
-% - Lots of citations, perhaps a few figures from my powerpoint
-%Sparse arrays
-% - Networks (graphblas, graph frameworks)
-% - Simulations (BLAS, symblas, banded blas, etc)
-% - Databases (database engines)
-%Run-length encoding
-%Symmetry
-%Bands
-%Padding
-%Blocks
-
 \begin{figure}
 	\includegraphics[width=\linewidth]{example_structures.png}
     \caption{some example structures that might be nice to put into a figure}
@@ -79,7 +64,6 @@ Operators, such as convolution, can be expressed as structured arrays.
 %
 For example, a convolution with a filter can be expressed as a matrix multiplication
 with the toeplitz matrix of all the circular shifts of the filter~\cite{sze2017efficient}.
-
 
 %
 \textbf{Currently, support for structured data is fragmented and incomplete}.
@@ -160,44 +144,15 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
 
 %
 Prior implementations are incomplete because the abstractions they use are tightly coupled with the specific data structures that they support.
-%many of these special purpose compilers represent a program's control flow via a specialized representation that is tightly integrated with a narrow class of supported data structures.
 %
 For example, TACO merge lattices represent boolean logic over sets of non-zero values on an integer grid~\cite{kjolstad_tensor_2017}.
 %
 The polyhedral model allows various compilers to represent dense computations on affine regions~\cite{grosser2012polly}.
 %
-Taichi enriches single static assignment form with specialized instruction for accessing only a single sparse structure, but it supports more control flow ~\cite{hu_taichi_2019}.
-% TODO: Make me shorter
-The reason these systems tightly couple their control flow to narrow classes of data structures is because producing efficient programs over structured data requires overcoming two challenges that occur when we intersect complex control flow with structured data:
-%Taichi enriches single static assignment form with specialized instruction for accessing a single sparse structure drawn from a particular class, which is why it supports the most control flow for a single sparse structure~\cite{hu_taichi_2019}.
-%
-%Furthermore, the limits and advantages of a DSL can be traced to the specific coupling of a program's control flow with the data structure: many new TACO features required modifying algorithms that worked with TACO's merge lattices and Tiramisu can express programs that Halide can't because Tiramisu uses a polyhedral model as opposed to a model built on iterating over regular grids~\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse, baghdadi2019tiramisu}.
-%
-%In this work, we will choose  a new representation of a program's data structures and control flows that covers a wide range of programs.
-%
-%However, simply combining a large variety of structured data with a large variety of programs does not necessarily yield a performance advantages.
-%
-%After all previous implementations choose to tightly couple to a specific data structure in part to ensure the data structures are iterated over efficiently.
-%
-%To find and produce efficient programs for structured data, we must overcome two challenges that occur when we intersect complex control flow with structured data:
+Taichi enriches single static assignment form with a specialized instruction for accessing only a single sparse structure, but it supports more control flow ~\cite{hu_taichi_2019}.
+These systems tightly couple their control flow to narrow classes of data structures to avoid the challenges that occur when we intersect complex control flow with structured data. The challenge is twofold:
+%writing efficient code over structured data
 
-%before introducing this, we must discuss performance: if we want to also produce efficient code for structured data, we face two challenges.
-
-
-
-%build on some conception of an iteration space: TACO has merge lattices, Polyhedral compilers rely on the polyhedral model, Halide and Corra uses rectangular intervals, and so on.
-%
-%And we believe the limitations of these systems can be traced back to their specific conceptions.} \willow{I agree with what this sentence is saying, but I'm concerned that the sentiment is unclear, because here it may seem like we say "iteration space bad" and later say "iteration space good". Can we perhaps adjust here to say may of these special purpose compilers use overly restrictive models of the iteration space of the program, but that Finch is good because it uses general control flow to express a wider variety of iteration spaces. At a high level, we need to define "iteration space" or "control flow" or "Looplets" if we want to use them in the intro, and depending on how much we want to use these words we may want to avoid them here.}
-%
-% \teo{For example, each modification to expressions that TACO could support required modifying the merge lattice algorithms\cite{kjolstad_tensor_2017, henry_compilation_2021, senanayake2020sparse} and several programs could not be supported in Halide, but could be in Tiramisu due to the limitations of a rectangular iteration space~\cite{baghdadi2019tiramisu}.
-% %
-% And many iteration space concepts simply don't allow for skipping work that isn't simply the complement of an interval.
-% %
-% In our work, we will show how we can use Looplets as our main tool to manage the iteration spaces of our computations and data structures.
-% %
-% However, to support as many data structures and iteration spaces as is implied above, we face two challenges if we want to also produce efficient code over structured data.
-% }
-%We see two main challenges to writing efficient code over structured data.
 
 \textbf{Optimizations are specific to the indirection and patterns in data structures}: 
 %
@@ -210,7 +165,6 @@ These zero regions or repeated regions are optimization opportunities, and we mu
 \textbf{Performance on structured data is highly algorithm dependent}: The landscape of implementation decisions is dramatically unpredictable. 
 %
 For example, the asymptotic performance of sparse matrix multiplication can be impacted by the distribution of nonzeros, the sparse format, and the loop order~\cite{ahrens2022autoscheduling, zhang2021gamma}. 
-% TODO: Add Gamma
 %For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
 This means that performance engineering for such kernels requires the exploration of a large design space, changing the algorithm as well as the data structures.
 
@@ -274,64 +228,6 @@ As an example, a programmer might explore the different ways to intersect only t
      end
 \end{minted}
 \end{minipage}%
-
-\begin{wrapfigure}{r}{0.2\linewidth}
-\begin{minted}{julia}
-     for i = _
-         cp[i] = ap[i] * b[i]
-     end
-     for i = _
-         if i % 2 == 0
-             c[i] = cp[i]
-         end
-     end
-\end{minted}
-\begin{minted}{julia}
-     for i = _
-         if i % 2 == 0
-             c[i] = a[i] * b[i]
-         end
-     end
-\end{minted}
-\begin{minted}{julia}
-     for i = _
-         if i % 2 == 0
-             ap[i] = a[i]
-         end
-     end
-     for i = _
-         c[i] = ap[i] * b[i]
-     end
-\end{minted}
-\end{wrapfigure}
-
-
-% \teo{
-% Due to this fine grained mixing of control flow and data structures, we dub a new programming model for Finch: ``Fine Grained Data Structure Driven Array Programming''.
-% %
-% Finch supports \textit{both} flexible programming constructs and diverse data structures. 
-% %
-% Finch supports a similar programming language of loops, statements, if conditions, breaks, etc, over a wide variety of array structures, such as sparsity, run-length-encoding, symmetry, triangles, padding, or blocks.
-% %
-% The Finch compiler uses the structure
-% of the data to generate efficient implementations of these programs by predictably converting the control flow into the same representation as the data, Looplets~\cite{ahrens_looplets_2023}.}
-
-
-%% Many variations of this problem.
-%By combining many data structures and control flows into a single language, a performance engineer could use a sufficiently predicable and fine grained compiler to find efficient programs.
-%
-%We dub this model, ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, but then can reasonably iterate on the two with a compiler that predicable combines them, leading to efficient code eventually.
-%
-%(Note quite sure how much comes after this)
-%We should say the predicability is generating only the non-zeros! We leverage the intiial stuff of Finch to say we will in order generate the code that only grabs the non-zeros, modified in certain ways based on the fine grained ordering of computation)
-%(Use the below comment as an example - where the old paragraph talked about merging two lists.)
-
-
-%In this work, we propose a new programming model we call ``Datastructure-driven Array Programming'' in which the programmer specifies the structure of the data separately from the program, and the compiler uses these two descriptions to generate efficient code.\saman{Is this new? TACO did something similar?} In this model, performance engineers can more efficiently search the
-%complex landscape of programs and datastructures to find the best implementation. In this programming model, we can express certain concepts in programs, and others in data. For example, if we wish to merge two sorted lists, we express this as two sparse vectors which are true whenever the list contains the key in question, and we iterate over the \textit{entire} space of keys, writing to the output list whenever either of the vectors are true.
-%While the order in which we iterate over the data is expressed in the program, which datapoints are of interest and how to find them is expressed in the data.
-
-
 
 \subsection{Contributions}
 
