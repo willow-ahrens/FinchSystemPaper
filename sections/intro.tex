@@ -237,14 +237,33 @@ of the data to generate efficient implementations of these programs by predictab
 
 \begin{figure}
     \centering
-\begin{subfigure}[]
-    \begin{minted}{julia}
+    \begin{subfigure}[b][0.3\textwidth]
+        \begin{minted}{julia}
     for i = _
         if i % 2 == 0
             c[i] = a[i] * b[i]
         end
     end
-    \end{minted}
+        \end{minted}
+        \caption{}
+        \label{fig:inter1}
+    \end{subfigure}
+        \begin{subfigure}[b][0.3\textwidth]
+        \begin{minted}{julia}
+    for i = _
+        if i % 2 == 0
+            ap[i] = a[i] * b[i]
+        end
+    end
+    for i = _
+        if i % 2 == 0
+            c[i] = a[i] * b[i]
+        end
+    end
+        \end{minted}
+        \caption{}
+        \label{fig:inter1}
+    \end{subfigure}
     \caption{Caption}
     \label{fig:enter-label}
 \end{figure}
