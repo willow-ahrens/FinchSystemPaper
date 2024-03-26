@@ -248,6 +248,7 @@ of the data to generate efficient implementations of these programs by predictab
         \caption{}
         \label{fig:inter1}
     \end{subfigure}
+    \
         \begin{subfigure}[b][0.3\textwidth]
         \begin{minted}{julia}
     for i = _
@@ -256,16 +257,28 @@ of the data to generate efficient implementations of these programs by predictab
         end
     end
     for i = _
+        c[i] = ap[i] * b[i]
+    end
+        \end{minted}
+        \caption{}
+        \label{fig:inter2}
+    \end{subfigure}
+            \begin{subfigure}[b][0.3\textwidth]
+        \begin{minted}{julia}
+    for i = _
+        cp[i] = ap[i] * b[i]
+    end
+    for i = _
         if i % 2 == 0
-            c[i] = ap[i] * bp[i]
+            c[i] = cp[i]
         end
     end
         \end{minted}
         \caption{}
-        \label{fig:inter1}
+        \label{fig:inter3}
     \end{subfigure}
     \caption{Caption}
-    \label{fig:enter-label}
+    \label{fig:intersections}
 \end{figure}
 
 %% Many variations of this problem.
