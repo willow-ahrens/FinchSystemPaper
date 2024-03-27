@@ -115,9 +115,6 @@ before continuing to execute the program as normal.
 Note that both Looplets and Finch are designed to be embedded into a larger
 language, and a separate state variable is introduced for this language.  
 
-%What are values? (objects in the host language)
-%What is t really? (
-
 \begin{figure}
     \centering
     \footnotesize
@@ -131,9 +128,9 @@ language, and a separate state variable is introduced for this language.
     \begin{prooftree}
         \hypo{\langle args_i, (e, t) \rangle \Rightarrow vals_i}
         \hypo{\langle f, (e, t) \rangle \Rightarrow g}
-        \infer2[$Call$]{\langle\finchcall(f, args...), (e, t)\rangle \rightarrow \langle g(vals...), t \rangle}
+        \infer2[$Call$]{\langle\finchcall(f, args...), (e, t)\rangle \rightarrow \llangle g(vals...), t \rrangle}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
 
     \begin{prooftree}
         \hypo{}
@@ -142,9 +139,9 @@ language, and a separate state variable is introduced for this language.
     \hfill
     \begin{prooftree}
         \hypo{}
-        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \langle ex, t \rangle}
+        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \llangle ex, t \rrangle}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
 
     \begin{prooftree}
         \infer0[$Variable$]{\splitfrac{\langle\finchvar(name), (e, t)\rangle}{\rightarrow e(\finchvar(name))}}
@@ -153,7 +150,7 @@ language, and a separate state variable is introduced for this language.
     \begin{prooftree}
         \infer0[$Index$]{\splitfrac{\langle\finchindex(name), (e, t)\rangle}{\rightarrow e(\finchindex(name))}}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
 
     \begin{prooftree}
         \hypo{\langle head, s_1 \rangle \rightarrow s_2}
@@ -163,7 +160,7 @@ language, and a separate state variable is introduced for this language.
     \begin{prooftree}
         \infer0[$EmptyBlock$]{\langle\finchblock(), s\rangle \rightarrow s}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
 
     \begin{prooftree}
         \hypo{\langle cond, s \rangle \Rightarrow true}
@@ -174,32 +171,30 @@ language, and a separate state variable is introduced for this language.
         \hypo{\langle cond, s \rangle \Rightarrow false}
         \infer1[$SieveFalse$]{\langle\finchsieve(cond, body), s\rangle \rightarrow s}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
     
     \begin{prooftree}  
     \hypo{s = (e, t)}
     \hypo{e(tns) = tns'}
     \hypo{\langle init, s \rangle \Rightarrow init'}
     \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \hypo{\langle declare(tns', init', dims'...), t \rangle \rightarrow t'}
-    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], t')}
+    \infer4[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle declare(tns', init', dims'...), t \rrangle)}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
     
     \begin{prooftree}  
     \hypo{s = (e, t)}
     \hypo{e(\finchmode(tns)) = update}
     \hypo{e(tns) = tns'}
-    \hypo{\langle freeze(tns'), t \rangle \rightarrow t'}
-    \infer4[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], t')}
+    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \llangle freeze(tns'), t \rrangle)}
     \end{prooftree}
-    \vspace{12pt}
+    \vspace{6pt}
 
     \begin{prooftree}  
     \hypo{s = (e, t)}
     \hypo{e(\finchmode(tns)) = read}
     \hypo{e(tns) = tns'}
-    \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
+    \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle thaw(tns'), t \rrangle)}
     \end{prooftree}
     
     \caption{Basic evaluation semantics, roughly defining most of these language
@@ -224,7 +219,17 @@ language, and a separate state variable is introduced for this language.
     \centering
     \footnotesize
 
-\vspace{12pt}
+\begin{multline*}
+E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) | \finchsieve(E | cond, E | body) |\\ 
+\finchdeclare(var, E|rhs, E|body) | \finchcall(E|f, E|args...) | \finchaccess(tns, E | idxs...)
+\end{multline*}
+
+\begin{prooftree}
+    \hypo{e(tns) \mapsto tns'}
+    \hypo{\llangle unfurl(tns', ext)\rrangle \mapsto tns''}
+    \infer2[$Unfurl$]{\langle \finchloop(i, ext, E[\finchaccess(tns, j..., i)]), s\rangle \rightarrow \langle \finchloop(i, ext, E[\finchaccess(tns'', j..., i)]), s\rangle}
+\end{prooftree}
+\vspace{6pt}
 
 \begin{prooftree}
     \infer0[$Run$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(run(body), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(body, j...)]), s\rangle}}
@@ -232,26 +237,34 @@ language, and a separate state variable is introduced for this language.
 \hfill
 \begin{prooftree}
     \hypo{e(i) = i'}
-    \hypo{\langle seek(i'), t \rangle \rightarrow t'}
+    \hypo{\llangle seek(i'), t \rrangle \rightarrow t'}
     \infer2[$Lookup$]{\splitfrac{\langle E[\finchaccess(lookup(seek, body), j..., i)], (e, t)\rangle}{\rightarrow \langle E[\finchaccess(body, j...)], (e, t')\rangle}}
 \end{prooftree}
-\vspace{12pt}
+\vspace{6pt}
 
 \begin{prooftree}
-    \hypo{\langle cond, t \rangle \Rightarrow true}
+    \hypo{\llangle cond, t \rrangle \Rightarrow true}
     \infer1[]{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle}{\rightarrow \langle E[\finchaccess(head, i...)], s\rangle}}
 \end{prooftree}
 \hfill
 \begin{prooftree}
-    \hypo{\langle cond, t \rangle \Rightarrow false}
+    \hypo{\llangle cond, t \rrangle \Rightarrow false}
     \infer1[$Switch$]{\splitfrac{\langle E[\finchaccess(switch(cond, head, tail), i...)], s\rangle}{\rightarrow \langle E[\finchaccess(tail, i...)], s\rangle}}
 \end{prooftree}
-\vspace{12pt}
+\vspace{6pt}
 
 \begin{prooftree}
     \infer0[$Phase$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle}{\rightarrow \langle \text{\finchloop}(i, extent(max(a, c), min(b, d)), E[\text{\finchaccess}(body, j..., i)]), s\rangle}}
 \end{prooftree}
-\vspace{12pt}
+\vspace{6pt}
+
+\begin{prooftree}
+    \hypo{\llangle preamble, t \rrangle \rightarrow t'}
+    \hypo{\langle E[body], (e, t') \rangle \rightarrow (e', t'')}
+    \hypo{\llangle epilogue, t'' \rrangle \rightarrow t'''}
+    \infer3[$Thunk$]{\langle E[thunk(preamble, body, epilogue)], (e, t')\rangle \rightarrow (e', t''')}
+\end{prooftree}
+\vspace{6pt}
 
 \begin{prooftree}
     \hypo{\langle \finchloop(i, ext, E[\finchaccess(head, j..., i)]), s\rangle \rightarrow s'}
@@ -262,17 +275,17 @@ language, and a separate state variable is introduced for this language.
     \hypo{\langle node, algebra \rangle \rightarrow node'}
     \infer1[$Simplify$]{\langle E[node], s\rangle \rightarrow \langle E[node'], s\rangle}
 \end{prooftree}
-\vspace{12pt}
+\vspace{6pt}
 
 \begin{prooftree}
-    \hypo{\langle seek(a), t \rangle \rightarrow t'}
+    \hypo{\llangle seek(a), t \rrangle \rightarrow t'}
     \infer1[$StepperSeek$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t)\rangle}{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t')\rangle}}
 \end{prooftree}
-\vspace{12pt}
+\vspace{6pt}
 
 \begin{prooftree}
     \hypo{\langle \finchloop(i, ext, E[\finchaccess(body, j..., i)]), (e, t) \rangle \rightarrow (e', t')}
-    \hypo{\langle next, t' \rangle \rightarrow t''}
+    \hypo{\llangle next, t' \rrangle \rightarrow t''}
     \infer2[$StepperNext$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), (e', t'')\rangle}}
 \end{prooftree}
 
@@ -284,7 +297,7 @@ language, and a separate state variable is introduced for this language.
     the syntax tree. The nonlocal evaluations of Looplets are what allow looplets to
     hoist conditions and subranges out of loops. However, this also means we must specify
     the priority in which we apply looplet rules, which is as follows:
-    $Phase > Switch > Simplify > Run > Spike > Sequence > StepperSeek > StepperNext > Lookup$
+    $Thunk > Phase > Switch > Simplify > Run > Spike > Sequence > StepperSeek > StepperNext > Lookup > Unfurl$
     Many looplets, most notably the thunk looplet, introduce variables into the
     host language environment.  While variables introduced by a looplet may be
     modified by the looplet itself (steppers often increment some state
