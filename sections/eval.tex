@@ -287,7 +287,7 @@ To express materialization, reuse of common sub-expressions, and multiple output
      expr:= \finchreorder | \finchrelabel | \finchreformat |\finchmapjoin | \finchaggregate | \finchtable | \finchalias \quad\quad
 \end{align*}
 
-Given this language, we now describe how to define a few example functions from the API as plans in the Finch Logic language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can manipulate an index as a scalar to implement $argmin$. For conciseness, we omit the outer wrapping of $\finchplan(\finchquery(out,...),out)$.
+Given this language, we now describe how to define a few example functions from the API as plans in the Finch Logic language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can access an index as a scalar to implement $argmin$. For conciseness, we omit the outer wrapping of $\finchplan(\finchquery(out,...),out)$.
 \begin{align*}
 &\text{sum}(M, dims=[2]) \rightarrow \finchaggregate(+,\finchrelabel(M, i_1,\ldots,i_d), i_2)\\
 &\text{matmul}(A, B) \rightarrow \finchaggregate(+,\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)\\
@@ -307,14 +307,15 @@ Once the Finch Logic program has been converted to the standard form, the Finch 
 
 \subsubsection{Evaluating Finch Logic}
 To demonstrate the performance of Finch Logic, we evaluate it on a series of kernels which benefit from the kind of kernel fusion that it automatically applies; 1) triangle counting on graphs 2) SDDMM 3) multiple elementwise operations. Further, we compare against DuckDB as a state of the art system which implements a form of kernel fusion through pipelined execution and even takes advantage of vector instructions which are not yet present in Finch.
-
-
 \begin{figure}
-	\includegraphics[width=.3\linewidth]{triangle_count_speedup_over_duckdb.png}
-	\includegraphics[width=.35\linewidth]{sddmm_speedup_over_duckdb.png}
-	\includegraphics[width=.3\linewidth]{elementwise_speedup_over_duckdb.png}
-    \caption{Performance of Finch Logic for common kernels.}
+\begin{tabular}{p{0.33\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
+  \vspace{0pt} \includegraphics[width=145pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
+  \vspace{0pt} \includegraphics[width=145pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
+  \vspace{0pt} \includegraphics[width=145pt, height=120pt]{figures/elementwise_speedup_over_duckdb.png}
+\end{tabular}
+\caption{Performance of Finch Logic for common kernels.}
 \end{figure}
+
 
 
 
