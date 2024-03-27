@@ -148,11 +148,11 @@ These restrictions play a similar role to that of a pure function in Halide~\cit
 %
 Second, loops with tensor accesses enter into a looplet system via the Unfurl rule.
 %
-In this system, repeated structures (Run) and constant information (Switch)  are slowly uncovered as accesses are lowered.
+In this system, repeated structures (Run) and constant information (Switch)  are slowly uncovered as accesses are lowered in various points in the program.
 %
-In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth.
+In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth based on the information provided via Looplets and via the control flow (loops, sieve, de
 %
-Since these occur within the context, the simplification system has full access to what is known via var
+
 
 
 % We break our description of the semantics of Finch into three parts, those
