@@ -191,7 +191,7 @@ language, and a separate state variable is introduced for this language.
     \hypo{e(\finchmode(tns)) = update}
     \hypo{e(tns) = tns'}
     \hypo{\langle freeze(tns'), t \rangle \rightarrow t'}
-    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], t')}
+    \infer4[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], t')}
     \end{prooftree}
     \vspace{12pt}
 
