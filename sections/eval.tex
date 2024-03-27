@@ -141,34 +141,25 @@ There were also significant advantages of using the Pattern format instead of th
 
 \begin{table}[htbp]
     \centering
-    \caption{SpMV Sample Matrices}
-    \label{spmv_sample_matrices}
-    \begin{tabular}{|m{3cm}|c|c|c|}
+    \caption{Transposed SpMV Sample Matrices}
+    \label{tab:transposed_spmv_sample_matrices}
+    \begin{tabular}{|
+        >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|
+        >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|
+        >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|
+        >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|
+        >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|}
         \hline
-        \textbf{Spy} & \textbf{Group / Name} & \textbf{Dimensions} & \textbf{Best Finch Format}\\
+         & \textbf{HB/saylr4} & \textbf{Norris/heart3} & \textbf{large\_band} & \textbf{SNAP/as-735} \\
         \hline
-        \includegraphics[width=3cm]{spmv_matrices/saylr4.png} & HB/saylr4 & 3,564 x 3,564 (22,316) & Symmetric SparseList \\
+        \textbf{Spy} & \includegraphics[width=\linewidth]{spmv_matrices/saylr4.png} & \includegraphics[width=\linewidth]{spmv_matrices/heart3.png} & \includegraphics[width=\linewidth]{spmv_matrices/toeplitz_large_band.png} & \includegraphics[width=\linewidth]{spmv_matrices/as-735.png} \\
         \hline 
-        \includegraphics[width=3cm]{spmv_matrices/heart3.png} & Norris/heart3 & 2,339 x 2,339 (680,341) & SparseVBL \\
-        \hline 
-        \includegraphics[width=3cm]{spmv_matrices/toeplitz_large_band.png} & toeplitz\_large\_band  & 10,000 x 10,000 (1,999,900) & SparseBand \\
+        \textbf{Group / Name} & HB/saylr4 & Norris/heart3 & large\_band & SNAP/as-735 \\
         \hline
-        \includegraphics[width=3cm]{spmv_matrices/as-735.png} & SNAP/as-735 & 7,716 x 7,716 (26,467) & Symmetric SparseList-Pattern \\
+        \textbf{Dimensions} & 3,564 x 3,564 (22,316) & 2,339 x 2,339 (680,341) & 10,000 x 10,000 (1,999,900) & 7,716 x 7,716 (26,467) \\
         \hline
-    \end{tabular}
-\end{table}
-
-
-\begin{table}[htbp]
-    \centering
-    \caption{SpMV Sample Matrices}
-    \label{spmv_sample_matrices}
-    \begin{tabular}{|l|c|c|c|c|}
-     \textbf{Spy} &
-     \includegraphics[width=3cm]{spmv_matrices/saylr4.png} &
-     \includegraphics[width=3cm]{spmv_matrices/heart3.png} &
-     \includegraphics[width=3cm]{spmv_matrices/toeplitz_large_band.png} & 
-     
+        \textbf{Best Finch Format} & Symmetric SparseList & SparseVBL & SparseBand & Symmetric SparseList-Pattern \\
+        \hline
     \end{tabular}
 \end{table}
 
@@ -189,22 +180,9 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 %Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
 
 \begin{figure}
-    \begin{minipage}[t]{0.5\textwidth}
-        \vspace{0pt} % Add this to ensure top alignment within minipage
-        \includegraphics[width=\linewidth]{spmv_performance_sorted_(faster_than_taco).png}
-    \end{minipage}%
-    \begin{minipage}[t]{0.5\textwidth}
-        \vspace{0pt} % Add this to ensure top alignment within minipage
-        \includegraphics[width=\linewidth]{spmv_performance_sorted_(slower_than_taco).png}
-    \end{minipage}
-    \caption{Performance of SpMV across various tools.}
-    \label{spmv_sorted}
-\end{figure}
-
-\begin{figure}
-    \includegraphics[width=\linewidth]{spmv_performance_grouped.png}
+    \includegraphics[width=\linewidth]{Spmv_annotated.drawio.png}
     \caption{Performance of SpMV by Finch format.}
-    \label{spmv_grouped}
+    \label{fig:spmv_grouped}
     \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. "R" indicates row-major implementation and "C" indicates column-major implementation in Finch. The baseline Finch format is unsymmetric Dense(SparseList(Element)).
 \end{figure}
 
@@ -221,19 +199,15 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 \help{Point out that masks with SparseRLE can sometimes perform better because they lift the masking out of the inner loop. Talk about hist and also the fact that Finch supports scatter, here and in spgemm.}
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{erode2_speedup_over_opencv.png}
-    \caption{Performance of Finch on erosion task (2 iterations).}
+	\includegraphics[width=0.5\linewidth]{erode2_speedup_over_opencv.png}%
+	\includegraphics[width=0.5\linewidth]{hist_speedup_over_opencv.png}
+    \caption{Performance of Finch on image morphology tasks. On left, we run 2 iterations of erosion. On right, we run a masked histogram.}
 \end{figure}
 
-\begin{figure}
-	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
-    \caption{Performance of Finch on erosion task (4 iterations).}
-\end{figure}
-
-\begin{figure}
-	\includegraphics[width=\linewidth]{hist_speedup_over_opencv.png}
-    \caption{Performance of Finch on masked histogram task.}
-\end{figure}
+%\begin{figure}
+%	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
+%    \caption{Performance of Finch on erosion task (4 iterations).}
+%\end{figure}
 
 \subsubsection{Graph Analytics}
 \help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
