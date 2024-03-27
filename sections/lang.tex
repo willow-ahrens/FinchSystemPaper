@@ -5,49 +5,73 @@
 
 The syntax of Finch is displayed in Figure \ref{fig:syntax}. The Finch syntax
 mirrors most imperative languages with for-loops and control flow. Notable
-inclusions to the language include \mintinline{julia}{for},
+inclusions to the language at the level of statements includes \mintinline{julia}{for},
 \mintinline{julia}{let}, blocks of code with \mintinline{julia}{if}, and 
 the lifecycle functions that let us declare, freeze, and thaw tensors.
+%
+At the level of expressions, we support a wide array of scalar operations through literals and calls to functions whose properties and definitions are defined externally.
+%
+The expressions can also interact with indices and extents.
+% FIXME: ???
+Finally, as detailed in the previous section, tensors are defined externally via an interface that supports the declare, freeze, thaw, and unfurl functions.
+%
+The first three are supported directly in the syntax whereas the four will be introduced through evaluation of \mintinline{julia}{for}-loops loops and accesses,
+in the next section.
+%
 
-Finch uses looplets to lower \mintinline{julia}{for}-loops, though a sparse
-program with complicated looplets should produce output tensors with the same
-semantic value as a dense program with ordinary for-loops.  We include the
-semantics of how looplets are lowered as it affects the structure of the results
-and the asymptotic complexity of the program. Some applications view the
-structure of tensors as semantically meaningful.
-
-The \mintinline{julia}{let} statement (marked by the \finchdefine AST node)
-allows us to define tensor variables and reuse their value in multiple
-subexpressions without passing the variable through a tensor. Although it is too
-complex in this work to propagate constants through tensors, we can propagate
-constants (including 0) through a define statement. This allows the compiler to
-build up complicated functions of known operators and infer annihilation
-properties through them.It also allows use to eliminate common subexpressions,
-or tensor accesses, by reusing a tensor value in multiple places (such as the
-symmetric spmv in Figure \ref{fib:spmv_programs}). As another example, in the
-following program we don't need to define sparsity and annihilator properties of
-$f(a + b) * (a - b)$, as we can derive this from the more basic operators, and
-the code only reads from $A$ and $B$ once.
-\begin{minted}{julia}
-    let a = A[i, j]
-        let b = B[i, j]
-            C[i, j] = (a + b) * (a - b)
-        end
-    end
-\end{minted}
-
-We allow the use of blocks of code to describe multiple operations. This allows
-us to support both multiple outputs and temporary tensors, seen most prominently
-in our implementation of gustavson's algorithm for sparse-sparse matrix multiply
-and breadth-first-search. Our breadth-first seach also uses an
+Our syntax is highly permissive: by allowin blocks of code with multiple statements, we support both multiple outputs and temporary tensors, seen most prominently in our implementation of gustavson's algorithm for sparse-sparse matrix multiply and breadth-first-search.
+%
+Our breadth-first seach also uses an
 \mintinline{julia}{if} statement to avoid operating on vertices outside the
-frontier. We have found that \mintinline{julia}{if} is particularly useful in
+frontier. 
+%
+We have found that \mintinline{julia}{if} is particularly useful in
 our model for masking to avoid work.
+%
+However, to compile these constructs efficient, we must restrict this syntax in several ways, as we have alluded to in the previous section via life cycles.
+%
+In the semantics section, we detail other specifics that allow us to specialize our syntax efficient code over structured data.
 
-Finally, we add some explicit functions to advance the lifecycle of a tensor.
-Note that the user would not typically write \mintinline{julia}{@freeze} or
-\mintinline{julia}{@thaw} explicitly as those can be inferred through a separate
-pass.
+
+% Finch uses looplets to lower \mintinline{julia}{for}-loops, though a sparse
+% program with complicated looplets should produce output tensors with the same
+% semantic value as a dense program with ordinary for-loops.  We include the
+% semantics of how looplets are lowered as it affects the structure of the results
+% and the asymptotic complexity of the program. Some applications view the
+% structure of tensors as semantically meaningful.
+
+% The \mintinline{julia}{let} statement (marked by the \finchdefine AST node)
+% allows us to define tensor variables and reuse their value in multiple
+% subexpressions without passing the variable through a tensor. Although it is too
+% complex in this work to propagate constants through tensors, we can propagate
+% constants (including 0) through a define statement. This allows the compiler to
+% build up complicated functions of known operators and infer annihilation
+% properties through them.It also allows use to eliminate common subexpressions,
+% or tensor accesses, by reusing a tensor value in multiple places (such as the
+% symmetric spmv in Figure \ref{fib:spmv_programs}). As another example, in the
+% following program we don't need to define sparsity and annihilator properties of
+% $f(a + b) * (a - b)$, as we can derive this from the more basic operators, and
+% the code only reads from $A$ and $B$ once.
+% \begin{minted}{julia}
+%     let a = A[i, j]
+%         let b = B[i, j]
+%             C[i, j] = (a + b) * (a - b)
+%         end
+%     end
+% \end{minted}
+
+% We allow the use of blocks of code to describe multiple operations. This allows
+% us to support both multiple outputs and temporary tensors, seen most prominently
+% in our implementation of gustavson's algorithm for sparse-sparse matrix multiply
+% and breadth-first-search. Our breadth-first seach also uses an
+% \mintinline{julia}{if} statement to avoid operating on vertices outside the
+% frontier. We have found that \mintinline{julia}{if} is particularly useful in
+% our model for masking to avoid work.
+
+% Finally, we add some explicit functions to advance the lifecycle of a tensor.
+% Note that the user would not typically write \mintinline{julia}{@freeze} or
+% \mintinline{julia}{@thaw} explicitly as those can be inferred through a separate
+% pass.
 
 \begin{figure}
 \scriptsize
@@ -101,19 +125,30 @@ initialization and finalization of tensors.}\label{fig:syntax}
 \subsection{Semantics}
 
 We present a sketch of a small-step operational semantics, showing how to execute a Finch program in a host language.
-We break our description of the semantics of Finch into three parts, those
-relating to lowering the language itself in Figure~\ref{fig:semantics_core},
-those pertaining to the lifecycle of tensors in
-Figure~\ref{fig:semantics_lifecycle}, and the semantics of the looplets in
-Figure~\ref{fig:semantics_looplets}. Note that in addition to the rules seen
-here, we also apply extensive symbolic simplification of the program whenever we
-can. In the implementaiton of the language we have heuristics for when to run a
-simplification pass, but for the purposes of understanding the semantics of the
-language we should understand simplification rules as occuring whenever possible
-before continuing to execute the program as normal.
+%
+We distinguish evaluation of the language by evolving compiler state with $\langle \rangle$ and evaluation in the host language via $\llangle\rrangle$.
+%
+For example, in Figure~\ref{fig:semantics_core}, we declare the core semantics of the language and the Define rule (\mintinline{julia}{let}) adds a definition to the compiler state whereas the Call rule passes evaluation off to the host.
+%
+In Figure~\ref{fig:semantics_looplets}, we detail the Looplet evaluation semantics, which details how acceses within a loop can be replaced with Loopets, which are progressively rewritten to host code.
+%
+Due to the use of rewrite rules, our semantics here make use of an evaluation context.
 
-Note that both Looplets and Finch are designed to be embedded into a larger
-language, and a separate state variable is introduced for this language.  
+
+
+% We break our description of the semantics of Finch into three parts, those
+% relating to lowering the language itself in Figure~\ref{fig:semantics_core},
+% those pertaining to the lifecycle of tensors in
+% Figure~\ref{fig:semantics_lifecycle}, and the semantics of the looplets in
+% Figure~\ref{fig:semantics_looplets}. Note that in addition to the rules seen
+% here, we also apply extensive symbolic simplification of the program whenever we
+% can. In the implementation of the language we have heuristics for when to run a
+% simplification pass, but for the purposes of understanding the semantics of the
+% language we should understand simplification rules as occurring whenever possible
+% before continuing to execute the program as normal.
+
+% Note that both Looplets and Finch are designed to be embedded into a larger
+% language, and a separate state variable is introduced for this language.  
 
 \begin{figure}
     \centering
@@ -122,7 +157,8 @@ language, and a separate state variable is introduced for this language.
     \begin{prooftree}
     \hypo{\langle val, (e, t) \rangle
     \rightarrow val'}
-    \infer1[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t) \rangle}}
+    \hypo{var\not\in e}
+    \infer2[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t) \rangle}}
     \end{prooftree}
     \hfill
     \begin{prooftree}
@@ -175,10 +211,11 @@ language, and a separate state variable is introduced for this language.
     
     \begin{prooftree}  
     \hypo{s = (e, t)}
+    \hypo{\finchmode(tns)\not\in e}
     \hypo{e(tns) = tns'}
     \hypo{\langle init, s \rangle \Rightarrow init'}
     \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \infer4[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle declare(tns', init', dims'...), t \rrangle)}
+    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle declare(tns', init', dims'...), t \rrangle)}
     \end{prooftree}
     \vspace{6pt}
     
