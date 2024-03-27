@@ -150,8 +150,9 @@ Second, loops with tensor accesses enter into a looplet system via the Unfurl ru
 %
 In this system, repeated structures (Run) and constant information (Switch)  are slowly uncovered as accesses are lowered in various points in the program.
 %
-In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth based on the information provided via Looplets and via the control flow (loops, sieve, definiti
+In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth based on the information provided via Looplets and via the control flow (loops, sieve, definitions).
 %
+Though the user may doubt the coverage of this approach, the next section will detail how the compiler adds additional features on top of this core language so that more complex control flow (complex index access expressions involving indirection and arithemtic)
 
 
 
