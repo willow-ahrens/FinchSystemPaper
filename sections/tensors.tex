@@ -93,38 +93,7 @@ unique data associated with $fiber(l, p)$ is the position $p$.
 \end{figure}
 
 \subsection{The 8 Key Level Structures}
-    The main benefits of specializing to structure come from the following properties of the data:
-    \begin{enumerate}
-        \item[Sparsity] Sparse data is data that is mostly zero, or some other
-        fill value. When we specialize on this data, we can use annihilation ($x
-        * 0 = 0$), identity ($x * 1 = 1$), or other constant propagation
-        properties ($ifelse(false, x, y) = y$) to simplify the computation and avoid
-        redundant work.
-        
-        \item[Blocks] Blocked data is a subset of sparse data where the nonzeros
-        are clustered and occur adjacent to one another. This provides us with
-        two opportunities: We can avoid storing the locations of the nonzeros
-        individually, and we can use more efficient randomly accessible
-        iterators within the block. \cite{im_optimizing_2001, vuduc_performance_2002, ahrens_looplets_2023}.
-
-        \item[Runs] Runs of repeated values may occur in dense or sparse code,
-        cutting down on storage and allowing us to use integration rules such as 
-        \mintinline{julia}{for i = 1:n; s += x end} $\rightarrow$
-        \mintinline{julia}{s += n * x} or code motion to lift operations out of loops \cite{donenfeld_unified_2022,ahrens_looplets_2023}.
-
-        \item[Singletons] When we have only one non-fill region in sparse data,
-        we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
-    \end{enumerate}
-
-    In Finch, we have identified 8 key level structures that can represent all
-    of the relevant combinations of these properties, summarized in Table
-    \ref{tab:TypesOfStructure}. We examine each structure in turn, describing
-    some of the key properties and potential use cases of each. In this sense,
-    the structures we consider are exhaustive. We can represent a wide variety
-    of hierarchical tensor structures by combining these level structures in a
-    tree, as shown in Figure~\ref{fig:structuraldiversity}.
-    \begin{table}
-    \begin{minipage}{.35\textwidth}
+    \begin{wrapfigure}{r}{.35\textwidth}
         \centering
         \scriptsize
         \begin{tabular}{|c|c|c|c|l|}
@@ -156,8 +125,37 @@ unique data associated with $fiber(l, p)$ is the position $p$.
         consider them together either. We omit such combinations
         from the exhaustive table.}
         \label{tab:TypesOfStructure}
-    \end{minipage}
-    \end{table}
+    \end{wrapfigure}
+    The main benefits of specializing to structure come from the following properties of the data:
+    \begin{enumerate}
+        \item[Sparsity] Sparse data is data that is mostly zero, or some other
+        fill value. When we specialize on this data, we can use annihilation ($x
+        * 0 = 0$), identity ($x * 1 = 1$), or other constant propagation
+        properties ($ifelse(false, x, y) = y$) to simplify the computation and avoid
+        redundant work.
+        
+        \item[Blocks] Blocked data is a subset of sparse data where the nonzeros
+        are clustered and occur adjacent to one another. This provides us with
+        two opportunities: We can avoid storing the locations of the nonzeros
+        individually, and we can use more efficient randomly accessible
+        iterators within the block. \cite{im_optimizing_2001, vuduc_performance_2002, ahrens_looplets_2023}.
+
+        \item[Runs] Runs of repeated values may occur in dense or sparse code,
+        cutting down on storage and allowing us to use integration rules such as 
+        \mintinline{julia}{for i = 1:n; s += x end} $\rightarrow$
+        \mintinline{julia}{s += n * x} or code motion to lift operations out of loops \cite{donenfeld_unified_2022,ahrens_looplets_2023}.
+
+        \item[Singletons] When we have only one non-fill region in sparse data,
+        we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
+    \end{enumerate}
+
+    In Finch, we have identified 8 key level structures that can represent all
+    of the relevant combinations of these properties, summarized in Table
+    \ref{tab:TypesOfStructure}. We examine each structure in turn, describing
+    some of the key properties and potential use cases of each. In this sense,
+    the structures we consider are exhaustive. We can represent a wide variety
+    of hierarchical tensor structures by combining these level structures in a
+    tree, as shown in Figure~\ref{fig:structuraldiversity}.
 
     \begin{figure}
         \centering
