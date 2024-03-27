@@ -12,10 +12,10 @@ Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scien
 The inner product, outer product, and Gustavson's algorithm are three different approaches to performing SpGEMM. 
 Inner product involves multiplying two matrices by taking dot products of corresponding rows and columns.
 Outer product computes the product of all pairs of elements from the input matrices.
-More detailed explanation is available in Section 2.2 of ~\cite{} \changwan{gamma}.
-\changwan{Inner, asym bad, }
+More detailed explanation is available in Section 2.2 of ~\cite{zhang2021gamma}.
+Figures ~\ref{spgemm_small} and ~\reef{spgemm_large} show  
 
-Figure~\ref{spgemm_small} 
+
 TACO does not support outer product due to its lack of support for scatter into a 2D workspace. 
 
 
@@ -333,7 +333,9 @@ During the standardization process, a concordization pass is performed which exa
 Once the Finch Logic program has been converted to the standard form, the Finch Interpreter can execute each query, in order, through a straightforward lowering process. First, the output format is identified by unpacking the outer $\finchreformat$ statement. Next, the inner expression of the is unpacked to identify the aggregate operator and to convert the pointwise expression into a Finch expression. At this point, any aliases to the result of previous queries are replaced with an access to the actual tensor. Lastly, the concordant loop order is identified and instantiated. The lowered query can then be compiled and executed with the Finch compiler, and the result is assigned to $name$ in the plan's scope before proceeding to the next query in the plan. 
 
 
-\subsubsection{The Benefits of Kernel Fusion}
+\subsubsection{Evaluating Finch Logic}
+To demonstrate the performance of Finch Logic, we evaluate it on a series of kernels which benefit from the kind of kernel fusion that it automatically applies; 1) triangle counting on graphs 2) SDDMM 3) multiple elementwise operations. Further, we compare against DuckDB as a state of the art system which implements a form of kernel fusion through pipelined execution and even takes advantage of vector instructions which are not yet present in Finch.
+
 
 \begin{figure}
 	\includegraphics[width=\linewidth]{triangle_count_speedup_over_duckdb.png}

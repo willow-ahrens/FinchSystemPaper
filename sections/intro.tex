@@ -252,7 +252,7 @@ structured data, as well as complex accesses such as affine indexing or scatter/
 %
 \item A compiler that specializes programs to data structures automatically,
 facilitating an expressive language that makes it easier to search the complex
-space of algorithms and data structures. 
+space of algorithms and data structures. Finch reliably utilizes the key properties of structure, such as structural zeros, repeated values, or clustered non-zeros.
 %
 \item We evaluate the efficiency, flexibility, and expressability of our language in several case studies, showing that Finch can be used to accelerate a wide range of applications,  from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface. 
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.

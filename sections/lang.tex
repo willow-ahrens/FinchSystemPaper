@@ -100,6 +100,7 @@ initialization and finalization of tensors.}\label{fig:syntax}
 
 \subsection{Semantics}
 
+We present a sketch of a small-step operational semantics, showing how to execute a Finch program in a host language.
 We break our description of the semantics of Finch into three parts, those
 relating to lowering the language itself in Figure~\ref{fig:semantics_core},
 those pertaining to the lifecycle of tensors in
@@ -113,6 +114,9 @@ before continuing to execute the program as normal.
 
 Note that both Looplets and Finch are designed to be embedded into a larger
 language, and a separate state variable is introduced for this language.  
+
+%What are values? (objects in the host language)
+%What is t really? (
 
 \begin{figure}
     \centering
@@ -170,27 +174,15 @@ language, and a separate state variable is introduced for this language.
         \hypo{\langle cond, s \rangle \Rightarrow false}
         \infer1[$SieveFalse$]{\langle\finchsieve(cond, body), s\rangle \rightarrow s}
     \end{prooftree}
-
-    \caption{Basic evaluation semantics, roughly defining most of these language
-    constructs to function similarly to their classical definitions. Note that
-    The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
-    environment and another state $t$ corresponding to the state in the
-    host language. Several Looplets introduce variables into the embedding
-    language, which may be read when evaluating the \finchvalue node.}
-    \label{fig:semantics_core}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \footnotesize
-
-      
+    \vspace{12pt}
+    
     \begin{prooftree}  
     \hypo{s = (e, t)}
     \hypo{e(tns) = tns'}
     \hypo{\langle init, s \rangle \Rightarrow init'}
     \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \infer4[$Declare$]{\langle\finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle \finchdeclare(tns', init', dims'...), t \rangle)}
+    \hypo{\langle declare(tns', init', dims'...), t \rangle \rightarrow t'}
+    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], t')}
     \end{prooftree}
     \vspace{12pt}
     
@@ -198,7 +190,8 @@ language, and a separate state variable is introduced for this language.
     \hypo{s = (e, t)}
     \hypo{e(\finchmode(tns)) = update}
     \hypo{e(tns) = tns'}
-    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \langle freeze(tns'), t \rangle)}
+    \hypo{\langle freeze(tns'), t \rangle \rightarrow t'}
+    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], t')}
     \end{prooftree}
     \vspace{12pt}
 
@@ -209,14 +202,23 @@ language, and a separate state variable is introduced for this language.
     \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \langle thaw(tns'), t \rangle)}
     \end{prooftree}
     
-    \caption{Lifecycle evaluation semantics. The state $s$ of the finch compiler
+    \caption{Basic evaluation semantics, roughly defining most of these language
+    constructs to function similarly to their classical definitions. Note that
+    The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
+    environment and another state $t$ corresponding to the state in the
+    host language. Several Looplets introduce variables into the embedding
+    language, which may be read when evaluating the \finchvalue node.
+    %
+    The state $s$ of the finch compiler
     is a tuple $(e, t)$ of a variable value environment and another state $t$
-    corresponding to the state in the host language. All of the lifecycle
+    corresponding to the state in the host language.
+    This means that rules which modify $t$ are running in the host language. All of the lifecycle
     functions are designed to be implemented and executed in the host language,
     but these semantics enforce that each of these functions may update state in
-    the host language and flip the mode of the tensor between read and update.}
-    \label{fig:semantics_lifecycle}
+    the host language and flip the mode of the tensor between read and update}
+    \label{fig:semantics_core}
 \end{figure}
+
 
 \begin{figure}
     \centering
@@ -278,7 +280,7 @@ language, and a separate state variable is introduced for this language.
     \caption{Looplet evaluation semantics. 
     The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
     environment and another state $t$ corresponding to the state in the host
-    language.  Note that $E$ is an evaluation context that applies anywhere in
+    language. This means that rules which modify $t$ are running in the host language. Note that $E$ is an evaluation context that applies anywhere in
     the syntax tree. The nonlocal evaluations of Looplets are what allow looplets to
     hoist conditions and subranges out of loops. However, this also means we must specify
     the priority in which we apply looplet rules, which is as follows:
