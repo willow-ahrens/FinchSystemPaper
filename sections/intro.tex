@@ -99,12 +99,15 @@ contractions \cite{kjolstad_tensor_2019, hu_taichi_2019, ghorbani2023compiling, 
 This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_structures}.
 %
 
+\newcommand*\rot{\rotatebox{90}}
 
 \begin{table}[h!]
-  \centering
+\noindent
+\flushleft
+\begin{minipage}[t]{.49\textwidth}
   \scriptsize
   \begin{tabular}{l|cccccc}
-  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{StructTensor} & \textbf{Finch} \\
+  \textbf{Feature / Tool} & \rothead{Halide} & \rothead{Taco} & \rothead{Cora} & \rothead{Taichi} & \rothead{StructTensor} & \rothead{Finch} \\
   \hline
   Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
   High-Level API           &            & \checkmark &            &            &            & \checkmark \\
@@ -119,12 +122,12 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
   \end{tabular}
   \caption{Feature support across various tools.}
   \label{tab:features}
-  \end{table}
-  
-  \begin{table}[h!]
-  \centering
+\end{minipage} 
+\begin{minipage}[t]{.49\textwidth}
+  \flushright
+  \scriptsize
   \begin{tabular}{l|cccccc}
-  \textbf{Feature / Tool} & \textbf{Halide} & \textbf{Taco} & \textbf{Cora} & \textbf{Taichi} & \textbf{StructTensor} & \textbf{Finch} \\
+  \textbf{Feature / Tool} & \rothead{Halide} & \rothead{Taco} & \rothead{Cora} & \rothead{Taichi} & \rothead{StructTensor} & \rothead{Finch} \\
   \hline
   Dense                    & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
   Padded                   & \checkmark &            &            &            &            & \checkmark \\
@@ -138,8 +141,8 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
   \end{tabular}
   \caption{Support for various data structures across tools. Finch supports \textbf{both} complex programs and complex data structures.}
   \label{tab:data_structures}
+\end{minipage}
 \end{table}
-
 
 
 %

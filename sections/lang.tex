@@ -50,6 +50,7 @@ Note that the user would not typically write \mintinline{julia}{@freeze} or
 pass.
 
 \begin{figure}
+\scriptsize
 \noindent % This ensures the minipages fill the page width
 \begin{minipage}{0.4\linewidth}
 \begin{align*}
@@ -83,7 +84,7 @@ pass.
 \end{minipage}%
 \begin{align*}
     \finchdeclare(tns \in T, init \in E, dims\ldots \in E) &:= \text{\mintinline{julia}{tns .= init(dims...)}} \\
-    \finchassign(lhs \in A, op \in E, rhs \in E) &:= \text{\mintinline{julia}{lhs \texttt{<<op>>=} rhs}} \\
+    \finchassign(lhs \in A, op \in E, rhs \in E) &:= \text{\mintinline{julia}{lhs <<op>>= rhs}} \\
     \finchloop(idx \in I, range \in E, body \in S) &:= \text{\mintinline{julia}{for idx = range; body end}} \\
     \finchdefine(var \in V, val \in E, body \in S) &:= \text{\mintinline{julia}{let var = val; body end}} \\
     \finchsieve(cond \in E, body \in S) &:= \text{\mintinline{julia}{if cond; body end}} \\
@@ -115,7 +116,7 @@ language, and a separate state variable is introduced for this language.
 
 \begin{figure}
     \centering
-    \small
+    \footnotesize
 
     \begin{prooftree}
     \hypo{\langle val, (e, t) \rangle
@@ -181,7 +182,7 @@ language, and a separate state variable is introduced for this language.
 
 \begin{figure}
     \centering
-    \small
+    \footnotesize
 
       
     \begin{prooftree}  
@@ -219,7 +220,7 @@ language, and a separate state variable is introduced for this language.
 
 \begin{figure}
     \centering
-    \small
+    \footnotesize
 
 \vspace{12pt}
 

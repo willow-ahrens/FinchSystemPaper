@@ -159,6 +159,22 @@ There were also significant advantages of using the Pattern format instead of th
     \end{tabular}
 \end{table}
 
+
+\begin{table}[htbp]
+    \centering
+    \caption{SpMV Sample Matrices}
+    \label{spmv_sample_matrices}
+    \begin{tabular}{|l|c|c|c|c|}
+     \textbf{Spy} &
+     \includegraphics[width=3cm]{spmv_matrices/saylr4.png} &
+     \includegraphics[width=3cm]{spmv_matrices/heart3.png} &
+     \includegraphics[width=3cm]{spmv_matrices/toeplitz_large_band.png} & 
+     
+    \end{tabular}
+\end{table}
+
+
+
 \subsubsection{Symmetric SpMV}
 Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by providing the capabilities to reuse memory reads and insert control flow logic to restrict iterations to either the lower or upper triangle of the sparse matrix. We can apply this strategy with any level format. Every symmetric matrix in the SparseList and SparseList-Pattern formats has better performance when we use a Finch SpMV program that takes advantage of this symmetry. However, the regular row- or column-major Finch SpMV programs have better performance for symmetric matrices than the symmetric Finch SpMV program for the other more specialized formats, likely because we need in-order accesses to fully capitalize on the specialized storage. Symmetric SpMV with the SparseList level format in Finch results in an average of 1.27x speedup over TACO and symmetric SpMV with the SparseList-Pattern format in Finch results in an average speedup of 1.21x over TACO. Notably, there is a 1.91x speedup for the HB/saylr4 matrix over TACO. 
 
