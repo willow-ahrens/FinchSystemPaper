@@ -19,7 +19,7 @@ The first three are supported directly in the syntax whereas the four will be in
 in the next section.
 %
 
-Our syntax is highly permissive: by allowin blocks of code with multiple statements, we support both multiple outputs and temporary tensors, seen most prominently in our implementation of gustavson's algorithm for sparse-sparse matrix multiply and breadth-first-search.
+Our syntax is highly permissive: by allowing blocks of code with multiple statements, we support both multiple outputs and temporary tensors, seen most prominently in our implementation of gustavson's algorithm for sparse-sparse matrix multiply and breadth-first-search.
 %
 Our breadth-first seach also uses an
 \mintinline{julia}{if} statement to avoid operating on vertices outside the
@@ -135,6 +135,21 @@ In Figure~\ref{fig:semantics_looplets}, we detail the Looplet evaluation semanti
 Due to the use of rewrite rules, our semantics here make use of an evaluation context.
 
 
+We include the sketch of our semantics to highlight several key design choices.
+%
+\teo{Make this true:}
+First, we note that the life cycle rules (in combination with the definition rules) prevent programs that read and write to values within a loop except in the narrow circumstance of updates, which cannot even be applied to scalar definitions.
+%
+Beyond the simple management of iterator state, these rules allow us to effectively analyze the propagation of constants within a loop.
+%
+We eliminate problems that in a less restrictive language would require alias analysis so that we can tell when a zero or repetitive value read from one tensor is being used in an expression or written to another tensor.
+%
+These restrictions play a similar role to that of a pure function in Halide~\cite{ragan-kelley_halide_2013}.
+%
+Second, loops with tensor accesses enter into a looplet system via the Unfurl rule.
+%
+In this system, repeated structures  (Run) and constant informa
+
 
 % We break our description of the semantics of Finch into three parts, those
 % relating to lowering the language itself in Figure~\ref{fig:semantics_core},
@@ -154,6 +169,9 @@ Due to the use of rewrite rules, our semantics here make use of an evaluation co
     \centering
     \footnotesize
 
+% \begin{multline*}
+%         Modes:=update \mid read \mid undefined \mid defined
+% \end{multline*}
     \begin{prooftree}
     \hypo{\langle val, (e, t) \rangle
     \rightarrow val'}
@@ -189,8 +207,8 @@ Due to the use of rewrite rules, our semantics here make use of an evaluation co
     \vspace{6pt}
 
     \begin{prooftree}
-        \hypo{\langle head, s_1 \rangle \rightarrow s_2}
-        \infer1[$BlockHead$]{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle}
+    \hypo{\langle head,s_{1} \rangle \rightarrow s_2}
+    \infer1[$BlockHead$]{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle}
     \end{prooftree}
     \hfill
     \begin{prooftree}
