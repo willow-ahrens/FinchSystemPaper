@@ -15,7 +15,7 @@ Outer-product computes the product of all pairs of elements from the input matri
 More detailed explanation is available in Section 2.2 of ~\cite{zhang2021gamma}.
 Figures ~\ref{spgemm_small} and ~\ref{spgemm_large} show SpGEMM results with Finch and TACO.
 Note that inner-product is very inefficient unless sparse matrices are nearly dense because the cost of intersections that incurs a lot of redundant computations. For the output-product, TACO only support the dense output: TACO does not support outer product due to its lack of support for scatter into a 2D workspace. So, due to memory constraints, we are unable to run TACO's outer-product for large sparse matrices. So, for large sparse matrices, we only compared Gustavson's algorithms. 
-As shown in Figure~\ref{spgemm_large}, Finch outp
+As shown in Figure~\ref{spgemm_large}, Finch outperforms TACO with an average speed
 
 
 \help{The main points of this section are:}
