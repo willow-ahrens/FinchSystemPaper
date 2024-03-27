@@ -150,7 +150,9 @@ Second, loops with tensor accesses enter into a looplet system via the Unfurl ru
 %
 In this system, repeated structures (Run) and constant information (Switch)  are slowly uncovered as accesses are lowered.
 %
-In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth
+In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth.
+%
+Since these occur within the context, the simplification system has full access to what is know
 
 
 % We break our description of the semantics of Finch into three parts, those
