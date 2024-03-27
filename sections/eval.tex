@@ -11,17 +11,16 @@
 Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics, focusing on efficiently computing the product of two sparse matrices to produce an output sparse matrix.
 
 The inner-product, outer product, and Gustavson's algorithm are three different approaches to performing SpGEMM. Inner-product involves multiplying two matrices by taking dot products of corresponding rows and columns, while outer-product computes the product of all pairs of elements from the input matrices.
-
+Gustavson's algorithm computes the output matrix one row at a time, by scaling and merging rows of the second sparse matrix corresponding to the nonzero columns of a row of the first sparse matrix.
 Further explanation is available in Section 2.2 of  ~\cite{zhang2021gamma}.
 
-Figures \ref{fig:spgemm_small} and \ref{fig:spgemm_large} illustrate SpGEMM results with Finch and TACO. Notably, inner-product can be very inefficient unless sparse matrices are nearly dense due to the cost of intersections incurring redundant traversals. Additionally, TACO does not support outer product due to its lack of support for scatter into a 2D workspace, limiting its use for large sparse matrices. In contrast, Finch supports scatter into 2D workspace, allowing for comparison with Gustavson's algorithm for large sparse matrices.
+Figures \ref{fig:spgemm_small} and \ref{fig:spgemm_large} illustrate SpGEMM results with Finch and TACO. Notably, inner-product can be very inefficient unless sparse matrices are nearly dense due to the cost of intersections incurring redundant traversals. Additionally, TACO only supports outer product when the output matrix format is dense. It does not support outer product due to its lack of support for scatter into a 2D workspace, limiting its use for large sparse matrices. In contrast, Finch supports scatter into 2D workspace, allowing for comparison with Gustavson's algorithm for large sparse matrices.
 
-As depicted in Figure \ref{fig:spgemm_small}, Finch achieves comparable performance with TACO for inner-product. For large sparse matrices, as shown in Figure \ref{fig:spgemm_large}, Finch outperforms TACO with an average speedup of 1.05. It's worth mentioning that TACO's Gustavson's algorithm is hard-wired.
+As depicted in Figure \ref{fig:spgemm_small}, Finch achieves comparable performance with TACO for inner-product. For large sparse matrices, as shown in Figure \ref{fig:spgemm_large}, Finch outperforms TACO with an average speedup of 1.05. It's worth mentioning that TACO's Gustavson's algorithm is hard-wired whereas Finch's data structure-driving programming enables to systematically generate SpGEMM using explicit temporary, bytemap format, and matrix transposition.
 
 \help{The main points of this section are:}
 
 \help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
-
 
 \help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
 
@@ -212,7 +211,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 \subsubsection{Graph Analytics}
 \help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
 
-To evaluate the capabilities of Finch in graph applications, we its performance for two fundamantal graph applications: Breadth-first search (BFS) and Bellman-Ford single-source shortest path. We used graphs in GraphBLAS~\cite{}, which include road networks (SNAP/roadNet-CA and GAP/GAP-road) where node degrees are bounded and a diametr is very long and scale-free graphs (the others) where the distribution of node degrees follows a power-law distribution and a diameter is very short, direction-optimization~\cite{} is crucial to achiceve high-performance. Direction-optimized BFS uses push and pull traversal to efficiently explore graphs. Push traversal starts from the source node, pushing neighboring nodes into the queue. Pull traversal starts from the target node, exploring predecessors (parents). This approach uses early-break in pull traversal, which is used to terminate the traversal prematurely once the target node is encountered, to avoid unnecessary edge traversal. 
+To evaluate the capabilities of Finch in graph applications, we its performance for two fundamantal graph applications: Breadth-first search (BFS) and Bellman-Ford single-source shortest path. We used graphs in GraphBLAS~\cite{mattson2019lagraph}, which include road networks (SNAP/roadNet-CA and GAP/GAP-road) where node degrees are bounded and a diametr is very long and scale-free graphs (the others) where the distribution of node degrees follows a power-law distribution and a diameter is very short, direction-optimization~\cite{beamer2012direction} is crucial to achieve high-performance. Direction-optimized BFS uses push and pull traversal to efficiently explore graphs. Push traversal starts from the source node, pushing neighboring nodes into the queue. Pull traversal starts from the target node, exploring predecessors (parents). This approach uses early-break in pull traversal, which is used to terminate the traversal prematurely once the target node is encountered, to avoid unnecessary edge traversal. 
 
 Figure~\cite{graph_result} (a) \changwan{add (a) in fig} shows BFS speedup over Graphs.jl, a BFS implementation with push traversal of Julia. `finch\_push\_only` only uses push traversal, whereas `finch\_push\_pull` applies direction-optimization used in GraphBLAS. Finch supports push/pull traversal, early break, so it supports direction-optimization. Finch additionaly supports the different loop orders and multiple outputs, which also improves the performance. As shown in Figure~\cite{graph_result} (a), direction-optimization significantly improves the performance for scale-free graphs. \changwan{how much average speedup?} GraphBLAS sometimes better than Finch since GraphBLAS incorporates all hardwired optimizations. We believe we will achieve a better performance if we incorporate those optimizations. 
 
@@ -311,19 +310,12 @@ To demonstrate the performance of Finch Logic, we evaluate it on a series of ker
 
 
 \begin{figure}
-	\includegraphics[width=\linewidth]{triangle_count_speedup_over_duckdb.png}
-    \caption{Performance of Finch on triangle counting.}
+	\includegraphics[width=.3\linewidth]{triangle_count_speedup_over_duckdb.png}
+	\includegraphics[width=.35\linewidth]{sddmm_speedup_over_duckdb.png}
+	\includegraphics[width=.3\linewidth]{elementwise_speedup_over_duckdb.png}
+    \caption{Performance of Finch Logic for common kernels.}
 \end{figure}
 
-\begin{figure}
-	\includegraphics[width=\linewidth]{elementwise_speedup_over_duckdb.png}
-    \caption{Performance of Finch on elementwise (A+B)*C kernel as the sparsity of C varies.}
-\end{figure}
-
-\begin{figure}
-	\includegraphics[width=\linewidth]{sddmm_speedup_over_duckdb.png}
-    \caption{Performance of Finch on SDDMM.}
-\end{figure}
 
 
 
