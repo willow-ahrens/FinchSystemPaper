@@ -66,3 +66,19 @@ triangular, run-length-encoded, or sparse datasets, and any combination thereof.
 with key level formats that completely capture the main structural properties of data. for expressing the structure of data
 hierarchically.\saman{level formats were done in TACO.} The first such set of formats to efficiently capture banded,
 triangular, run-length-encoded, or sparse datasets, and any combination thereof.
+
+%
+\teo{
+The Finch language offers extensible abstractions for elements of control flow (conditionals and indexing expressions) that the Finch compiler predictably converts into the same structured representation used to describe arrays.
+%
+By controlling how control flow is lowered into this representation, a programmer can control how structured data is combined with control flow to produce a single control flow, the program.
+%
+We observe that this strategy naturally extends the dense solution.
+}
+\teo{I think we can back it up in two ways:
+1. We need to modify the semantics to focus when on when things are converted into Looplets
+2. We need to highlight the specifics in the case studies: in particular, the blur and the symmetric operations. If we do triangle counting or something like that, we could maybe talk about that a bit.
+}
+\teo{
+\item Extensibility of the language and compiler with respect to data structures and control flow: (Maybe put stuff about the data structure extensibility here?)
+}

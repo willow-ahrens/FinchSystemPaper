@@ -17,10 +17,10 @@ processing, and more  \cite{harris_array_2020, virtanen_scipy_2020,
 moler_history_2020, abadi_tensorflow_2016,
 paszke_pytorch_2019,ragan-kelley_halide_2013}.
 % EASY CUT
-These frameworks have been the
-subject of extensive industry investment to enable performant implementations,
-and often operate at the peak capacity of the hardware they run on
-\cite{lo_roofline_2015}.
+%These frameworks have been the
+%subject of extensive industry investment to enable performant implementations,
+%and often operate at the peak capacity of the hardware they run on
+%\cite{lo_roofline_2015}.
 
 The success and ubiquity of arrays is largely due to their simplicity. 
 %
@@ -184,7 +184,7 @@ Finch supports a familiar programming language of loops, statements, if conditio
 This support would be useless without the appropriate level of structural specialization; Finch reliably utilizes the key properties of structure, such as structural zeros, repeated values, or clustered non-zeros.
 %
 
-As an example, a programmer might explore the different ways to intersect only the even integers of two lists (represented as sparse vectors with sorted indices). The control flow here is only useful if the first example differs from the second in that it actually selects only even indices as the two integer lists are merged:
+As an example, a programmer might explore different ways to intersect only the even integers of two lists (represented as sparse vectors with sorted indices). The control flow here is only useful if the first example differs from the second in that it actually selects only even indices as the two integer lists are merged:
 %The Finch compiler uses the structure of the data to generate efficient implementations of these programs.
 
 %\teo{Proposed new paragraph:}
@@ -250,25 +250,10 @@ To our knowledge, the Finch programming language is the first
 to support if-conditions, early breaks, and multiple left hand sides over
 structured data, as well as complex accesses such as affine indexing or scatter/gather of sparse or structured operands. 
 %
-\item A compiler that specializes programs to data structures 
-predictably,\saman{Interesting...can we back this claim up in the discription?} facilitating an expressive language that makes it easier to search the complex space of algorithms and data structures.
+\item A compiler that specializes programs to data structures automatically,
+facilitating an expressive language that makes it easier to search the complex
+space of algorithms and data structures. 
 %
-%
-\teo{
-The Finch language offers extensible abstractions for elements of control flow (conditionals and indexing expressions) that the Finch compiler predictably converts into the same structured representation used to describe arrays.
-%
-By controlling how control flow is lowered into this representation, a programmer can control how structured data is combined with control flow to produce a single control flow, the program.
-%
-We observe that this strategy naturally extends the dense solution.
-}
-\teo{I think we can back it up in two ways:
-1. We need to modify the semantics to focus when on when things are converted into Looplets
-2. We need to highlight the specifics in the case studies: in particular, the blur and the symmetric operations. If we do triangle counting or something like that, we could maybe talk about that a bit.
-}
-\teo{
-\item Extensibility of the language and compiler with respect to data structures and control flow: (Maybe put stuff about the data structure extensibility here?)
-}
-
 \item We evaluate the efficiency, flexibility, and expressability of our language in several case studies, showing that Finch can be used to accelerate a wide range of applications,  from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and a high-level tensor operator fusion interface. 
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
