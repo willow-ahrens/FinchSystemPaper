@@ -224,51 +224,57 @@ Figure~\cite{graph_result} (a) \changwan{add (a) in fig} shows BFS speedup over 
      \label{graph_result}
 \end{figure}
 
-Push-Pull BFS in Finch:
-\begin{minted}{julia}
-V = Tensor(Dense(Element(false)))
-P = Tensor(Dense(Element(0)))
-F = Tensor(SparseByteMap(Pattern()))
-_F = Tensor(SparseByteMap(Pattern()))
-A = Tensor(Dense(SparseList(Pattern())))
-AT = Tensor(Dense(SparseList(Pattern())))
+\begin{figure}
+    \begin{minipage}{0.5\linewidth}
+    \begin{minted}{julia}
+    V = Tensor(Dense(Element(false)))
+    P = Tensor(Dense(Element(0)))
+    F = Tensor(SparseByteMap(Pattern()))
+    _F = Tensor(SparseByteMap(Pattern()))
+    A = Tensor(Dense(SparseList(Pattern())))
+    AT = Tensor(Dense(SparseList(Pattern())))
 
-function finch_bfs_push_kernel(_F, F, A, V, P)
-    @finch begin
-        _F .= false
-        for j=_, k=_
-            if F[j] && A[k, j] && !(V[k])
-                _F[k] |= true
-                P[k] <<choose(0)>>= j #Only set the parent for this vertex
+    function finch_bfs_push_kernel(_F, F, A, V, P)
+        @finch begin
+            _F .= false
+            for j=_, k=_
+                if F[j] && A[k, j] && !(V[k])
+                    _F[k] |= true
+                    P[k] <<choose(0)>>= j
+                end
             end
+            return _F
         end
-        return _F
     end
-end
 
-
-function finch_bfs_pull_kernel(_F, F, AT, V, P)
-    p = ShortCircuitScalar{0}()
-    @finch begin
-        _F .= false
-        for k=_
-            if !V[k]
-                p .= 0
-                for j=_
-                    if F[follow(j)] && AT[j, k]
-                        p[] <<choose(0)>>= j #Only set the parent for this vertex
+    \end{minted}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+    \begin{minted}{julia}
+    function finch_bfs_pull_kernel(_F, F, AT, V, P)
+        p = ShortCircuitScalar{0}()
+        @finch begin
+            _F .= false
+            for k=_
+                if !V[k]
+                    p .= 0
+                    for j=_
+                        if F[follow(j)] && AT[j, k]
+                            p[] <<choose(0)>>= j
+                        end
+                    end
+                    if p[] != 0
+                        _F[k] |= true
+                        P[k] = p[]
                     end
                 end
-                if p[] != 0
-                    _F[k] |= true
-                    P[k] = p[]
-                end
             end
+            return _F
         end
-        return _F
     end
-end
-\end{minted}
+    \end{minted}
+\end{minipage}
+\end{figure}
 
 \subsection{Implementing Numpy's Array API in Finch}
 In the past decade, the adoption of the Python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this API for structured data suffer from either incompleteness or inefficiency. They generally either limit the dimensionality to vectors and matrices or only support tabular representations in order to reduce the complexity of interactions between different formats. Further, existing work doesn't support the fusion of arbitrary operators which can have a drastic impact on performance as we show in Fig. (\kyle{PUT FIG HERE}). We believe that a flexible, online compiler like Finch which can manage the complexity of arbitrary operations between inputs with a wide variety of formats is the secret ingredient needed to make the array API performant for structured data.
