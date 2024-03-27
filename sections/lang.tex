@@ -148,7 +148,9 @@ These restrictions play a similar role to that of a pure function in Halide~\cit
 %
 Second, loops with tensor accesses enter into a looplet system via the Unfurl rule.
 %
-In this system, repeated structures  (Run) and constant information 
+In this system, repeated structures (Run) and constant information (Switch)  are slowly uncovered as accesses are lowered.
+%
+In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth
 
 
 % We break our description of the semantics of Finch into three parts, those
