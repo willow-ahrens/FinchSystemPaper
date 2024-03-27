@@ -9,11 +9,12 @@
 %}
 
 Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics. SpGEMM focuses on efficiently computing the product of two sparse matrices to produce an output sparse matrix.
-The inner product, outer product, and Gustavson's algorithm are three different approaches to performing SpGEMM. 
-Inner product involves multiplying two matrices by taking dot products of corresponding rows and columns.
-Outer product computes the product of all pairs of elements from the input matrices.
+The inner-product, outer product, and Gustavson's algorithm are three different approaches to performing SpGEMM. 
+Inner-product involves multiplying two matrices by taking dot products of corresponding rows and columns.
+Outer-product computes the product of all pairs of elements from the input matrices.
 More detailed explanation is available in Section 2.2 of ~\cite{zhang2021gamma}.
-%Figures ~\ref{spgemm_small} and ~\reef{spgemm_large} show  
+Figures ~\ref{spgemm_small} and ~\reef{spgemm_large} show SpGEMM results with Finch and TACO.
+Note that inner-product 
 
 
 TACO does not support outer product due to its lack of support for scatter into a 2D workspace. 
