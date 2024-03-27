@@ -32,15 +32,15 @@ As depicted in Figure \ref{fig:spgemm_small}, Finch achieves comparable performa
 
 \help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
 \begin{figure}
-    \label{fig:spgemm_small}
-	\includegraphics[width=\linewidth]{spgemm_small_speedup_log_scale.png}
-    \caption{A comparison of several matrix multiplication algorithms between Finch and Taco smaller matrices, ordered from small to big dimension. Note that inner products necessarily requires $O(n^2)$ work and taco's outer products format is dense. Finch can use a sparse outer products format and thus has an asymptotic advantage that becomes evident as the output dimensions grow.}
-\end{figure}
-
-\begin{figure}
-\label{fig:spgemm_large}
-	\includegraphics[width=\linewidth]{spgemm_joel_speedup.png}
-    \caption{A comparison of gustavson's algorithm between Finch and Taco on some larger matrices}
+    \label{fig:spgemm}
+	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
+	\includegraphics[width=0.5\linewidth]{spgemm_joel_speedup.png}
+    \caption{A comparison of several matrix multiplication algorithms between
+    Finch and Taco. On left, we use smaller matrices, ordered from small to big
+    dimension. Note that inner products necessarily requires $O(n^2)$ work and
+    taco's outer products format is dense. Finch can use a sparse outer products
+    format and thus has an asymptotic advantage that becomes evident as the
+    output dimensions grow. On right, we use only gustavson's algorithm and compare on larger matrices.}
 \end{figure}
 
 Examples that demonstrate performance engineering in a datastructure-driven model
