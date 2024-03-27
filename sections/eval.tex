@@ -13,9 +13,12 @@ The inner-product, outer product, and Gustavson's algorithm are three different 
 Inner-product involves multiplying two matrices by taking dot products of corresponding rows and columns.
 Outer-product computes the product of all pairs of elements from the input matrices.
 More detailed explanation is available in Section 2.2 of ~\cite{zhang2021gamma}.
-Figures ~\ref{spgemm_small} and ~\ref{spgemm_large} show SpGEMM results with Finch and TACO.
-Note that inner-product is very inefficient unless sparse matrices are nearly dense because the cost of intersections that incurs a lot of redundant computations. For the output-product, TACO only support the dense output: TACO does not support outer product due to its lack of support for scatter into a 2D workspace. So, due to memory constraints, we are unable to run TACO's outer-product for large sparse matrices. So, for large sparse matrices, we only compared Gustavson's algorithms. 
-As shown in Figure~\ref{spgemm_large}, Finch outperforms TACO with an average speedup of X.
+Figures ~\ref{fig:spgemm_small} and ~\ref{fig:spgemm_large} show SpGEMM results with Finch and TACO.
+Note that inner-product is very inefficient unless sparse matrices are nearly dense because the cost of intersections that incurs a lot of redundant traversals. For the output-product, TACO only supports the dense output: TACO does not support outer product due to its lack of support for scatter into a 2D workspace. So, due to memory constraints, we are unable to run TACO's outer-product for large sparse matrices. On the other hand, 
+So, for large sparse matrices, we only compared Gustavson's algorithms.
+\changwan{mention TACO's gustavson's algorithm is hard-wired}
+As shown in Figure~\ref{fig:spgemm_small}, for inner-product, Finch achieves comparable performance with TACO, and for outer-product, the 
+As shown in Figure~\ref{fig:spgemm_large}, for large sparse matrices, Finch outperforms TACO with an average speedup of 1.05.
 
 
 \help{The main points of this section are:}
@@ -33,13 +36,13 @@ As shown in Figure~\ref{spgemm_large}, Finch outperforms TACO with an average sp
 
 \help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
 \begin{figure}
-    \label{spgemm_small}
+    \label{fig:spgemm_small}
 	\includegraphics[width=\linewidth]{spgemm_small_speedup_log_scale.png}
     \caption{A comparison of several matrix multiplication algorithms between Finch and Taco smaller matrices, ordered from small to big dimension. Note that inner products necessarily requires $O(n^2)$ work and taco's outer products format is dense. Finch can use a sparse outer products format and thus has an asymptotic advantage that becomes evident as the output dimensions grow.}
 \end{figure}
 
 \begin{figure}
-\label{spgemm_large}
+\label{fig:spgemm_large}
 	\includegraphics[width=\linewidth]{spgemm_joel_speedup.png}
     \caption{A comparison of gustavson's algorithm between Finch and Taco on some larger matrices}
 \end{figure}
