@@ -125,24 +125,30 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     \end{table}
     
 \subsection{Dimensionalization}
-    Looplets typically require the dimension of the loop extent to match the
-    dimensions of the tensor. 
+    Looplets typically require the dimension of the loop extent to match the dimensions of the tensor. 
+    %
+    However, it is cumbersome to write the dimensions
+    in loop programs, and most tensor compilers have a means of specifying the dimensions automatically.
+    %
+    In many pure Einsum languages, determining dimensions
+    is not needed because any tensor dimensions that share an index are assumed to be the same~\cite{kjolstad_tensor_2017}.
+    %
+    Other languages such as Halide perform bounds inference wherein
+    known bounds are symbolically propagated to fill in unknown bounds, often from the desired output/input sizes to intermediates via some conservative approximation such as interval analysis or polyhedral methods~\cite{ragan-kelley_halide_2013, grosser2012polly}.
+    %
+    We refer to the process of discovering suitable
+    dimensions as \textbf{dimensionalization}. 
+    %
 
     
-    However, it is cumbersome to write the dimensions
-    in loop programs, and most tensor compilers have a means of specifying the
-    dimensions automatically. We refer to the process of discovering suitable
-    dimensions as \textbf{dimensionalization}. \willow{Teo, please explain
-    alternative approaches}>
+    %\willow{Teo, please explain
+    %alternative approaches}>
 
-    In finch, we use a straightforward algorithm to automatically determine
-    suitable dimensions for loops and declaration statements (output tensors).
-    Finch determines the dimension of a loop index i from all of the tensors
-    using i in an access, as well as the bounds in the loop itself, and operates
-    similarly for declarations.
-
-    Our algorithm uses the following principles, assuming dimension types form a
-    lattice:
+    In Finch, we use a straightforward algorithm to automatically determine suitable dimensions for loops and declaration statements (output tensors).
+    %
+    Finch determines the dimension of a loop index i from all of the tensors using i in an access, as well as the bounds in the loop itself, and operates similarly for declarations.
+    %   
+    Our algorithm uses the following principles, assuming dimension types form a lattice:
     \begin{enumerate}
         \item We assign dimensions to indices.
         \item Using an index in an access “hints” that the index should have the corresponding dimension.
@@ -242,9 +248,9 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     \end{minted}
 
 \subsection{Life Cycles and Scopes}
-
+\teo{Can we maybe skip this because we cover it in the semantics?}
 \subsection{Simplification and Algebraic Transformations}
 
 \subsection{Bounds Analysis}
-
 \subsection{Performance Warnings}
+\teo{I also think this maybe belongs in an appendix.}
