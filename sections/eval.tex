@@ -18,19 +18,19 @@ Figures~\ref{fig:spgemm_small} and~\ref{fig:spgemm_large} illustrate SpGEMM resu
 
 As depicted in Figure~\ref{fig:spgemm_small}, Finch achieves comparable performance with TACO for inner-product. For large sparse matrices, as shown in Figure~\ref{fig:spgemm_large}, Finch outperforms TACO with an average speedup of 1.05. It's worth mentioning that TACO's Gustavson's algorithm is hard-wired whereas Finch's data structure-driving programming enables to systematically generate SpGEMM using explicit temporary, bytemap format, and matrix transposition.
 
-\help{The main points of this section are:}
+%\help{The main points of this section are:}
 
-\help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
+%\help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
 
-\help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
+%\help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
 
-\help{3. Point out that TACO does not even support outer product because it does not support scatter into 2D workspace}
+%\help{3. Point out that TACO does not even support outer product because it does not support scatter into 2D workspace}
 
-\help{4. Take a look at the figure and point out that Finch is competitive with TACO on inner and gustavson, and that for outer product we see what we would expect from TACO: i.e. Finch Outer with dense performs similarly to TACO with dense, and Finch Outer with sparse performs much better as the matrix size increases.}
+%\help{4. Take a look at the figure and point out that Finch is competitive with TACO on inner and gustavson, and that for outer product we see what we would expect from TACO: i.e. Finch Outer with dense performs similarly to TACO with dense, and Finch Outer with sparse performs much better as the matrix size increases.}
 
-\help{5. point out that for the large matrices finch is competitive with TACO for gustavson}.
+%\help{5. point out that for the large matrices finch is competitive with TACO for gustavson}.
 
-\help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
+%\help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
 \begin{figure}
     \label{fig:spgemm}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
@@ -209,7 +209,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 %\end{figure}
 
 \subsubsection{Graph Analytics}
-\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
+%\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
 
 To evaluate the capabilities of Finch in graph applications, we assessed its performance in two fundamental graph algorithms: Breadth-First Search (BFS) and Bellman-Ford single-source shortest path. The graphs used were obtained from GraphBLAS~\cite{mattson2019lagraph}, including road networks (SNAP/roadNet-CA and GAP/GAP-road), characterized by bounded node degrees and long diameters, and scale-free graphs, where node degree distribution follows a power-law distribution and diameters are short. Direction-optimization~\cite{beamer2012direction} is crucial for achieving high performance in such scenarios.
 
@@ -314,12 +314,15 @@ Once the Finch Logic program has been converted to the standard form, the Finch 
 
 
 \subsubsection{Evaluating Finch Logic}
-To demonstrate the performance of Finch Logic, we evaluate it on a series of kernels which benefit from the kind of kernel fusion that it automatically applies; 1) triangle counting on graphs 2) SDDMM 3) and element-wise operations. Further, we compare against DuckDB as a state of the art system which implements a form of kernel fusion through pipelined query execution. For the element-wise operations, we also provide an unfused Finch implementation and the native Julia implementation for reference
+To demonstrate the performance of Finch Logic, we evaluate it on a series of kernels which benefit from the kind of kernel fusion that it automatically applies; 1) triangle counting on graphs 2) SDDMM 3) and element-wise operations. Further, we compare against DuckDB as a state of the art system which implements a form of kernel fusion through pipelined query execution. To do this, we express each of these kernels as a single select, join, groupby statement in SQL. For the element-wise operations, we also provide an unfused Finch implementation to show the impact of fusion. For triangle counting, we use the same set of graph matrices as in Fig. \ref{graph_result}. For SDDMM, we use this set of graph matrices for the sparse matrix, and we produce random dense matrices with embedding dimension 25. Lastly, for the elementwise operations, we use uniformly sparse matrices with dimension 10000 by 10000. A/B have sparsity $.1$, and we vary the sparsity of C in the X axis.
+
+Across all three of these kernels, we see that the high level interface for Finch provides a significant improvement over DuckDB ranging from $1.2x-28x$. For triangle counting and SDDMM, this improvement stems from DuckDB's use of binary join plans which, while not materializing intermediates, don't optimally intersect the nonzero indices for cyclic queries. This matches with findings in the database literature showing that worst-case optimal joins (which are very similar to our kernel execution) are more efficient than binary joins for these queries \cite{wang2023free}. For the element-wise operations, this stems from Finch's ability to aggressively intersect with the indices of $C$ before handling the disjunction on the indices implied by $A+B$. DuckDB handles the latter first which makes the computation linear in the size of $A+B$ rather than $C$.
+
 \begin{figure}
 \begin{tabular}{p{0.33\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
-  \vspace{0pt} \includegraphics[width=145pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
-  \vspace{0pt} \includegraphics[width=145pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
-  \vspace{0pt} \includegraphics[width=145pt, height=120pt]{figures/elementwise_speedup_over_duckdb.png}
+  \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
+  \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
+  \vspace{0pt} \includegraphics[width=140pt, height=123pt]{figures/elementwise_speedup_over_duckdb.png}
 \end{tabular}
 \caption{Performance of Finch Logic for common kernels.}
 \end{figure}

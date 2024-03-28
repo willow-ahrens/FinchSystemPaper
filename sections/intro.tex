@@ -184,7 +184,7 @@ Finch supports a familiar programming language of loops, statements, if conditio
 This support would be useless without the appropriate level of structural specialization; Finch reliably utilizes the key properties of structure, such as structural zeros, repeated values, or clustered non-zeros.
 %
 
-As an example, a programmer might explore different ways to intersect only the even integers of two lists (represented as sparse vectors with sorted indices). The control flow here is only useful if the first example differs from the second in that it actually selects only even indices as the two integer lists are merged:
+As an example, a programmer might explore different ways to intersect only the even integers of two lists (represented as sparse vectors with sorted indices). The control flow here is only useful if the first example differs from the next two in that it actually selects only even indices as the two integer lists are merged and different from the last in that it does not require another tensor:
 %The Finch compiler uses the structure of the data to generate efficient implementations of these programs.
 
 %\teo{Proposed new paragraph:}
@@ -198,16 +198,16 @@ As an example, a programmer might explore different ways to intersect only the e
 %\teo{Via index expressions, multiple levels of loops and tensors, and more complex filtering expressions, we can imagine many variation of this problem with fine grained distinctions about when various operations are performed.}
 
 
-\begin{minipage}{0.333\linewidth}
+\begin{minipage}{0.25\linewidth}
 \begin{minted}{julia}
      for i = _
          if i % 2 == 0
-             c[i] = a[i] * b[i]
+             c[i]=a[i]*b[i]
          end
      end
 \end{minted}
 \end{minipage}%
-\begin{minipage}{0.333\linewidth}
+\begin{minipage}{0.25\linewidth}
 \begin{minted}{julia}
      for i = _
          if i % 2 == 0
@@ -219,15 +219,27 @@ As an example, a programmer might explore different ways to intersect only the e
      end
 \end{minted}
 \end{minipage}%
-\begin{minipage}{0.333\linewidth}
+\begin{minipage}{0.25\linewidth}
 \begin{minted}{julia}
      for i = _
-         cp[i] = ap[i] * b[i]
+         cp[i] = a[i] * b[i]
      end
      for i = _
          if i % 2 == 0
              c[i] = cp[i]
          end
+     end
+\end{minted}
+\end{minipage}%
+\begin{minipage}{0.25\linewidth}
+\begin{minted}{julia}
+     for i = _
+        if i % 2 == 0
+            f[i] = 1
+        end
+     end
+     for i = _
+        c[i] = a[i] * b[i] * f[i]
      end
 \end{minted}
 \end{minipage}%
