@@ -18,19 +18,19 @@ Figures~\ref{fig:spgemm_small} and~\ref{fig:spgemm_large} illustrate SpGEMM resu
 
 As depicted in Figure~\ref{fig:spgemm_small}, Finch achieves comparable performance with TACO for inner-product. For large sparse matrices, as shown in Figure~\ref{fig:spgemm_large}, Finch outperforms TACO with an average speedup of 1.05. It's worth mentioning that TACO's Gustavson's algorithm is hard-wired whereas Finch's data structure-driving programming enables to systematically generate SpGEMM using explicit temporary, bytemap format, and matrix transposition.
 
-\help{The main points of this section are:}
+%\help{The main points of this section are:}
 
-\help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
+%\help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
 
-\help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
+%\help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
 
-\help{3. Point out that TACO does not even support outer product because it does not support scatter into 2D workspace}
+%\help{3. Point out that TACO does not even support outer product because it does not support scatter into 2D workspace}
 
-\help{4. Take a look at the figure and point out that Finch is competitive with TACO on inner and gustavson, and that for outer product we see what we would expect from TACO: i.e. Finch Outer with dense performs similarly to TACO with dense, and Finch Outer with sparse performs much better as the matrix size increases.}
+%\help{4. Take a look at the figure and point out that Finch is competitive with TACO on inner and gustavson, and that for outer product we see what we would expect from TACO: i.e. Finch Outer with dense performs similarly to TACO with dense, and Finch Outer with sparse performs much better as the matrix size increases.}
 
-\help{5. point out that for the large matrices finch is competitive with TACO for gustavson}.
+%\help{5. point out that for the large matrices finch is competitive with TACO for gustavson}.
 
-\help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
+%\help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
 \begin{figure}
     \label{fig:spgemm}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
@@ -209,7 +209,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 %\end{figure}
 
 \subsubsection{Graph Analytics}
-\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
+%\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
 
 To evaluate the capabilities of Finch in graph applications, we assessed its performance in two fundamental graph algorithms: Breadth-First Search (BFS) and Bellman-Ford single-source shortest path. The graphs used were obtained from GraphBLAS~\cite{mattson2019lagraph}, including road networks (SNAP/roadNet-CA and GAP/GAP-road), characterized by bounded node degrees and long diameters, and scale-free graphs, where node degree distribution follows a power-law distribution and diameters are short. Direction-optimization~\cite{beamer2012direction} is crucial for achieving high performance in such scenarios.
 

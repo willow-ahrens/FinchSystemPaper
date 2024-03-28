@@ -130,10 +130,10 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     However, it is cumbersome to write the dimensions
     in loop programs, and most tensor compilers have a means of specifying the dimensions automatically.
     %
-    In many pure Einsum languages, determining dimensions
+    In many pure Einsum languages like TACO, determining dimensions
     is not needed because any tensor dimensions that share an index are assumed to be the same~\cite{kjolstad_tensor_2017}.
     %
-    Other languages such as Halide perform bounds inference wherein
+    Other languages, such as Halide, perform bounds inference where
     known bounds are symbolically propagated to fill in unknown bounds, often from the desired output/input sizes to intermediates via some conservative approximation such as interval analysis or polyhedral methods~\cite{ragan-kelley_halide_2013, grosser2012polly}.
     %
     We refer to the process of discovering suitable
@@ -141,9 +141,6 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     %
 
     
-    %\willow{Teo, please explain
-    %alternative approaches}>
-
     In Finch, we use a straightforward algorithm to automatically determine suitable dimensions for loops and declaration statements (output tensors).
     %
     Finch determines the dimension of a loop index i from all of the tensors using i in an access, as well as the bounds in the loop itself, and operates similarly for declarations.
@@ -249,6 +246,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
 
 \subsection{Life Cycles and Scopes}
 \teo{Can we maybe skip this because we cover it in the semantics?}
+\willow{we should at least say here that we have a pass that adds freeze and thaw appropriately}
 \subsection{Simplification and Algebraic Transformations}
 
 \subsection{Bounds Analysis}

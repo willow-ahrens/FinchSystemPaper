@@ -5,7 +5,7 @@
 
 The syntax of Finch is displayed in Figure \ref{fig:syntax}. The Finch syntax
 mirrors most imperative languages with for-loops and control flow. Notable
-inclusions to the language at the level of statements includes \mintinline{julia}{for},
+statements that have been added to the language include \mintinline{julia}{for},
 \mintinline{julia}{let}, blocks of code with \mintinline{julia}{if}, and 
 the lifecycle functions that let us declare, freeze, and thaw tensors.
 %
@@ -220,8 +220,8 @@ Also in the next section, We will show how similar means lets us exploit the str
     \vspace{6pt}
 
     \begin{prooftree}
-    \hypo{\langle head,s_{1} \rangle \rightarrow s_2}
-    \infer1[$BlockHead$]{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle}
+        \hypo{\langle head, s_1 \rangle \rightarrow s_2}
+        \infer1[$BlockHead$]{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle}
     \end{prooftree}
     \hfill
     \begin{prooftree}
