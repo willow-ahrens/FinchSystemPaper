@@ -316,15 +316,13 @@ Once the Finch Logic program has been converted to the standard form, the Finch 
 \subsubsection{Evaluating Finch Logic}
 To demonstrate the performance of Finch Logic, we evaluate it on a series of kernels which benefit from the kind of kernel fusion that it automatically applies; 1) triangle counting on graphs 2) SDDMM 3) and element-wise operations. Further, we compare against DuckDB as a state of the art system which implements a form of kernel fusion through pipelined query execution. To do this, we express each of these kernels as a single select, join, groupby statement in SQL. For the element-wise operations, we also provide an unfused Finch implementation to show the impact of fusion. For triangle counting, we use the same set of graph matrices as in Fig. \ref{graph_result}. For SDDMM, we use this set of graph matrices for the sparse matrix, and we produce random dense matrices with embedding dimension 25. Lastly, for the elementwise operations, we use uniformly sparse matrices with dimension 10000 by 10000. A/B have sparsity $.1$, and we vary the sparsity of C in the X axis.
 
-
-Across all three of these kernels, we see that the high level interface for Finch provides a significant improvement over DuckDB ranging from $1.2x-28x$. Generally, this improvement stems from DuckDB's use of binary join plans which, while not materializing intermediates, don't optimally intersect the nonzero indices for cyclic queries. This matches with findings in the database literature
-
+Across all three of these kernels, we see that the high level interface for Finch provides a significant improvement over DuckDB ranging from $1.2x-28x$. For triangle counting and SDDMM, this improvement stems from DuckDB's use of binary join plans which, while not materializing intermediates, don't optimally intersect the nonzero indices for cyclic queries. This matches with findings in the database literature showing that worst-case optimal joins (which are very similar to our kernel execution) are more efficient than binary joins for these queries \cite{wang2023free}. For the element-wise operations, this stems from Finch's ability to aggressively intersect with the indices of $C$ before handling the disjunction on the indices implied by $A+B$. DuckDB handles the latter first which makes the computation linear in the size of $A+B$ rather than $C$.
 
 \begin{figure}
 \begin{tabular}{p{0.33\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
-  \vspace{0pt} \includegraphics[width=145pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
-  \vspace{0pt} \includegraphics[width=145pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
-  \vspace{0pt} \includegraphics[width=145pt, height=123pt]{figures/elementwise_speedup_over_duckdb.png}
+  \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
+  \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
+  \vspace{0pt} \includegraphics[width=140pt, height=123pt]{figures/elementwise_speedup_over_duckdb.png}
 \end{tabular}
 \caption{Performance of Finch Logic for common kernels.}
 \end{figure}
