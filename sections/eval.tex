@@ -318,7 +318,6 @@ To demonstrate the performance of Finch Logic, we evaluate it on a series of ker
 
 Across all three of these kernels, we see that the high level interface for Finch provides a significant improvement over DuckDB ranging from $1.2x-28x$. For triangle counting and SDDMM, this improvement stems from DuckDB's use of binary join plans which, while not materializing intermediates, don't optimally intersect the nonzero indices for cyclic queries. This matches with findings in the database literature showing that worst-case optimal joins (which are very similar to our kernel execution) are more efficient than binary joins for these queries \cite{wang2023free}. For the element-wise operations, this stems from Finch's ability to aggressively intersect with the indices of $C$ before handling the disjunction on the indices implied by $A+B$. DuckDB handles the latter first which makes the computation linear in the size of $A+B$ rather than $C$.
 
-
 \begin{figure}
 \begin{tabular}{p{0.33\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
   \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
