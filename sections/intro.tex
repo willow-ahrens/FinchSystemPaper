@@ -110,8 +110,8 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
   \textbf{Feature / Tool} & \rothead{Halide} & \rothead{Taco} & \rothead{Cora} & \rothead{Taichi} & \rothead{StructTensor} & \rothead{Finch} \\
   \hline
   Einsums and Contractions & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
-  High-Level API           &            & \checkmark &            &            &            & \checkmark \\
-  Automatic API Fusion     &            &            &            &            &            & \checkmark \\
+  % High-Level API           &            & \checkmark &            &            &            & \checkmark \\
+  % Automatic API Fusion     &            &            &            &            &            & \checkmark \\
 %  Parallelism             & \checkmark & \checkmark & \checkmark & \checkmark&           & \checkmark \\
   Multiple LHS             & \checkmark &            & \checkmark & \checkmark &            & \checkmark \\
   Affine Indices           & \checkmark &            &            & \checkmark & \checkmark & \checkmark \\
@@ -119,6 +119,7 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
   If-Conditions and Masks  & \checkmark & \checkmark &            & \checkmark &            & \checkmark \\
   Scatter Gather           & \checkmark &            &            & \checkmark &            &\checkmark \\
   Early Break              &            & \checkmark &            & \checkmark &            &\checkmark \\
+    Arbitrary Read/Write              &    \checkmark        &  &            &  &            &\checkmark \\
   \end{tabular}
   \caption{Feature support across various tools.}
   \label{tab:features}
@@ -173,9 +174,9 @@ This means that performance engineering for such kernels requires the exploratio
 
 
 
-In this work, we propose a new programming language, Finch, which supports \textit{both} flexible control flow and diverse data structures.
+\textbf{In this work, we propose a new programming language, Finch, which supports \textit{both} flexible control flow and diverse data structures.}
 %
-Finch facilitates a programming model which resolves the challenges of computing over structured arrays by combining control flow and data structures into a common representation where they can be co-optimized.
+Finch facilitates a programming model which resolves the challenges of computing over structured arrays by \textbf{combining control flow and data structures into a common representation where they can be co-optimized}.
 %
 In particular, Finch automatically specializes the control flow to the data so that performance engineers can focus on experimenting with many algorithms.
 %
