@@ -18,3 +18,6 @@ file=LevelsVsFibers # File name excluding extension
 file=Structures # File name excluding extension
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 0 --output "$file.png" "$file.drawio"
 /Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 1 --output "$file-examples.png" "$file.drawio"
+
+file=Spmv_annotated # File name excluding extension
+/Applications/draw.io.app/Contents/MacOS/draw.io --export --page-index 0 --output "$file.png" "$file.drawio"
