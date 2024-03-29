@@ -312,7 +312,7 @@ During the standardization process, a concordization pass is performed which exa
 
 
 \subsubsection{Finch Interpreter} 
-Once the Finch Logic program has been converted to the standard form, the Finch Interpreter can execute each query, in order, through a straightforward lowering process. First, the output format is identified by unpacking the outer $\finchreformat$ statement. Next, the inner expression of the is unpacked to identify the aggregate operator and to convert the pointwise expression into a Finch expression. At this point, any aliases to the result of previous queries are replaced with an access to the actual tensor. Lastly, the concordant loop order is identified and instantiated. The lowered query can then be compiled and executed with the Finch compiler, and the result is assigned to $name$ in the plan's scope before proceeding to the next query in the plan. 
+Once the Finch Logic program has been converted to the standard form, the Finch Interpreter can execute each query, in order, through a straightforward lowering process. First, the output format is identified by unpacking the outer $\finchreformat$ statement. Next, the inner expression of the is unpacked to identify the $\finchaggregate$ operator and to convert the pointwise expression into a Finch expression. At this point, any aliases to the result of previous queries are replaced with an access to the actual tensor. Lastly, the concordant loop order is identified and instantiated. The lowered query can then be compiled and executed with the Finch compiler, and the result is assigned to $name$ in the plan's scope before proceeding to the next query in the plan. 
 
 
 \subsubsection{Evaluating Finch Logic}

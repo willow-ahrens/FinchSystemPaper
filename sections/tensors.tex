@@ -125,16 +125,19 @@ iterating over the corresponding loop, so it has access to any state variables i
 by freezing or thawing the tensor.
 
 \begin{figure}[htbp]
-    \scriptsize
+    \footnotesize
     \raggedright
-\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors
+$declare(lvl, init, dims...)$: Declares the level to hold subtensors
 of size $dims$ and an initial value of $init$. Requires the level to be in
 read-only mode.
-\paragraph{$freeze(lvl)$} Finalizes the updates in the level, and readies the
+
+$freeze(lvl)$: Finalizes the updates in the level, and readies the
 level for reading. Requires the level to be in update-only mode.
-\paragraph{$thaw(lvl)$} Prepares the level to accept updates. Requires the level
+
+$thaw(lvl)$: Prepares the level to accept updates. Requires the level
 to be in read-only mode.
-\paragraph{$unfurl(fiber(lvl, pos), ext, mode)$} Unfurls the fiber at position
+
+$unfurl(fiber(lvl, pos), ext, mode)$: Unfurls the fiber at position
 $pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
 returns a looplet nest over the values in the read-only fiber.  When $mode =
 \finchupdate$, returns a looplet nest over mutable subfibers in the update-only
@@ -142,7 +145,8 @@ fiber. Often, skipping over mutable locations allows the level to know which
 locations must be stored. Additionally, a dirty bit may be used to communicate
 whether the mutable subfiber has been written to, which allows the parent fiber
 to know whether the subfiber must be stored explicitly.
-\paragraph{$assemble(lvl, pos_{start}, pos_{stop})$} Allocates subfibers in the
+
+$assemble(lvl, pos_{start}, pos_{stop})$: Allocates subfibers in the
 level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
 only ever called on unassembled positions, but some levels (such as dense levels
 or bytemaps) may support reassembly.
@@ -201,7 +205,7 @@ data twice to determine the number of required output nonzeros.
 
     \begin{wrapfigure}{r}{.35\textwidth}
         \centering
-        \scriptsize
+        \footnotesize
         \begin{tabular}{|c|c|c|c|l|}
             \hline
             \rothead{Sparse} & \rothead{Blocked} & \rothead{Runs} & \rothead{Singletons} & \begin{tabular}{@{}l@{}}\textbf{Corresponding} \\ \textbf{Format}\end{tabular} \\
@@ -298,8 +302,9 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
 
 \begin{table}[ht]
     \centering
-    \scriptsize
+    \footnotesize
     \begin{tabular}{p{14cm}}
+
     \hline
     \textbf{Sequential Reading and Updating} \\
     \hline
@@ -345,6 +350,7 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
     It stores two vectors, such that the run in subfiber $p$ begins and ends at $left[p]$ and $right[p]$ respectively. \\
     \textbf{SparseVBL}: Used to represent blocked data. It stores three vectors, $idx$, $ptr$, and $ofs$, such that $ofs[ptr[p] + q]:ofs[ptr[p] + q + 1] - 1$ are the subpositions of block $q$ ending at index $idx[ptr[p] + q]$ in the subfiber at position $p$. \\
     \textbf{SparseBand}: Similar to SparseVBL, but stores only one block per subfiber, eliminating the need for the $ptr$ field. It stores two vectors $idx$ and $ofs$, such that $ofs[p]:ofs[p + 1] - 1$ are the subpositions of the block ending at $idx[p]$ in subfiber $p$. \\
+
     \hline
     \textbf{Random Access Reading and Updating} \\
     \hline
@@ -372,6 +378,13 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
     These vectors are used to collect dirty locations.
     %
     It also stores $tbl$, a dense array of booleans such that $tbl[shape * p + i]$ is true when there is a nonzero at index $i$ in the subfiber at position $p$. \\
+    \hline
+    \textbf{Leaf Levels} \\
+    \hline
+    \textbf{Element}:
+    The element level uses an array $val$ to store a value for each position $p$. The zero (fill) value is configurable.\\
+    \textbf{Pattern}:
+    The pattern level statically represents a leaf level with a fill value of $false$ and whose stored values are all $true$. \\
     \hline
     \end{tabular}
     \caption{The main level formats supported by Finch. Note that all non-leaf
