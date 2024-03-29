@@ -289,7 +289,7 @@ The leaf level stores the actual entries of the tensor. In most cases, it is
 sufficient to store each entry at a separate position in a vector. This is accomplished by the \textbf{ElementLevel}. However, when all of the
 values are the same, an additional optimization can be made by storing the
 identical value only once. In this work, we introduce the concept of a \textbf{pattern}
-level to handle the boolean case, returning $true$ for all ``stored'' values.
+level to handle this binary case. Pattern has a fill value of $false$, and returning $true$ for all ``stored'' values. The pattern level allows us to easily represent unweighted graphs or other boolean matrices.
 
 \subsection{Scalars}
 
