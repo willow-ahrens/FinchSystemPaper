@@ -238,13 +238,13 @@ data twice to determine the number of required output nonzeros.
     the the 8 resulting situations. While it is impossible to write code which
     precisely addresses every possible structure, the combination of our level
     formats can express a wide variety of hierarchical structures to a
-    sufficient granularity that we can generate efficient code for them.  For
-    example, though banded arrays are a superset of ragged arrays, representing
-    a ragged array using a banded format does not add much overhead.  The
-    structures we consider are exhaustive in the sense that they address all 
-    combinations of sparsity, blocks, runs, and singletons in each level. We can
-    represent a wide variety of hierarchical tensor structures by combining
-    these level structures in a tree, as shown in
+    sufficient granularity that we can generate code which utilizes the four
+    properties.  For example, though banded arrays are a superset of ragged
+    arrays, representing a ragged array using a banded format does not add much
+    overhead.  The structures we consider are exhaustive in the sense that they
+    address all combinations of sparsity, blocks, runs, and singletons in each
+    level. We can represent a wide variety of hierarchical tensor structures by
+    combining these level structures in a tree, as shown in
     Figure~\ref{fig:structuraldiversity}.
     
     \begin{figure}
@@ -258,25 +258,8 @@ data twice to determine the number of required output nonzeros.
         \label{fig:structuraldiversity}
     \end{figure}
 
-    Having described the 8 basic level structures and the functions that define a
-level format, we can describe the concrete level formats supported by Finch,
-some of the challenges in their implementation, and how we overcome them. Note
-that these formats are not meant to be exhaustive; we will later give
-recommendations for additional level formats to be implemented and explain how
-users can also add their own custom formats.
-
-A few challenges arise when implementing these levels. First, 
-
-Second, 
-
-    
-
-Note that all of the levels below store their shape and a sublevel.
-
-\help{we need also to talk about pattern and element}
-
-\subsection{Flexible Level Formats}
-The levels we described in the previous section are all oriented towards bulk,
+\subsection{Randomly Accessible Temporary Levels}
+To reduce the implementation burden and improve efficiency in the common case, the levels we described in the previous section only support bulk,
 sequential creation of formats. However, when users want to be able to write out
 of order (which is a common requirement arising from loop order or from the
 problem itself, it occurs in our spgemm algorithms and our histogram example in
@@ -295,6 +278,18 @@ $A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an
 intermediate randomly accessible structure, because (unlike blocks or
 singletons), runs have asymptotic benefits. However, these cases were not
 necessary for our case studies.
+
+\help{we need also to talk about pattern and element}
+
+\help{this section fails to address freeze or thaw and how it relates to the concrete levels}
+
+\subsection{Leaf Levels}
+
+The leaf level stores the actual entries of the tensor. In most cases, it is
+sufficient to store each entry at a separate position in a vector. This is accomplished by the \textbf{ElementLevel}. However, when all of the
+values are the same, an additional optimization can be made by storing the
+identical value only once. In this work, we introduce the concept of a \textbf{pattern}
+level to handle the boolean case, returning $true$ for all ``stored'' values.
 
 \subsection{Scalars}
 
