@@ -37,12 +37,39 @@ by adding a loop to randomly access \mintinline{julia}{A} or adjusting the
 storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
 
 \subsection{Wrapperization}
+    \begin{wrapfigure}{R}{0.2\textwidth}
+        \vspace{-1\intextsep}
+        \begin{minted}{julia}
+            for i=_, j=_
+                if i <= j
+                    s[] += A[i, j]
+                end
+            end
+        \end{minted}
+        $\downarrow$
+        \begin{minted}{julia}
+            for i=_, j=_
+                if UpTriMask()[i, j]
+                    s[] += A[i, j]
+                end
+            end
+        \end{minted}
+        $\downarrow$
+        \begin{minted}{julia}
+            for i = 1:n
+                for j = 1:i
+                    s[] += A[i, j]
+                end
+            end
+        \end{minted}
+        \caption{Wrapperization}\label{fig:wrapperization}
+    \end{wrapfigure}
 
     Many fancy operations on indices can be resolved by introducing equivalent
     \textbf{wrapper arrays} which modify the behavior of the tensors they wrap,
     or by introducing \textbf{mask arrays} which replace index expressions like
-    \mintinline{julia}{i == j} with their equivalent masks (in this case, a
-    diagonal mask tensor).
+    \mintinline{julia}{i <= j} with their equivalent masks (in this case, a
+    triangular mask tensor).
 
     All wrapper arrays are eventually unwrapped by the compiler as we lower
     them, some earlier than others. For example, the $swizzle$ array wraps a
@@ -58,23 +85,6 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     that are constructed during the unfurl step. They are summarized in table \ref{tab:masks}. Mask tensors
     allow us to lift computations with masks to the level of the loop, without modifying the loop directly.
 
-    For example, \begin{minted}{julia}
-    for i=_, j=_
-        if i <= j
-            s[] += A[i, j]
-        end
-    end
-    \end{minted}
-
-    would likely compile to something like
-
-    \begin{minted}{julia}
-    for i = 1:n
-        for j = 1:i
-            s[] += A[i, j]
-        end
-    end
-    \end{minted}
 
     \begin{table}[h]
         \scriptsize
@@ -146,6 +156,32 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     Finch determines the dimension of a loop index i from all of the tensors using i in an access, as well as the bounds in the loop itself, and operates similarly for declarations.
     %   
     Our algorithm uses the following principles, assuming dimension types form a lattice:
+    \begin{wrapfigure}{r}{0.3\textwidth}
+        \begin{minted}{julia}
+            #A is 3 x 4
+            #B is 4 x 5
+            C .= 0
+            for i = 1:3
+                for j = _
+                    for k = _
+                        C[i, j] += A[i, k] * B[k, j]
+                    end
+                end
+            end
+        \end{minted}
+        $\downarrow$
+        \begin{minted}{julia}
+            C .= 0
+            for i = 1:3
+                for j = 1:5
+                    for k = 1:4
+                        C[i, j] += A[i, k] * B[k, j]
+                    end
+                end
+            end
+        \end{minted}
+        \caption{Dimensionalization}\label{fig:dimensionalization}
+    \end{wrapfigure}
     \begin{enumerate}
         \item We assign dimensions to indices.
         \item Using an index in an access “hints” that the index should have the corresponding dimension.
@@ -161,38 +197,11 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
         access.
     \end{enumerate}
 
-    For example, consider the following code
-    
-    \begin{minted}{julia}
-    A = fsprand(3, 4, 0.5)
-    B = fsprand(4, 5, 0.5)
-    C = Tensor(Dense(SparseList(Element(0.0))))
-    @finch begin
-    C .= 0
-    for i = 1:3
-        for j = _
-            for k = _
-                C[i, j] += A[i, k] * B[k, j]
-            end
-        end
-    end
-    \end{minted}
-    
-    In the above code, the second dimension of A must match the first dimension of B. Also, the first dimension of A must match the i loop dimension, 1:3. Finch will also resize declared tensors to match indices used in writes, so C is resized to (1:3, 1:5). If no dimensions are specified elsewhere, then Finch will use the dimension of the declared tensor.
+    For example, in Figure ~\ref{fig:dimensionalization}, the second dimension of A must match the first dimension of B. Also, the first dimension of A must match the i loop dimension, 1:3. Finch will also resize declared tensors to match indices used in writes, so C is resized to (1:3, 1:5). If no dimensions are specified elsewhere, then Finch will use the dimension of the declared tensor.
     
     Dimensionalization occurs after wrapper arrays are de-sugared. You can
-    therefore exempt a tensor from dimensionalization by wrapping the
-    corresponding index in ~ to produce a "PermissiveArray". For example,
-    
-    \begin{minted}{julia}
-    @finch begin
-    y .= 0
-    for i = 1:3
-        y[~i] += x[i]
-    end
-    \end{minted}
-    
-    does not set the dimension of y, and y does not participate in dimensionalization.
+    therefore exempt a mode in an access from dimensionalization by wrapping the
+    corresponding index in $~$ to produce a "PermissiveArray" (e.g. $A[~i]$).
     
 \subsection{Concordization}
     After wrapperization, all arrays are normalized to column-major ordering and
@@ -200,8 +209,11 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     point, we run a pass over the code to make the program concordant.
     
     We make expressions concordant by inserting loops with one iteration. For example, the following expression can be made concordant by adding a loop for the out of order access to \texttt{i}.
-    \begin{minted}{julia}
-        @finch begin
+    \begin{figure}[htbp]
+        \centering % Center the figure
+        % First pair of examples
+        \begin{minipage}{0.3\textwidth}
+        \begin{minted}[fontsize=\scriptsize, breaklines]{julia}
         for i = _
             for j = _
                 for k = _
@@ -209,46 +221,81 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
                 end
             end
         end
-    \end{minted}
-
-    \begin{minted}{julia}
-        @finch begin
-        for i = _
-            for j = _
-                for k = _
-                    for l = _
-                        if i == l #diagonal mask
-                            s[] += A[l, k, j]
+        \end{minted}
+        \end{minipage}
+        $\rightarrow$
+        \begin{minipage}{0.4\textwidth}
+        \begin{minted}[fontsize=\scriptsize, breaklines]{julia}
+            for i = _
+                for j = _
+                    for k = _
+                        for l = _
+                            if i == l
+                                s[] += A[l, k, j]
+                            end
                         end
                     end
                 end
             end
-        end
-    \end{minted}
-
-    We can concordize unrecognized index expressions using a similar approach:
-
-    \begin{minted}{julia}
-        for i = _
-            A[I[i]] += 1
-        end
-    \end{minted}
-
-    \begin{minted}{julia}
-        for i = _
-            for j = _
-                if j == I[i]
-                    A[j] += 1
+        \end{minted}
+        \end{minipage}\hfill%
+        \begin{minipage}{0.2\textwidth}
+            \begin{minted}[fontsize=\scriptsize, breaklines]{julia}
+                for i = _
+                    A[I[i]] += 1
+                end
+                \end{minted}
+            $\downarrow$
+            \begin{minted}[fontsize=\scriptsize, breaklines]{julia}
+            for i = _
+                for j = _
+                    if j == I[i]
+                        A[j] += 1
+                    end
                 end
             end
+            \end{minted}
+        \end{minipage}
+        
+        \caption{Transformations demonstrating concordization of unrecognized index expressions.}
+        \end{figure}
+\begin{wrapfigure}{r}{0.45\textwidth}
+    \vspace{-1\intextsep}
+    \begin{minipage}{0.2\textwidth}
+    \begin{minted}{julia}
+        y .= 0
+        for i = _
+            y[i] .= x[i] + 1
+        end
+        for i = _
+            x[i] += 1
+            y[i] += 1
+        end 
+        for i = _
+            x[i] += y[i]
         end
     \end{minted}
-
-\subsection{Life Cycles and Scopes}
-\teo{Can we maybe skip this because we cover it in the semantics?}
-\willow{we should at least say here that we have a pass that adds freeze and thaw appropriately}
-\subsection{Simplification and Algebraic Transformations}
-
-\subsection{Bounds Analysis}
-\subsection{Performance Warnings}
-\teo{I also think this maybe belongs in an appendix.}
+    \end{minipage}
+    $\rightarrow$
+    \begin{minipage}{0.2\textwidth}
+    \begin{minted}{julia}
+        y .= 0
+        for i = _
+            y[i] .= x[i] + 1
+        end
+        @thaw(x)
+        @freeze(y)
+        for i = _
+            x[i] += 1
+            y[i] += 1
+        end
+        @freeze(x)
+        for i = _
+            x[i] += y[i]
+        end
+    \end{minted}
+    \end{minipage}
+    \caption{Life Cycle Automation.}\label{fig:lifecycles}
+\end{wrapfigure}
+\subsection{Life Cycle Automation}
+Finally, we introduce a pass to avoid needed to manually insert the \mintinline{julia}{@freeze} or \mintinline{julia}{@thaw} macros. The pass will insert these statements at the appropriate place in the program if they have not been inserted already, easing the burden on the programmer and bridging between structured and dense languages. An example is given in Figure \ref{fig:lifecycles}.
