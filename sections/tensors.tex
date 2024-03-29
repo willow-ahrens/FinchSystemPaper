@@ -92,8 +92,114 @@ and the data underlying each fiber is managed entirely by the level, so the
 level may choose to overlap the storage between different fibers. Thus, the only
 unique data associated with $fiber(l, p)$ is the position $p$.
 
+
+
+\subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
+
+Our simplified view of a level is enabled by our use of looplets to represent
+the structure within each fiber. In fact, our level interface requires only 5
+highly general operations, described below.
+
+The first three of these functions, declare, freeze, and thaw, have to do with
+managing when tensors can be assumed mutable or immutable. As we use Looplets to
+represent iteration over a tensor, we must restrict the mutability of tensors
+while we iterate over them. For example, if a tensor declares it has a constant
+region from $i = 2:5$, but some other part of the computation modifies the
+tensor at $i = 3$, this would result in incorrect behavior. It is much easier to
+write correct Looplet code if we can assume that the tensor is immutable while
+we are reading from it. Thus, we introduce the notion that a tensor can be in
+read-only mode or update-only mode.  In read-only mode, the tensor may only
+appear in the right-hand side of assignments. In update-only mode, the tensor
+may only appear in the left-hand side of an assignment, either being overwritten
+or incremented by some operator.  We can switch between these modes using freeze
+and thaw functions. The declare function is used to allocate a tensor,
+initialize it to some specified size and value, and leave it in update-only
+mode. 
+
+The unfurl function is used to manage iteration over a subfiber. At the point
+when it comes time to iterate over a tensor, be in on the left or right hand
+side of an assignment, we call the unfurl function to precompute whatever state
+and datastructures are necessary to return a looplet nest that would iterate
+over that level of a tensor. The unfurl function is called directly before
+iterating over the corresponding loop, so it has access to any state variables introduced
+by freezing or thawing the tensor.
+
+\begin{figure}[htbp]
+    \scriptsize
+    \raggedright
+\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors
+of size $dims$ and an initial value of $init$. Requires the level to be in
+read-only mode.
+\paragraph{$freeze(lvl)$} Finalizes the updates in the level, and readies the
+level for reading. Requires the level to be in update-only mode.
+\paragraph{$thaw(lvl)$} Prepares the level to accept updates. Requires the level
+to be in read-only mode.
+\paragraph{$unfurl(fiber(lvl, pos), ext, mode)$} Unfurls the fiber at position
+$pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
+returns a looplet nest over the values in the read-only fiber.  When $mode =
+\finchupdate$, returns a looplet nest over mutable subfibers in the update-only
+fiber. Often, skipping over mutable locations allows the level to know which
+locations must be stored. Additionally, a dirty bit may be used to communicate
+whether the mutable subfiber has been written to, which allows the parent fiber
+to know whether the subfiber must be stored explicitly.
+\paragraph{$assemble(lvl, pos_{start}, pos_{stop})$} Allocates subfibers in the
+level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
+only ever called on unassembled positions, but some levels (such as dense levels
+or bytemaps) may support reassembly.
+\caption{The five functions that define a level.}
+\end{figure}
+
+
+Our view of a level as a fiber allocator implies an allocation function
+$assemble(tns, pos_{start}:pos_{stop})$, which allocates fibers at positions
+$pos_{start}:pos_{stop}$ in the level. We don't specify a de-allocation
+function, instead relying on initialization to reset the fiber if it needs to be
+reused. While all of the previous functions are used to manage the lifecycle and
+iteration over a general tensor, the assemble function is quite specific to the
+level abstraction, and the notion of positions within sublevels. Note: it was an
+intentional choice to hold the parent level responsible for managing the
+data of the sublevels, which positions they allocate, etc. This allows the parent
+level to reuse allocation logic from internal index datastructures. For example,
+a sparse level might use a list of indices to store which nonzeros are present,
+and when it comes time to resize that list, it could also call assemble to resize the
+sublevel, reducing the number of branches in the code. The assemble function
+lends itself particularly to a "vector doubling" allocation approach, which we
+have found to be effective and flexible when managing the allocation
+of sparse left hand sides. This benefit is made clear in our evaluation section,
+where we see that prior systems like TACO do not support all possible loop
+orderings and format combinations for sparse matrix multiply because they do
+not have a flexible enough allocation strategy, instead using a two-phase approach
+which requires computing a complicated closed-form kernel to iterate over the
+data twice to determine the number of required output nonzeros.
+
 \subsection{The 8 Key Level Structures}
-    \begin{wrapfigure}{R}{.35\textwidth}
+
+
+
+    The main benefits of specializing to structure come from the following properties of the data:
+    \begin{itemize}
+        \item \textbf{Sparsity} Sparse data is data that is mostly zero, or some other
+        fill value. When we specialize on this data, we can use annihilation ($x
+        * 0 = 0$), identity ($x * 1 = 1$), or other constant propagation
+        properties ($ifelse(false, x, y) = y$) to simplify the computation and avoid
+        redundant work.
+        
+        \item \textbf{Blocks} Blocked data is a subset of sparse data where the nonzeros
+        are clustered and occur adjacent to one another. This provides us with
+        two opportunities: We can avoid storing the locations of the nonzeros
+        individually, and we can use more efficient randomly accessible
+        iterators within the block. \cite{im_optimizing_2001, vuduc_performance_2002, ahrens_looplets_2023}.
+
+        \item \textbf{Runs} Runs of repeated values may occur in dense or sparse code,
+        cutting down on storage and allowing us to use integration rules such as 
+        \mintinline{julia}{for i = 1:n; s += x end} $\rightarrow$
+        \mintinline{julia}{s += n * x} or code motion to lift operations out of loops \cite{donenfeld_unified_2022,ahrens_looplets_2023}.
+
+        \item \textbf{Singletons} When we have only one non-fill region in sparse data,
+        we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
+    \end{itemize}
+
+    \begin{wrapfigure}{r}{.35\textwidth}
         \centering
         \scriptsize
         \begin{tabular}{|c|c|c|c|l|}
@@ -126,37 +232,21 @@ unique data associated with $fiber(l, p)$ is the position $p$.
         from the exhaustive table.}
         \label{tab:TypesOfStructure}
     \end{wrapfigure}
-    The main benefits of specializing to structure come from the following properties of the data:
-    \begin{enumerate}
-        \item[Sparsity] Sparse data is data that is mostly zero, or some other
-        fill value. When we specialize on this data, we can use annihilation ($x
-        * 0 = 0$), identity ($x * 1 = 1$), or other constant propagation
-        properties ($ifelse(false, x, y) = y$) to simplify the computation and avoid
-        redundant work.
-        
-        \item[Blocks] Blocked data is a subset of sparse data where the nonzeros
-        are clustered and occur adjacent to one another. This provides us with
-        two opportunities: We can avoid storing the locations of the nonzeros
-        individually, and we can use more efficient randomly accessible
-        iterators within the block. \cite{im_optimizing_2001, vuduc_performance_2002, ahrens_looplets_2023}.
 
-        \item[Runs] Runs of repeated values may occur in dense or sparse code,
-        cutting down on storage and allowing us to use integration rules such as 
-        \mintinline{julia}{for i = 1:n; s += x end} $\rightarrow$
-        \mintinline{julia}{s += n * x} or code motion to lift operations out of loops \cite{donenfeld_unified_2022,ahrens_looplets_2023}.
-
-        \item[Singletons] When we have only one non-fill region in sparse data,
-        we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
-    \end{enumerate}
-
-    In Finch, we have identified 8 key level structures that can represent all
-    of the relevant combinations of these properties, summarized in Table
-    \ref{tab:TypesOfStructure}. We examine each structure in turn, describing
-    some of the key properties and potential use cases of each. In this sense,
-    the structures we consider are exhaustive. We can represent a wide variety
-    of hierarchical tensor structures by combining these level structures in a
-    tree, as shown in Figure~\ref{fig:structuraldiversity}.
-
+    We consider all combinations of these structural properties in Table
+    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
+    the the 8 resulting situations. While it is impossible to write code which
+    precisely addresses every possible structure, the combination of our level
+    formats can express a wide variety of hierarchical structures to a
+    sufficient granularity that we can generate efficient code for them.  For
+    example, though banded arrays are a superset of ragged arrays, representing
+    a ragged array using a banded format does not add much overhead.  The
+    structures we consider are exhaustive in the sense that they address all 
+    combinations of sparsity, blocks, runs, and singletons in each level. We can
+    represent a wide variety of hierarchical tensor structures by combining
+    these level structures in a tree, as shown in
+    Figure~\ref{fig:structuraldiversity}.
+    
     \begin{figure}
         \centering
         \includegraphics[width=\linewidth]{Structures.png}\hfill%
@@ -168,106 +258,52 @@ unique data associated with $fiber(l, p)$ is the position $p$.
         \label{fig:structuraldiversity}
     \end{figure}
 
-\subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
-
-Our simplified view of a level is enabled by our use of looplets to represent
-the structure within each fiber. In fact, our level interface requires only 5
-highly general operations, described below.
-
-The first three of these functions, declare, freeze, and thaw, have to do with
-managing when tensors can be assumed mutable or immutable. As we use Looplets to
-represent iteration over a tensor, we must restrict the mutability of tensors
-while we iterate over them. For example, if a tensor declares it has a constant
-region from $i = 2:5$, but some other part of the computation modifies the
-tensor at $i = 3$, this would result in incorrect behavior. It is much easier to
-write correct Looplet code if we can assume that the tensor is immutable while
-we are reading from it. Thus, we introduce the notion that a tensor can be in
-read-only mode or update-only mode.  In read-only mode, the tensor may only
-appear in the right-hand side of assignments. In update-only mode, the tensor
-may only appear in the left-hand side of an assignment, either being overwritten
-or incremented by some operator.  We can switch between these modes using freeze
-and thaw functions. The declare function is used to allocate a tensor,
-initialize it to some specified size and value, and leave it in update-only
-mode. 
-
-The unfurl function is used to manage iteration over a subfiber. At the point
-when it comes time to iterate over a tensor, be in on the left or right hand
-side of an assignment, we call the unfurl function to precompute whatever state
-and datastructures are necessary to return a looplet nest that would iterate
-over that level of a tensor. The unfurl function is called directly before
-iterating over the corresponding loop, so it has access to any state variables introduced
-by freezing or thawing the tensor.
-
-Our view of a level as a fiber allocator implies an allocation function
-$assemble(tns, pos_{start}:pos_{stop})$, which allocates fibers at positions
-$pos_{start}:pos_{stop}$ in the level. We don't specify a de-allocation
-function, instead relying on initialization to reset the fiber if it needs to be
-reused. While all of the previous functions are used to manage the lifecycle and
-iteration over a general tensor, the assemble function is quite specific to the
-level abstraction, and the notion of positions within sublevels. Note: it was an
-intentional choice to hold the parent level responsible for managing the
-data of the sublevels, which positions they allocate, etc. This allows the parent
-level to reuse allocation logic from internal index datastructures. For example,
-a sparse level might use a list of indices to store which nonzeros are present,
-and when it comes time to resize that list, it could also call assemble to resize the
-sublevel, reducing the number of branches in the code. The assemble function
-lends itself particularly to a "vector doubling" allocation approach, which we
-have found to be effective and flexible when managing the allocation
-of sparse left hand sides. This benefit is made clear in our evaluation section,
-where we see that prior systems like TACO do not support all possible loop
-orderings and format combinations for sparse matrix multiply because they do
-not have a flexible enough allocation strategy, instead using a two-phase approach
-which requires computing a complicated closed-form kernel to iterate over the
-data twice to determine the number of required output nonzeros.
-
-\begin{figure}
-    \raggedright
-\paragraph{$declare(lvl, init, dims...)$} Declares the level to hold subtensors
-of size $dims$ and an initial value of $init$. Requires the level to be in
-read-only mode.
-\paragraph{$freeze(lvl)$} Finalizes the updates in the level, and readies the
-level for reading. Requires the level to be in update-only mode.
-\paragraph{$thaw(lvl)$} Prepares the level to accept updates. Requires the level
-to be in read-only mode.
-\paragraph{$unfurl(fiber(lvl, pos), ext, mode)$} Unfurls the fiber at position
-$pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
-returns a looplet nest over the values in the read-only fiber.  When $mode =
-\finchupdate$, returns a looplet nest over mutable subfibers in the update-only
-fiber. Often, skipping over mutable locations allows the level to know which
-locations must be stored. Additionally, a dirty bit may be used to communicate
-whether the mutable subfiber has been written to, which allows the parent fiber
-to know whether the subfiber must be stored explicitly.
-\paragraph{$assemble(lvl, pos_{start}, pos_{stop})$} Allocates subfibers in the
-level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
-only ever called on unassembled positions, but some levels (such as dense levels
-or bytemaps) may support reassembly.
-\caption{The five functions that define a level.}
-\end{figure}
-
-\subsection{Level Formats}
-Having described the 8 basic level structures and the functions that define a
+    Having described the 8 basic level structures and the functions that define a
 level format, we can describe the concrete level formats supported by Finch,
 some of the challenges in their implementation, and how we overcome them. Note
 that these formats are not meant to be exhaustive; we will later give
 recommendations for additional level formats to be implemented and explain how
 users can also add their own custom formats.
 
-A few challenges arise when implementing these levels. First, it is difficult to merge duplicate runs.
-%
-Such a scenario might arise when merging runs of subfibers of length 3, representing colors in an image.
-%
-Ideally, we would be able to detect duplicate subfibers and merge them on the fly, but we cannot determine which subfibers are equal because we cannot read them while the sublevel is in update-only mode.
-%
-Instead, we merge the duplicates during the freeze phase.
-%
-We $freeze$ the sublevel, $declare$ a separate sublevel as a buffer to store the deduplicated subfibers, and then compare each of the subfibers in the main level, copying the deduplicated subfibers into the buffer.
+A few challenges arise when implementing these levels. First, 
 
-Second, we must be able to handle the case where a sublevel is not stored because a parent level is sparse.
-%
-Therefore, all of Finch's sparse formats use a dirty bit during writing to determine whether the sublevel has been modified from it's default fill value and thus, whether it needs to be stored.
+Second, 
+
+    
+
+Note that all of the levels below store their shape and a sublevel.
+
+\help{we need also to talk about pattern and element}
+
+\subsection{Flexible Level Formats}
+The levels we described in the previous section are all oriented towards bulk,
+sequential creation of formats. However, when users want to be able to write out
+of order (which is a common requirement arising from loop order or from the
+problem itself, it occurs in our spgemm algorithms and our histogram example in
+the evaluation section), we must use more complicated datastructures like hash
+tables and trees to support the random access. Because these datastructures are
+more complex and have a higher implementation burden and performance overhead,
+we only support random access construction of sparse or dense structures.  We
+can use these two more general structures as intermediates to convert to our
+more specialized structures later.
+
+As future work, we also recommend the implementation of a tree-based format, as
+this would enable incremental construction. Currently, the cost of freezing and
+thawing is usually proportional to the number of stored fibers, so an operation
+that sets a single value in a tensor would be prohibitively expensive (i.e.
+$A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an
+intermediate randomly accessible structure, because (unlike blocks or
+singletons), runs have asymptotic benefits. However, these cases were not
+necessary for our case studies.
+
+\subsection{Scalars}
+
+\subsubsection{Sparse Scalars}
+\subsubsection{Early Break Scalars}
 
 \begin{table}[ht]
     \centering
+    \scriptsize
     \begin{tabular}{p{14cm}}
     \hline
     \textbf{Sequential Reading and Updating} \\
@@ -281,7 +317,17 @@ Therefore, all of Finch's sparse formats use a dirty bit during writing to deter
     \textbf{DenseRLE}:
     Used to represent runs of repeated values, storing two vectors, $right$ and $ptr$, with $qth$ run in the $p^th$ subfiber starting and ending at $right[ptr[p] + q]$ and $right[ptr[p] + q + 1] - 1$, respectively.
     %
-    It also stores a duplicate sublevel, $buf$, for deduplication. \\
+    A challenge arises for this level: it is difficult to merge duplicate runs.
+    %
+    Such a scenario might arise when merging runs of subfibers of length 3, representing colors in an image.
+    %
+    Ideally, we would be able to detect duplicate subfibers and merge them on the fly, but we cannot determine which subfibers are equal because we cannot read them while the sublevel is in update-only mode.
+    %
+    Instead, we merge the duplicates during the freeze phase.
+    %
+    We $freeze$ the sublevel, $declare$ a separate sublevel $buf$ as a buffer to store the deduplicated subfibers, and then compare each of the subfibers in the main level, copying the deduplicated subfibers into the buffer. \\
+    %
+    %It also stores a duplicate sublevel, $buf$, for deduplication. \\
     \textbf{SparseList}:
     The simplest sparse format, used to construct popular formats like CSR, CSC, DCSR, DCSC, and CSF.
     %
@@ -295,7 +341,7 @@ Therefore, all of Finch's sparse formats use a dirty bit during writing to deter
     %
     It stores three vectors $left$, $right$, and $ptr$, such that the $qth$ run in the $p^th$ subfiber begins and ends at $left[ptr[p] + q]$ and $right[ptr[p] + q]$, respectively.
     %
-    It also stores a duplicate sublevel, $buf$, for deduplication. \\
+    Like DenseRLE, it also stores a duplicate sublevel, $buf$, for deduplication. \\
     \textbf{SparseInterval}:
     Similar to SparseRLE, but only stores one run per subfiber, eliminating the need for the $ptr$ field.
     %
@@ -333,64 +379,11 @@ Therefore, all of Finch's sparse formats use a dirty bit during writing to deter
     It also stores $tbl$, a dense array of booleans such that $tbl[shape * p + i]$ is true when there is a nonzero at index $i$ in the subfiber at position $p$. \\
     \hline
     \end{tabular}
-    \caption{Description of Data Storage Formats}
+    \caption{The main level formats supported by Finch. Note that all non-leaf
+    levels store a the dimension of the subfibers and a child level. Since we
+    must be able to handle the case where a sublevel is not stored because a
+    parent level is sparse, all of Finch's sparse formats use a dirty bit during
+    writing to determine whether the sublevel has been modified from it's
+    default fill value and thus, whether it needs to be stored.}
     \label{table:formats}
 \end{table}
-    
-
- Note that all of the levels below store their shape and a sublevel.
-
-\help{we need also to talk about pattern and element}
-
-\subsection{Flexible Level Formats}
-The levels we described in the previous section are all oriented towards bulk,
-sequential creation of formats. However, when users want to be able to write out
-of order (which is a common requirement arising from loop order or from the
-problem itself, it occurs in our spgemm algorithms and our histogram example in
-the evaluation section), we must use more complicated datastructures like hash
-tables and trees to support the random access. Because these datastructures are
-more complex and have a higher implementation burden and performance overhead,
-we only support random access construction of sparse or dense structures.  We
-can use these two more general structures as intermediates to convert to our
-more specialized structures later.
-
-\begin{enumerate}
-\item[SparseHash]
-    The sparse hash format uses a hash table to store the locations of nonzeros,
-    and sorts the unique indices for iteration during the freeze phase. This
-    allows for efficient random access, but not incremental construction, as the
-    freeze phase runs in time proportional to the number of nonzeros in the
-    entire level.
-    \begin{enumerate}
-        \item[$idx$] A vector of nonzero indices in the level
-        \item[$ptr$] A vector of delimiters such that $idx[ptr[p]:ptr[p+1] - 1]$ is the set of nonzero indices in the subfiber at position $p$.
-        \item[$tbl$] A hash table used for construction of the level.
-    \end{enumerate}
-\item[SparseBytemap]
-    The SparseBytemap format uses a bytemap to store which locations have been
-    written to. Unlike the SparseHash format, the bytemap assembles the entire
-    space of possible subfibers. This accelerates random access in the format,
-    but requires a high memory overhead. Because we don't want to reallocate all
-    of the memory in each iteration, the declaration of this format instead
-    re-assembles only the dirty locations in the tensor. This format is
-    analogous to the default workspace format used by TACO.
-    \begin{enumerate}
-        \item[$idx$] A vector of nonzero indices in the level
-        \item[$ptr$] A vector of delimiters such that $idx[ptr[p]:ptr[p+1] - 1]$ is the set of nonzero indices in the subfiber at position $p$.
-        \item[$tbl$] A dense array of booleans used to mark dirty locations in the tensor.
-    \end{enumerate}
-\end{enumerate}
-
-As future work, we also recommend the implementation of a tree-based format, as
-this would enable incremental construction. Currently, the cost of freezing and
-thawing is usually proportional to the number of stored fibers, so an operation
-that sets a single value in a tensor would be prohibitively expensive (i.e.
-$A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an
-intermediate randomly accessible structure, because (unlike blocks or
-singletons), runs have asymptotic benefits. However, these cases were not
-necessary for our case studies.
-
-\subsection{Scalars}
-
-\subsubsection{Sparse Scalars}
-\subsubsection{Early Break Scalars}
