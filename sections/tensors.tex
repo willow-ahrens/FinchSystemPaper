@@ -266,47 +266,77 @@ Second, we must be able to handle the case where a sublevel is not stored becaus
 %
 Therefore, all of Finch's sparse formats use a dirty bit during writing to determine whether the sublevel has been modified from it's default fill value and thus, whether it needs to be stored.
 
-\begin{itemize}
-\item \textbf{Dense}
-    The dense format is the simplest format, and simply maps $fiber(l, p)[i]
-    \rightarrow fiber(l.lvl, p * l.shape + i)$. This format is used to store dense data,
-    and is often a convenient format for the root level of a tensor. Because
-    of its simplicity, freezing and thawing the level are no-ops.
-\item \textbf{DenseRLE}
-    The DenseRLE format is used to represent runs of repeated values.
+\begin{table}[ht]
+    \centering
+    \begin{tabular}{p{14cm}}
+    \hline
+    \textbf{Sequential Reading and Updating} \\
+    \hline
+    \textbf{Dense}:
+    The dense format is the simplest format, mapping $fiber(l, p)[i] \rightarrow fiber(l.lvl, p \times l.shape + i)$.
     %
-    Stores two vectors, $right$ and $ptr$, such that the $qth$ run in the $p^th$ subfiber begins and ends at $right[ptr[p] + q]$ and $right[ptr[p] + q + 1] - 1$, respectively.
+    This format is used to store dense data and is often a convenient format for the root level of a tensor.
     %
-    Also stores a duplicate sublevel, $buf$, for deduplication.
-\item \textbf{SparseList}
-    The sparse list format is the simplest sparse format, and is used to construct the popular CSR, CSC, DCSR, DCSC, and CSF formats.
+    Due to its simplicity, freezing and thawing the level are no-ops. \\
+    \textbf{DenseRLE}:
+    Used to represent runs of repeated values, storing two vectors, $right$ and $ptr$, with $qth$ run in the $p^th$ subfiber starting and ending at $right[ptr[p] + q]$ and $right[ptr[p] + q + 1] - 1$, respectively.
     %
-    Stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$.
-\item \textbf{SparsePinpoint}
-    Because the SparsePinpoint format will only ever store one nonzero in each subfiber, we do not need the $ptr$ field.
+    It also stores a duplicate sublevel, $buf$, for deduplication. \\
+    \textbf{SparseList}:
+    The simplest sparse format, used to construct popular formats like CSR, CSC, DCSR, DCSC, and CSF.
     %
-    Stores a vector $idx$ such that $idx[p]$ is the nonzero index in the subfiber at position $p$.
-\item \textbf{SparseRLE}
-    Similar to the DenseRLE level, but because the runs are stored on top of a background of fill values, we must also store the start of each run.
+    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$. \\
+    \textbf{SparsePinpoint}:
+    Similar to SparseList, but only one nonzero in each subfiber, eliminating the need for the $ptr$ field.
     %
-    Stores three vectors, $left$, $right$, and $ptr$, such that the $qth$ run in the $p^th$ subfiber begins and ends at $left[ptr[p] + q]$ and $right[ptr[p] + q]$, respectively.
+    It stores a vector $idx$, such that $idx[p]$ is the nonzero index in the subfiber at position $p$. \\
+    \textbf{SparseRLE}:
+    Similar to DenseRLE level, but because runs are sparse, we must also store the start of each run.
     %
-    Also stores a duplicate sublevel, $buf$, for deduplication.
-\item \textbf{SparseInterval}
-    Similar to the SparseRLE level, but $ptr$ is redundant because we only store one run.
+    It stores three vectors $left$, $right$, and $ptr$, such that the $qth$ run in the $p^th$ subfiber begins and ends at $left[ptr[p] + q]$ and $right[ptr[p] + q]$, respectively.
     %
-    We also don't bother with deduplication here as we cannot store any intermediate results with duplicates.
+    It also stores a duplicate sublevel, $buf$, for deduplication. \\
+    \textbf{SparseInterval}:
+    Similar to SparseRLE, but only stores one run per subfiber, eliminating the need for the $ptr$ field.
     %
-    Stores two vectors, $left$ and $right$, such that the run in subfiber $p$ begins and ends at $left[p]$ and $right[p]$ respectively.
-\item \textbf{SparseVBL}
-    The SparseVBL format is used to represent blocked data.
+    This level does not deduplicate as it cannot store intermediate results with more than one run.
     %
-    Stores three vectors, $idx$, $ptr$, and $ofs$, such that $ofs[ptr[p] + q]:ofs[ptr[p] + q + 1] - 1$ are the subpositions of block $q$ ending at index $idx[ptr[p] + q]$ in the subfiber at position $p$.
-\item \textbf{SparseBand}
-    Like SparseVBL, but only one block is stored in each subfiber.
+    It stores two vectors, such that the run in subfiber $p$ begins and ends at $left[p]$ and $right[p]$ respectively. \\
+    \textbf{SparseVBL}: Used to represent blocked data. It stores three vectors, $idx$, $ptr$, and $ofs$, such that $ofs[ptr[p] + q]:ofs[ptr[p] + q + 1] - 1$ are the subpositions of block $q$ ending at index $idx[ptr[p] + q]$ in the subfiber at position $p$. \\
+    \textbf{SparseBand}: Similar to SparseVBL, but stores only one block per subfiber, eliminating the need for the $ptr$ field. It stores two vectors $idx$ and $ofs$, such that $ofs[p]:ofs[p + 1] - 1$ are the subpositions of the block ending at $idx[p]$ in subfiber $p$. \\
+    \hline
+    \textbf{Random Access Reading and Updating} \\
+    \hline
+    \textbf{SparseHash}:
+    The sparse hash format uses a hash table to store the locations of nonzeros, and sorts the unique indices for iteration during the freeze phase.
     %
-    Stores two vectors $idx$ and $ofs$, such that $ofs[p]:ofs[p + 1] - 1$ are the subpositions of the block ending at $idx[p]$ in subfiber $p$.
-\end{itemize}
+    This allows for efficient random access, but not incremental construction, as the freeze phase runs in time proportional to the number of nonzeros in the entire level.
+    %
+    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$. 
+    %
+    Also stores a hash table $tbl$ for construction and random access in the level. \\
+    \textbf{SparseBytemap}
+    The SparseBytemap format uses a bytemap to store which locations have been written to.
+    %
+    Unlike the SparseHash format, the bytemap assembles the entire space of possible subfibers.
+    %
+    This accelerates random access in the format, but requires a high memory overhead.
+    %
+    Because we don't want to reallocate all of the memory in each iteration, the declaration of this format instead re-assembles only the dirty locations in the tensor.
+    %
+    This format is analogous to the default workspace format used by TACO.
+    %
+    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$.
+    %
+    These vectors are used to collect dirty locations.
+    %
+    It also stores $tbl$, a dense array of booleans such that $tbl[shape * p + i]$ is true when there is a nonzero at index $i$ in the subfiber at position $p$. \\
+    \hline
+    \end{tabular}
+    \caption{Description of Data Storage Formats}
+    \label{table:formats}
+\end{table}
+    
 
  Note that all of the levels below store their shape and a sublevel.
 
