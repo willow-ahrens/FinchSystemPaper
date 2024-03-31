@@ -2,7 +2,7 @@
 %
 The Finch language provides descriptions of computations that iterate over a subset of a regular grid that is lexicographically ordered.
 %
-At this point, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators, but Finch programs and data structures are sufficiently flexible that this impossible.
+At this point, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators, but Finch programs and data structures are sufficiently flexible that this impossible\saman{?????}.
 %
 First, the Finch language interacts with multi-dimensional tensors whereas the Looplet abstraction is best suited towards iterators over a single dimension.
 %
@@ -100,8 +100,8 @@ Our simplified view of a level is enabled by our use of looplets to represent
 the structure within each fiber. In fact, our level interface requires only 5
 highly general operations, described below.
 
-The first three of these functions, declare, freeze, and thaw, have to do with
-managing when tensors can be assumed mutable or immutable. As we use Looplets to
+The first three of these functions, declare, freeze, and thaw, \saman{Italics for keywords?}have to do with
+managing when tensors can be assumed mutable or immutable. \saman{This is because Finch goes beyond just a single einsum...the scope of Finch w.r.t. TACO etc, is not clear.} As we use Looplets to
 represent iteration over a tensor, we must restrict the mutability of tensors
 while we iterate over them. For example, if a tensor declares it has a constant
 region from $i = 2:5$, but some other part of the computation modifies the
@@ -274,6 +274,7 @@ we only support random access construction of sparse or dense structures.  We
 can use these two more general structures as intermediates to convert to our
 more specialized structures later.
 
+\saman{Can we not put future work into the submission!}
 As future work, we also recommend the implementation of a tree-based format, as
 this would enable incremental construction. Currently, the cost of freezing and
 thawing is usually proportional to the number of stored fibers, so an operation

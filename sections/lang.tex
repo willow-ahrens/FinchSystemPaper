@@ -28,7 +28,7 @@ frontier.
 We have found that \mintinline{julia}{if} is particularly useful in
 our model for masking to avoid work.
 %
-However, to compile these constructs efficient, we must restrict this syntax in several ways, as we have alluded to in the previous section via life cycles.
+However, to compile these constructs efficiently, we must restrict this syntax in several ways, as we have alluded to in the previous section, via life cycles.
 %
 In the semantics section, we detail other specifics that allow us to specialize our syntax efficient code over structured data.
 
@@ -137,7 +137,6 @@ Due to the use of rewrite rules, our semantics here make use of an evaluation co
 
 We include the sketch of our semantics to highlight several key design choices.
 %
-\teo{Make this true:}
 First, we note that the life cycle rules (in combination with the definition rules) prevent programs that read and write to values within a loop except in the narrow circumstance of updates, which cannot even be applied to scalar definitions.
 %
 Beyond the simple management of iterator state, these rules allow us to effectively analyze the propagation of constants within a loop.
@@ -158,8 +157,8 @@ Though the user may doubt the coverage of this approach, the next section will d
 %
 In the next section, we will handle complex index access expressions involving indirection and arithmetic by transforming complex accesses to additional loop variables with additional tensor accesses to insert Looplets to provide the structure dictated by the complex control flow.
 %
-Also in the next section, We will show how similar means lets us exploit the structure of complex conditional expressions when the structure of the expressions is placed inside a tensor access.
-\teo{More next sections teaserse here}
+Also in the next section, we will show how similar means lets us exploit the structure of complex conditional expressions when the structure of the expressions is placed inside a tensor access.
+
 
 
 
@@ -186,10 +185,10 @@ Also in the next section, We will show how similar means lets us exploit the str
 %         Modes:=update \mid read \mid undefined \mid defined
 % \end{multline*}
     \begin{prooftree}
-    \hypo{\langle val, (e, t) \rangle
+    \hypo{\langle val, (e, t, d) \rangle
     \rightarrow val'}
-    \hypo{var\not\in e}
-    \infer2[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t) \rangle}}
+    \hypo{var\not\in d}
+    \infer2[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t, d)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t, d\cup\{var\}) \rangle}}
     \end{prooftree}
     \hfill
     \begin{prooftree}
@@ -201,37 +200,38 @@ Also in the next section, We will show how similar means lets us exploit the str
 
     \begin{prooftree}
         \hypo{}
-        \infer1[$Literal$]{\langle\finchliteral(val), (e, t)\rangle \rightarrow val}
+        \infer1[$Literal$]{\langle\finchliteral(val), (e, t, d)\rangle \rightarrow val}
     \end{prooftree}
     \hfill
     \begin{prooftree}
         \hypo{}
-        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t)\rangle \Rightarrow \llangle ex, t \rrangle}
+        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t, d)\rangle \Rightarrow \llangle ex, t \rrangle}
     \end{prooftree}
     \vspace{6pt}
 
     \begin{prooftree}
-        \infer0[$Variable$]{\splitfrac{\langle\finchvar(name), (e, t)\rangle}{\rightarrow e(\finchvar(name))}}
+        \infer0[$Variable$]{\splitfrac{\langle\finchvar(name), (e, t, d)\rangle}{\rightarrow e(\finchvar(name))}}
     \end{prooftree}
     \hfill
     \begin{prooftree}
-        \infer0[$Index$]{\splitfrac{\langle\finchindex(name), (e, t)\rangle}{\rightarrow e(\finchindex(name))}}
+        \infer0[$Index$]{\splitfrac{\langle\finchindex(name), (e, t, d)\rangle}{\rightarrow e(\finchindex(name))}}
     \end{prooftree}
     \vspace{6pt}
 
     \begin{prooftree}
-        \hypo{\langle head, s_1 \rangle \rightarrow s_2}
-        \infer1[$BlockHead$]{\langle\finchblock(head, tail...), s_1 \rangle \rightarrow \langle \finchblock(tail...), s_2 \rangle}
+    \hypo{s = (e, t, d)}
+    \hypo{\langle head, (e, t, \{\}) \rangle \rightarrow s^{\prime}}
+    \hypo{\langle \finchblock(tail...), s^{\prime} \rangle \rightarrow (e^{\prime}, t^{\prime}, d^{\prime})})
+        \infer3[$BlockHead$]{\langle\finchblock(head, tail...), s \rangle \rightarrow (e^{\prime}, t^{\prime}, d) }
     \end{prooftree}
     \hfill
-    \begin{prooftree}
-        \infer0[$EmptyBlock$]{\langle\finchblock(), s\rangle \rightarrow s}
-    \end{prooftree}
+
     \vspace{6pt}
 
     \begin{prooftree}
-        \hypo{\langle cond, s \rangle \Rightarrow true}
-        \infer1[$SieveTrue$]{\langle\finchsieve(cond, body), s\rangle \rightarrow \langle body, s \rangle}
+    \hypo{\langle cond, (e, t, d) \rangle \Rightarrow true}
+    \hypo{\langle body, (e, t, \{\}) \rangle \rightarrow (e^{\prime}, t^{\prime}, d^{\prime})}
+        \infer2[$SieveTrue$]{\langle\finchsieve(cond, body), (e, t, d)\rangle \rightarrow (e^{\prime}, t^{\prime}, d)}
     \end{prooftree}
     \hfill
     \begin{prooftree}
@@ -241,41 +241,45 @@ Also in the next section, We will show how similar means lets us exploit the str
     \vspace{6pt}
     
     \begin{prooftree}  
-    \hypo{s = (e, t)}
-    \hypo{\finchmode(tns)\not\in e}
+    \hypo{s = (e, t, d)}
+    \hypo{tns\not\in d}
     \hypo{e(tns) = tns'}
     \hypo{\langle init, s \rangle \Rightarrow init'}
     \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle declare(tns', init', dims'...), t \rrangle)}
+    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle declare(tns', init', dims'...), t \rrangle, d\cup\{ tns\})}
     \end{prooftree}
     \vspace{6pt}
     
     \begin{prooftree}  
-    \hypo{s = (e, t)}
+    \hypo{s = (e, t,d )}
     \hypo{e(\finchmode(tns)) = update}
+    \hypo{tns\in d}
     \hypo{e(tns) = tns'}
-    \infer3[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \llangle freeze(tns'), t \rrangle)}
+    \infer4[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \llangle freeze(tns'), t \rrangle, d)}
     \end{prooftree}
     \vspace{6pt}
 
     \begin{prooftree}  
-    \hypo{s = (e, t)}
+    \hypo{s = (e, t, d)}
     \hypo{e(\finchmode(tns)) = read}
+    \hypo{tns\in d}
     \hypo{e(tns) = tns'}
-    \infer3[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle thaw(tns'), t \rrangle)}
+    \infer4[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle thaw(tns'), t \rrangle, d)}
     \end{prooftree}
     
     \caption{Basic evaluation semantics, roughly defining most of these language
-    constructs to function similarly to their classical definitions. Note that
-    The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
-    environment and another state $t$ corresponding to the state in the
-    host language. Several Looplets introduce variables into the embedding
-    language, which may be read when evaluating the \finchvalue node.
+    constructs to function similarly to their classical definitions.
     %
-    The state $s$ of the finch compiler
-    is a tuple $(e, t)$ of a variable value environment and another state $t$
-    corresponding to the state in the host language.
-    This means that rules which modify $t$ are running in the host language. All of the lifecycle
+    The state $s$ of the finch compiler is a tuple $(e, t, d)$ of a variable value
+    environment, another state $t$ corresponding to the state in the
+    host language, and finally the set of tensors defined within the current scope, $d$. 
+    %
+    This means that rules which modify $t$ are running in the host language.
+    %
+    Several Looplets introduce variables into the embedding
+    language, which may be read when evaluating the \finchvalue node.
+%
+     All of the lifecycle
     functions are designed to be implemented and executed in the host language,
     but these semantics enforce that each of these functions may update state in
     the host language and flip the mode of the tensor between read and update}
@@ -359,24 +363,41 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
 
 
     \caption{Looplet evaluation semantics. 
-    The state $s$ of the finch compiler is a tuple $(e, t)$ of a variable value
-    environment and another state $t$ corresponding to the state in the host
-    language. This means that rules which modify $t$ are running in the host language. Note that $E$ is an evaluation context that applies anywhere in
-    the syntax tree. The nonlocal evaluations of Looplets are what allow looplets to
-    hoist conditions and subranges out of loops. However, this also means we must specify
+    %
+    Basic evaluation semantics, roughly defining most of these language
+    constructs to function similarly to their classical definitions.
+    %
+    The state of the compiler is described in the previous figure.
+    %
+     Note that $E$ is an evaluation context that applies anywhere in
+    the syntax tree. 
+    %
+    The nonlocal evaluations of Looplets are what allow looplets to
+    hoist conditions and subranges out of loops.
+    %
+    However, this also means we must specify
     the priority in which we apply looplet rules, which is as follows:
     $Thunk > Phase > Switch > Simplify > Run > Spike > Sequence > StepperSeek > StepperNext > Lookup > Unfurl$
+    %
     Many looplets, most notably the thunk looplet, introduce variables into the
-    host language environment.  While variables introduced by a looplet may be
+    host language environment. 
+    %
+    While variables introduced by a looplet may be
     modified by the looplet itself (steppers often increment some state
     variables), we forbid child looplets from modifying any state variables that
-    they didn't introduce. This allows us to treat the \finchvalue node as a
+    they didn't introduce. 
+    %
+    This allows us to treat the \finchvalue node as a
     constant.
     %
     Note: the $Simplify$ rule references $algebra$, which is our variable
-    defining a set of straightforward simplification rules. These rules include
+    defining a set of straightforward simplification rules. 
+    %
+    These rules include
     simple properties like $x * 0 \rightarrow 0$ to more complicated ones such
-    as constant propagation. We omit the full set of rules for brevity, but
+    as constant propagation. 
+    %
+    We omit the full set of rules for brevity, but
     point the curious reader to \cite[Figure 5]{ahrens_looplets_2023} for some examples}
     \label{fig:semantics_looplets}
 \end{figure}
