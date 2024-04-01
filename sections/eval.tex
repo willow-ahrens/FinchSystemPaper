@@ -1,6 +1,19 @@
 
 \section{Evaluation}
 
+We evaluate Finch on a broad set of applications to showcase it's efficiency,
+flexibility, and expressibility. All of our implementations highlight the
+benefits of data structure and algorithm co-design.  Our implementation of
+sparse-sparse-matrix multiply (SpGEMM) translates classical lessons from sparse
+performance engineering into the language of Finch, using temporaries and
+randomly-accessible workspace formats to efficiently implement the three main
+approaches. Our study of sparse-matrix-dense-vector multiply (SpMV) highlights
+the benefits of precise structural specialization. Our studies of image
+morphology and graph applications show how Finch's programming model can express more complex
+real-world kernels. Finally, we explain
+how flexible operators, formats, and indexing expressions in Finch have
+supported a flexible implementation of the Python Array API, supporting fused exection.
+
 \subsection{Data-Driven Performance Engineering}
 \subsubsection{Sparse-Sparse Matrix Multiply (SpGEMM)}
 %\changwan{
