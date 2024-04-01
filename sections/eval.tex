@@ -1,5 +1,5 @@
 
-\section{Evaluation}
+\section{Case Studies}
 
 We evaluate Finch on a broad set of applications to showcase it's efficiency,
 flexibility, and expressibility. All of our implementations highlight the
@@ -14,60 +14,111 @@ real-world kernels. Finally, we explain
 how flexible operators, formats, and indexing expressions in Finch have
 supported a flexible implementation of the Python Array API, supporting fused exection.
 
-All experiments were run on a single core of a Intel Xeon E5-2695 v2 running at
+All experiments were run on a single core of a 12-core 2-socket Intel Xeon E5-2695 v2 running at
 2.40GHz with 128GB of memory. Finch is implemented in Julia v1.9, targeting LLVM
 through Julia. All timings are the minimum of 10,000 runs or 5s of measurement,
 whichever happens first.
 
-\subsection{Data-Driven Performance Engineering}
-\subsubsection{Sparse-Sparse Matrix Multiply (SpGEMM)}
-%\changwan{
-%Explain what is SpGEMM. why SpGEMM hard? (not sure)
-%three approaches. Asym time complexity?
-%}
-
-Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics, focusing on efficiently computing the product of two sparse matrices to produce an output sparse matrix.
-
-The inner-product, outer product, and Gustavson's algorithm are three different approaches to performing SpGEMM. Inner-product involves multiplying two matrices by taking dot products of corresponding rows and columns, while outer-product computes the product of all pairs of elements from the input matrices.
-Gustavson's algorithm computes the output matrix one row at a time, by scaling and merging rows of the second sparse matrix corresponding to the nonzero columns of a row of the first sparse matrix.
-Further explanation is available in Section 2.2 of~\cite{zhang2021gamma}.
-
-Figures~\ref{fig:spgemm_small} and~\ref{fig:spgemm_large} illustrate SpGEMM results with Finch and TACO. Notably, inner-product can be very inefficient unless sparse matrices are nearly dense due to the cost of intersections incurring redundant traversals. Additionally, TACO only supports outer product when the output matrix format is dense. It does not support outer product due to its lack of support for scatter into a 2D workspace, limiting its use for large sparse matrices. So, we were unable to obtain numbers for inner-product and TACO's outer-product for large matrices. In contrast, Finch supports scatter into 2D workspace, allowing for comparison with Gustavson's algorithm for large sparse matrices.
-
-As depicted in Figure~\ref{fig:spgemm_small}, Finch achieves comparable performance with TACO for inner-product. For large sparse matrices, as shown in Figure~\ref{fig:spgemm_large}, Finch outperforms TACO with an average speedup of 1.05. It's worth mentioning that TACO's Gustavson's algorithm is hard-wired whereas Finch's data structure-driving programming enables to systematically generate SpGEMM using explicit temporary, bytemap format, and matrix transposition.
-
-%\help{The main points of this section are:}
-
-%\help{1. summarize the difference between inner, gustavson, and outer, cite gamma but this also needs to stand on it's own}
-
-%\help{2. Explain why bytemap temporary makes sense for gustavson, but not for outer or inner}
-
-%\help{3. Point out that TACO does not even support outer product because it does not support scatter into 2D workspace}
-
-%\help{4. Take a look at the figure and point out that Finch is competitive with TACO on inner and gustavson, and that for outer product we see what we would expect from TACO: i.e. Finch Outer with dense performs similarly to TACO with dense, and Finch Outer with sparse performs much better as the matrix size increases.}
-
-%\help{5. point out that for the large matrices finch is competitive with TACO for gustavson}.
-
-%\help{6. explain the features of "datastructure-driven programming" that are used here in this problem. i.e. explicit temporary, bytemap format, transpositions}.
+\subsection{Sparse-Sparse Matrix Multiply (SpGEMM)}
 \begin{figure}
-    \label{fig:spgemm}
+    \begin{minipage}{0.333\linewidth}
+    \begin{minted}{julia}
+    @finch begin
+      C .= 0
+      for j=_
+        for i=_
+          for k=_
+            C[i, j] += AT[k, i] * B[k, j]
+          end
+        end
+      end
+      return C
+    end
+    \end{minted}
+    \end{minipage}%
+    \begin{minipage}{0.333\linewidth}
+    \begin{minted}{julia}
+    w = Tensor(SparseByteMap(Element(0)))
+    @finch begin
+      C .= 0
+      for j=_
+        w .= 0
+        for k=_
+          for i=_
+            w[i] += A[i, k] * B[k, j]
+          end
+        end
+        for i=_
+          C[i, j] = w[i]
+        end
+      end
+    end
+    \end{minted}
+    \end{minipage}%
+    \begin{minipage}{0.333\linewidth}
+    \begin{minted}{julia}
+    w = Tensor(SparseHash(SparseHash(Element(0))))
+    @finch begin
+      w .= 0
+      for k=_
+        for j=_
+          for i=_
+            w[i, j] += A[i, k] * BT[j, k]
+          end
+        end
+      end
+      C .= 0
+      for j=_, i=_
+        C[i, j] = w[i, j]
+      end
+    end
+    \end{minted}
+    \end{minipage}
+    \caption{Inner Products, Gustavsons, and Outer Products matrix multiply in Finch}\label{fig:spgemm_listing}
+\end{figure}
+
+Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics. 
+We compute the $M \times N$ sparse matrix $C$ as the product of $M \times K$ and $K \times N$ sparse matrices $A$ and $B$.
+
+There are three main approaches to SpGEMM \cite[Section 2.2]{zhang2021gamma}.
+%
+The inner-products algorithm takes dot products of corresponding rows and columns, while the outer-products algorithm sums the outer products of corresponding columns and rows.
+%
+Gustavson's algorithm sums the rows of $B$ scaled by the corresponding nonzero columns in each row of $A$.
+%
+Inner products is known to be asymptotically less efficient than the others, as we must do a merge operation to compute each of the $O(MN)$ entries in the output \cite{ahrens2022autoscheduling}.
+
+Figure~\ref{fig:spgemm_listing} implements all three approaches in Finch, and Figure~\ref{fig:spgemm} compares the performance of Finch to TACO.
+%
+Note that these algorithms mainly differ in their loop order, but that different datastructures can be used to support the various access patterns induced.
+%
+Although a sparse bytemap has a dense memory footprint, we use it in our Finch implemenation of Gustavson's for the smaller $O(M)$ intermediate.
+%
+In our Finch implementation of outer products, we use a sparse hash table, as it is fully-sparse and randomly accessible.
+%
+Unfortunately, TACO does not support multidimensional sparse workspaces, only supporting outer-products with a dense output, a limitation with asymptotic consequences.
+%
+It's also worth mentioning that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporary formats and transpositions.
+
+As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. For large sparse matrices, Finch outperforms TACO with an average speedup of 1.05.
+
+\begin{figure}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
 	\includegraphics[width=0.5\linewidth]{spgemm_joel_speedup.png}
     \caption{A comparison of several matrix multiplication algorithms between
     Finch and Taco. On left, we use smaller matrices, ordered from small to big
     dimension. Note that inner products necessarily requires $O(n^2)$ work and
-    taco's outer products format is dense. Finch can use a sparse outer products
+    TACO's outer products format is dense. Finch can use a sparse outer products
     format and thus has an asymptotic advantage that becomes evident as the
-    output dimensions grow. On right, we use only gustavson's algorithm and compare on larger matrices.}
+    output dimensions grow. On right, we use only gustavson's algorithm and
+    compare on larger matrices.}
+    \label{fig:spgemm}
 \end{figure}
 
-Examples that demonstrate performance engineering in a datastructure-driven model
-
-\subsubsection{SpMV}
+\subsection{SpMV}
 The sparse matrix-vector multiplication kernel (SpMV) is a common operation in sparse linear algebra with many applications including conjugate gradients, graph algorithms, numerical analysis, and neural networks [cite]. SpMV is a bandwidth bound kernel, and thus historically has been subject to many modifications to improve throughput and reduce the associated control flow [cite]. The wide range of applications unsurprisingly results in a wide range of types of datasets making it an effective kernel to demonstrate the utility of having flexible data formats. 
 
 In this case study, we highlight a few different Finch formats as specified in Table \ref{spmv_tensor_formats}, and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do. Finch also provides the control flow necessary to manipulate data reads and writes, enabling exploitation of multiple structural patterns concurrently (e.g. sparsity \textit{and} symmetry). 
-
 
 We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset in Figure \ref{spmv_grouped} is the fastest among the formats and programs we tested. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
@@ -205,9 +256,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
     \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. "R" indicates row-major implementation and "C" indicates column-major implementation in Finch. The baseline Finch format is unsymmetric Dense(SparseList(Element)).
 \end{figure}
 
-\subsection{Programming over flexible data}
-
-\subsubsection{Image Morphology}
+\subsection{Image Morphology}
 
 \help{In this section, explain what erosion is, link a few cool images that show erosion, and then explain what the finch kernel looks like. in particular, be sure to point out that we're doing unrolled convolution, and how that maps to the generated code (merging shifted sparse iterators).}
 
@@ -228,7 +277,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 %    \caption{Performance of Finch on erosion task (4 iterations).}
 %\end{figure}
 
-\subsubsection{Graph Analytics}
+\subsection{Graph Analytics}
 %\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
 
 To evaluate the capabilities of Finch in graph applications, we assessed its performance in two fundamental graph algorithms: Breadth-First Search (BFS) and Bellman-Ford single-source shortest path. The graphs used were obtained from GraphBLAS~\cite{mattson2019lagraph}, including road networks (SNAP/roadNet-CA and GAP/GAP-road), characterized by bounded node degrees and long diameters, and scale-free graphs, where node degree distribution follows a power-law distribution and diameters are short. Direction-optimization~\cite{beamer2012direction} is crucial for achieving high performance in such scenarios.
