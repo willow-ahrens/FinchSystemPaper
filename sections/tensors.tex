@@ -2,7 +2,9 @@
 %
 The Finch language provides descriptions of computations that iterate over a subset of a regular grid that is lexicographically ordered.
 %
-At this point, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators, but Finch programs and data structures are sufficiently flexible that this impossible\saman{?????}.
+Based on our description of Looplets, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators.
+%
+However, Finch's data structures and control flow are sufficiently complex that several challenges exist.
 %
 First, the Finch language interacts with multi-dimensional tensors whereas the Looplet abstraction is best suited towards iterators over a single dimension.
 %
@@ -97,30 +99,53 @@ unique data associated with $fiber(l, p)$ is the position $p$.
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
 Our simplified view of a level is enabled by our use of looplets to represent
-the structure within each fiber. In fact, our level interface requires only 5
+the structure within each fiber.
+%
+In fact, our level interface requires only 5
 highly general operations, described below.
 
 The first three of these functions, declare, freeze, and thaw, \saman{Italics for keywords?}have to do with
-managing when tensors can be assumed mutable or immutable. \saman{This is because Finch goes beyond just a single einsum...the scope of Finch w.r.t. TACO etc, is not clear.} As we use Looplets to
+managing when tensors can be assumed mutable or immutable.
+%
+\saman{This is because Finch goes beyond just a single einsum...the scope of Finch w.r.t. TACO etc, is not clear.}
+%
+As we use Looplets to
 represent iteration over a tensor, we must restrict the mutability of tensors
-while we iterate over them. For example, if a tensor declares it has a constant
+while we iterate over them. 
+%
+For example, if a tensor declares it has a constant
 region from $i = 2:5$, but some other part of the computation modifies the
-tensor at $i = 3$, this would result in incorrect behavior. It is much easier to
+tensor at $i = 3$, this would result in incorrect behavior.
+%
+It is much easier to
 write correct Looplet code if we can assume that the tensor is immutable while
-we are reading from it. Thus, we introduce the notion that a tensor can be in
-read-only mode or update-only mode.  In read-only mode, the tensor may only
-appear in the right-hand side of assignments. In update-only mode, the tensor
+we are reading from it.
+%
+Thus, we introduce the notion that a tensor can be in
+read-only mode or update-only mode.  
+%
+In read-only mode, the tensor may only
+appear in the right-hand side of assignments
+%
+. In update-only mode, the tensor
 may only appear in the left-hand side of an assignment, either being overwritten
-or incremented by some operator.  We can switch between these modes using freeze
-and thaw functions. The declare function is used to allocate a tensor,
+or incremented by some operator. 
+%
+We can switch between these modes using freeze
+and thaw functions.
+%
+The declare function is used to allocate a tensor,
 initialize it to some specified size and value, and leave it in update-only
 mode. 
 
-The unfurl function is used to manage iteration over a subfiber. At the point
-when it comes time to iterate over a tensor, be in on the left or right hand
+The unfurl function is used to manage iteration over a subfiber. 
+%
+At the point when it comes time to iterate over a tensor, be in on the left or right hand
 side of an assignment, we call the unfurl function to precompute whatever state
 and datastructures are necessary to return a looplet nest that would iterate
-over that level of a tensor. The unfurl function is called directly before
+over that level of a tensor.
+%
+The unfurl function is called directly before
 iterating over the corresponding loop, so it has access to any state variables introduced
 by freezing or thawing the tensor.
 
