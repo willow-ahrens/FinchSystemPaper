@@ -36,11 +36,14 @@ The $assemble$ function manages the allocation of new data in the tensor.
     \label{fig:levelsvsfibers}
 \end{wrapfigure}
 
+\teo{Here is a new paragraph.}
 In the rest of this section, we describe this functionality in detail after we review the basics of level abstractions~\cite{sze2017efficient,chou2022compilation, chou2018format}.
 %
 Then we discuss $declare$, $freeze$, $thaw$, and $unfurl$ functions as part of a life cycle abstraction as well as the $assemble$ function.
 %
-These 
+These interfaces add to the level abstraction, expanding the types of data that they can express via mapping to Looplets and expanding the contexts in which they can be used.
+%
+Finally, we describe several levels that we implement in this abstraction, which allow us to implement our taxonomy of known structures. 
 
 % Previous efforts to compile a greater variety of sparse array programs left these bridges untouched ~\cite{henry_compilation_2021, won2023unified, senanayake2020sparse}
 
