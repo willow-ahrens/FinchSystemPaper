@@ -14,6 +14,11 @@ real-world kernels. Finally, we explain
 how flexible operators, formats, and indexing expressions in Finch have
 supported a flexible implementation of the Python Array API, supporting fused exection.
 
+All experiments were run on a single core of a Intel Xeon E5-2695 v2 running at
+2.40GHz with 128GB of memory. Finch is implemented in Julia v1.9, targeting LLVM
+through Julia. All timings are the minimum of 10,000 runs or 5s of measurement,
+whichever happens first.
+
 \subsection{Data-Driven Performance Engineering}
 \subsubsection{Sparse-Sparse Matrix Multiply (SpGEMM)}
 %\changwan{
