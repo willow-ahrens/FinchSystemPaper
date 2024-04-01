@@ -1,20 +1,32 @@
 \section{Bridging Looplets and Finch: The Tensor Interface}
 %
-The Finch language provides descriptions of computations that iterate over a subset of a regular grid that is lexicographically ordered.
+%The Finch language provides descriptions of computations that iterate over a subset of a regular grid that is lexicographically ordered.
 %
-Based on our description of Looplets, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators.
+%Based on our description of Looplets, the reader might believe that compilation of a Finch program simply involves simply replacing for loops over a range with for loops over iterators.
 %
-However, Finch's data structures and control flow are sufficiently complex that several challenges exist.
+%However, Finch's data structures and control flow are sufficiently complex that several challenges exist.
 %
-First, the Finch language interacts with multi-dimensional tensors whereas the Looplet abstraction is best suited towards iterators over a single dimension.
+Arrays use multiple dimensions to organize data with respect to orthogonal concepts.
 %
-We require a bridge between the single dimensional iterators created from looplets and the mutli-dimensional abstractions common to tensor compilers.
+Thus, the Finch language supports multi-dimensional arrays.
 %
-Second, since the iteration order of a Finch program might not match that of a data structure (a discordant traversal), different iterators need to be requested for the same data depending on the traversal order of the program.
+Unfortunately, the Looplet abstraction is best suited towards iterators over a single dimension.
 %
-So we require a bridge that can provide different iteration orders depending on the context.
+Our level abstraction provides a bridge between the single dimensional iterators created from looplets and the mutli-dimensional abstractions common to tensor compilers.
+% 
+This bridge must address three challenges.
 %
-Third, since Finch programs can read and write to the same data, multi-dimensional tensors need to provide iterators for reading and writing as well as machinery to manage transition between these states.
+First, looplets represent an instance of an iterator over a tensor, but we may access the same tensor twice with different indices.
+%
+Thus, the $unfurl$ function creates separate looplet nests for each iterator.
+%
+Next, since Finch programs are not just single einsums, they may read and write to the same data at different times.
+%
+The $declare$, $freeze$, and $thaw$ functions provide machinery to manage transition between these states.
+%
+Finally, we must be able to write looplet nests that modify tensors, as well as reading them.
+%
+The $assemble$ function manages the allocation of new data in the tensor.
 
 \begin{wrapfigure}{R}{0.5\linewidth}
     \centering
