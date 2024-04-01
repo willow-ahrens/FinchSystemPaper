@@ -100,7 +100,7 @@ Unfortunately, TACO does not support multidimensional sparse workspaces, only su
 %
 It's also worth mentioning that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporary formats and transpositions.
 
-As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. For large sparse matrices, Finch outperforms TACO with an average speedup of 1.05.
+As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. For large sparse matrices, Finch outperforms TACO with an average speedup of 1.05 \changwan{(self)may remove this number for consistency with other exps.}.
 
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
