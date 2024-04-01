@@ -100,7 +100,7 @@ Unfortunately, TACO does not support multidimensional sparse workspaces, only su
 %
 It's also worth mentioning that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporary formats and transpositions.
 
-As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. For large sparse matrices, Finch outperforms TACO with an average speedup of 1.05.
+As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. Finch outperforms TACO on larger matrices, with an average speedup of 1.05.
 
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
@@ -115,14 +115,19 @@ As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance wi
     \label{fig:spgemm}
 \end{figure}
 
-\subsection{SpMV}
-The sparse matrix-vector multiplication kernel (SpMV) is a common operation in sparse linear algebra with many applications including conjugate gradients, graph algorithms, numerical analysis, and neural networks [cite]. SpMV is a bandwidth bound kernel, and thus historically has been subject to many modifications to improve throughput and reduce the associated control flow [cite]. The wide range of applications unsurprisingly results in a wide range of types of datasets making it an effective kernel to demonstrate the utility of having flexible data formats. 
+\subsection{Sparse Matrix-Vector Multiply (SpMV)}
+Sparse matrix-vector multiplication (SpMV) is perhaps the most studied sparse
+kernel, with a wide range of applications \cite{liu_csr5_2015,
+zhou_enabling_2020}. Because SpMV is a bandwidth bound kernel, many formats have
+been proposed to reduce the footprint with a minimal impact on complexity
+\cite{langr_evaluation_2016}. The wide range of applications unsurprisingly
+results in a wide range of structures, making it an effective kernel to
+demonstrate the utility of flexible data formats. 
 
-In this case study, we highlight a few different Finch formats as specified in Table \ref{spmv_tensor_formats}, and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do. Finch also provides the control flow necessary to manipulate data reads and writes, enabling exploitation of multiple structural patterns concurrently (e.g. sparsity \textit{and} symmetry). 
+In this case study, we highlight different Finch formats as specified in Table \ref{spmv_tensor_formats}, and the performance effects of conforming a dataset’s structure with its storage format, which Finch's datastructure-driven model enables us to do. Finch also provides the control flow necessary to manipulate data reads and writes, enabling exploitation of multiple structural patterns concurrently (e.g. sparsity \textit{and} symmetry). 
 
 We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset in Figure \ref{spmv_grouped} is the fastest among the formats and programs we tested. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
-% TODO: make this be 3 columns
 \begin{figure}
     \begin{minipage}[t]{0.315\textwidth}
         \vspace{0pt} % Add this to ensure top alignment within minipage
@@ -199,8 +204,6 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
     \end{tabular}
 \end{table}
 
-
-
 \subsubsection{Tensor Formats}
 We found that the SpMV performance was superior for the level format that best paralleled the structure of the tensor. We consider the Dense(SparseList(Element)) format with the column-major SpMV program to be the Finch baseline as it is the closet analog to the sparse matrix format and SpMV program in other libraries.  
 
@@ -233,8 +236,6 @@ There were also significant advantages of using the Pattern format instead of th
     \end{tabular}
 \end{table}
 
-
-
 \subsubsection{Symmetric SpMV}
 Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by providing the capabilities to reuse memory reads and insert control flow logic to restrict iterations to either the lower or upper triangle of the sparse matrix. We can apply this strategy with any level format. Every symmetric matrix in the SparseList and SparseList-Pattern formats has better performance when we use a Finch SpMV program that takes advantage of this symmetry. However, the regular row- or column-major Finch SpMV programs have better performance for symmetric matrices than the symmetric Finch SpMV program for the other more specialized formats, likely because we need in-order accesses to fully capitalize on the specialized storage. Symmetric SpMV with the SparseList level format in Finch results in an average of 1.27x speedup over TACO and symmetric SpMV with the SparseList-Pattern format in Finch results in an average speedup of 1.21x over TACO. Notably, there is a 1.91x speedup for the HB/saylr4 matrix over TACO. 
 
@@ -258,6 +259,84 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 
 \subsection{Image Morphology}
 
+Some image processing pipelines stand to benefit from structured data processing \cite{donenfeld_unified_2022}.
+In this case study, we focus on binary image morpology and the logical transformation of binary images and masks.
+We consider two operations: binary erosion (computing a mask), and a masked histogram (using a mask to avoid work).
+
+Samples from our datasets are shown in Figure~\ref{fig:image_datasets}. Note that these images are all binary, either by design or having been thresholded.
+
+Finch allows us to modify both our algorithm and our datastructure, so we may choose to use either a dense representation with bytes ($Dense(Element(0x00))$), a bit-packed representation ($Dense(Element(UInt64))$), or a run-length encoded representation that represents runs of true or false ($SparseRLE(Pattern())$).
+%
+All of these have their advantages.
+%
+The dense representation induces the least overhead, the bit-packed representation can take advantage of bitwise binary ops, and the run-length encoded version only uses memory and compute when the pattern changes between true and false.
+
+The erosion operation turns off a pixel unless all of it's neighbors are on.
+%
+This can be used to shrink the boundaries of a mask, and remove point instances of noise \cite{fisher_hypermedia_1996}.
+%
+Note that two instances of structure occur here, both in the mask and in the convolutional filter itself.
+%
+We might understand the filter as a structured tensor of circular shifts, or we might understand each shifted view of the data in an unrolled stencil computation as a structured tensor.
+Figure \ref{fig:erosion_listing} displays example erosion algorithms for bitwise or
+run-length-encoded algorithms.
+
+\begin{figure}
+    \scriptsize
+    \begin{minipage}{0.5\linewidth}
+    Wordwise Erosion:
+    \begin{minted}{julia}
+        output .= false
+        for y = _
+          tmp .= false
+          for x = _
+            tmp[x] = coalesce(input[x, ~(y-1)], true) & input[x, y] & coalesce(input[x, ~(y+1)], true)
+          end
+          for x = _
+            output[x, y] = coalesce(tmp[~(x-1)], true) & tmp[x] & coalesce(tmp[~(x+1)], true)
+          end
+        end
+    \end{minted}
+    \vspace{12pt}
+    Masked Histogram:
+    \begin{minted}{julia}
+        bins .= 0 
+        for x=_
+          for y=_
+            if mask[y, x]
+              bins[div(img[y, x], 16) + 1] += 1
+            end
+          end
+        end
+    \end{minted}
+    \end{minipage}%
+    \begin{minipage}{0.5\linewidth}
+    Bitwise Erosion:
+    \begin{minted}{julia}
+        output .= 0
+        for y = _
+          tmp .= 0
+          for x = _
+            if mask[x, y]
+              tmp[x] = coalesce(input[x, ~(y-1)], 0xFFFFFFFF) & input[x, y] & coalesce(input[x, ~(y+1)], 0xFFFFFFFF)
+            end
+          end
+          for x = _
+            if mask[x, y]
+              let tl = coalesce(tmp[~(x-1)], 0xFFFFFFFF), t = tmp[x], tr = coalesce(tmp[~(x+1)], 0xFFFFFFFF)
+                let res = ((tr << (8 * sizeof(UInt) - 1)) | (t >> 1)) & t & ((t << 1) | (tl >> (8 * sizeof(UInt) - 1)))
+                  output[x, y] = res
+                end
+              end
+            end
+          end
+        end
+    \end{minted}
+    \end{minipage}
+    \caption{Two approaches to erosion in Finch. The $coalesce$ function defines the out of bounds value. On left, the naive approach. On $SparseRLE(Pattern())$ inputs, this only performs operations at the boundaries of constant regions. On right, a bitwise approach, using a mask to limit work to nonzero blocks of bits.}
+    \label{fig:morphology_listing}
+\end{figure}
+
 \help{In this section, explain what erosion is, link a few cool images that show erosion, and then explain what the finch kernel looks like. in particular, be sure to point out that we're doing unrolled convolution, and how that maps to the generated code (merging shifted sparse iterators).}
 
 \help{Explain the role of formats in this kernel, how sparseRLE(PAttern) is really the right thing to use here}
@@ -265,6 +344,8 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 \help{Explain that finch can support a bitwise version, and that finch can mask the bitwise kernel too to get performance with a small change to the code}
 
 \help{Point out that masks with SparseRLE can sometimes perform better because they lift the masking out of the inner loop. Talk about hist and also the fact that Finch supports scatter, here and in spgemm.}
+
+\help{Strength of flexible operators on bitwise ops}
 
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{erode2_speedup_over_opencv.png}%
