@@ -100,7 +100,7 @@ Unfortunately, TACO does not support multidimensional sparse workspaces, only su
 %
 It's also worth mentioning that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporary formats and transpositions.
 
-As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. For large sparse matrices, Finch outperforms TACO with an average speedup of 1.05 \changwan{(self)may remove this number for consistency with other exps.}.
+As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. For large sparse matrices, Finch outperforms TACO with an average speedup of 1.05 \changwan{(self)may remove this number for consistency with other exps. finch\_outer\_bytemap not explained.}.
 
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
@@ -280,7 +280,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 \subsection{Graph Analytics}
 %\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
 
-To evaluate the capabilities of Finch in graph applications, we assessed its performance in two fundamental graph algorithms: Breadth-First Search (BFS) and Bellman-Ford single-source shortest path. The graphs used were obtained from GraphBLAS~\cite{mattson2019lagraph}, including road networks (SNAP/roadNet-CA and GAP/GAP-road), characterized by bounded node degrees and long diameters, and scale-free graphs, where node degree distribution follows a power-law distribution and diameters are short. Direction-optimization~\cite{beamer2012direction} is crucial for achieving high performance in such scenarios.
+To evaluate the capabilities of Finch in graph applications, we assessed its performance in two fundamental graph algorithms: Breadth-First Search (BFS) and Bellman-Ford single-source shortest path. The graphs used were obtained from GraphBLAS~\cite{mattson2019lagraph}, including road networks (SNAP/roadNet-CA and GAP/GAP-road), characterized by bounded node degrees and long diameters, and scale-free graphs, where node degree distribution follows a power-law distribution and diameters are short. Direction-optimization~\cite{beamer2012direction} is crucial for achieving high BFS performance in such scenarios.
 
 Direction-optimized BFS utilizes push and pull traversal techniques to efficiently explore graphs. Push traversal originates from the source node, pushing neighboring nodes into the queue, while pull traversal starts from the target node, exploring predecessors (parents). Incorporating early-break in pull traversal enables premature termination upon encountering the target node, thereby avoiding unnecessary edge traversal.
 
