@@ -128,55 +128,45 @@ In this case study, we highlight different Finch formats as specified in Table \
 
 We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library, as depicted in Figures \ref{spmv_sorted} and \ref{spmv_grouped}.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created several synthetic matrices containing bands or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases. The dense vector is randomly generated. We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset in Figure \ref{spmv_grouped} is the fastest among the formats and programs we tested. Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) in TACO so we use column-major SpMV in TACO as our baseline.
 
-\begin{figure}
-    \begin{minipage}[t]{0.315\textwidth}
+\begin{wrapfigure}{r}{0.41\linewidth}
+    \begin{minipage}[t]{0.18\textwidth}
         \vspace{0pt} % Add this to ensure top alignment within minipage
         \begin{minted}{julia}
-            @finch begin
-                y .= 0
-                for j = _, i = _
-                    y[i] += A[i, j] * x[j]
-                end
-                return y
+            y .= 0
+            for j = _, i = _
+              y[i] += A[i, j] * x[j]
             end
         \end{minted}
-    \end{minipage}%
-    \begin{minipage}[t]{0.315\textwidth}
-        \vspace{0pt} % Add this to ensure top alignment within minipage
+        \vspace{24pt} % Add this to ensure top alignment within minipage
         \begin{minted}{julia}
-            @finch begin
-                y .= 0
-                for j = _, i = _
-                    y[j] += A[i, j] * x[i]
-                end
-                return y
+            y .= 0
+            for j = _, i = _
+              y[j] += A[i, j] * x[i]
             end
         \end{minted}
-    \end{minipage}
-    \begin{minipage}[t]{0.36\textwidth}
+    \end{minipage}\hfill%
+    \begin{minipage}[t]{0.22\textwidth}
         \vspace{0pt} % Add this to ensure top alignment within minipage
         \begin{minted}{julia}
-            @finch begin
-                y .= 0
-                for j = _
-                    let x_j = x[j]
-                        y_j .= 0
-                        for i = _
-                            let A_ij = A[i, j]
-                                y[i] += x_j * A_ij
-                                y_j[] += A_ij * x[i]
-                            end
-                        end
-                        y[j] += y_j[] + diag[j] * x_j
-                    end
+            y .= 0
+            for j = _
+              let x_j = x[j]
+                y_j .= 0
+                for i = _
+                  let A_ij = A[i, j]
+                    y[i] += x_j * A_ij
+                    y_j[] += A_ij * x[i]
+                  end
                 end
-                return y
+                #D is the diagonal
+                y[j] += y_j[] + D[j] * x_j
+              end
             end
         \end{minted}
     \end{minipage}
-    \caption{Finch \saman{row-major, column-major and symmetric} SpMV Programs}
+    \caption{Finch row-major, column-major and symmetric SpMV Programs}
     \label{spmv_programs}
-\end{figure}
+\end{wrapfigure}
 
 
 

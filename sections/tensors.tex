@@ -320,17 +320,7 @@ we only support random access construction of sparse or dense structures.  We
 can use these two more general structures as intermediates to convert to our
 more specialized structures later.
 
-\saman{Can we not put future work into the submission!}
-As future work, we also recommend the implementation of a tree-based format, as
-this would enable incremental construction. Currently, the cost of freezing and
-thawing is usually proportional to the number of stored fibers, so an operation
-that sets a single value in a tensor would be prohibitively expensive (i.e.
-$A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an
-intermediate randomly accessible structure, because (unlike blocks or
-singletons), runs have asymptotic benefits. However, these cases were not
-necessary for our case studies.
-
-\help{we need also to talk about pattern and element}
+\HIDE{\saman{Can we not put future work into the submission!} As future work, we also recommend the implementation of a tree-based format, as this would enable incremental construction. Currently, the cost of freezing and thawing is usually proportional to the number of stored fibers, so an operation that sets a single value in a tensor would be prohibitively expensive (i.e.  $A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an intermediate randomly accessible structure, because (unlike blocks or singletons), runs have asymptotic benefits. However, these cases were not necessary for our case studies.}
 
 \help{this section fails to address freeze or thaw and how it relates to the concrete levels}
 
