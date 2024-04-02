@@ -74,7 +74,9 @@ whichever happens first.
     end
     \end{minted}
     \end{minipage}
+    \vspace{-12pt}
     \caption{Inner Products, Gustavsons, and Outer Products matrix multiply in Finch}\label{fig:spgemm_listing}
+    \vspace{-12pt}
 \end{figure}
 
 Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics. 
@@ -105,6 +107,7 @@ As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance wi
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
 	\includegraphics[width=0.5\linewidth]{spgemm_joel_speedup.png}
+    \vspace{-8pt}
     \caption{A comparison of several matrix multiplication algorithms between
     Finch and Taco. On left, we use smaller matrices, ordered from small to big
     dimension. Note that inner products necessarily requires $O(n^2)$ work and
@@ -113,6 +116,7 @@ As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance wi
     output dimensions grow. On right, we use only gustavson's algorithm and
     compare on larger matrices.}
     \label{fig:spgemm}
+    \vspace{-12pt}
 \end{figure}
 
 \subsection{Sparse Matrix-Vector Multiply (SpMV)}
@@ -164,16 +168,20 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
             end
         \end{minted}
     \end{minipage}
+    \vspace{-8pt}
     \caption{Finch row-major, column-major and symmetric SpMV Programs}
     \label{spmv_programs}
+    \vspace{-12pt}
 \end{wrapfigure}
 
 
 
 \begin{table}[htbp]
-    \footnotesize
+    \scriptsize
     \centering
+    \vspace{-12pt}
     \caption{SpMV Tensor Formats}
+    \vspace{-12pt}
     \label{spmv_tensor_formats}
     \begin{tabular}{|l|l|l|l|}
         \hline
@@ -192,6 +200,7 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
         & & Pattern & matrix with runs of true or false \\
         \hline 
     \end{tabular}
+    \vspace{-8pt}
 \end{table}
 
 \subsubsection{Tensor Formats}
@@ -203,8 +212,9 @@ There were also significant advantages of using the Pattern format instead of th
 
 \begin{table}[htbp]
     \centering
-    \footnotesize
+    \scriptsize
     \caption{Transposed SpMV Sample Matrices}
+    \vspace{-12pt}
     \label{tab:transposed_spmv_sample_matrices}
     \begin{tabular}{|
         >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|
@@ -224,6 +234,7 @@ There were also significant advantages of using the Pattern format instead of th
         \textbf{Best Finch Format} & Symmetric SparseList & SparseVBL & SparseBand & Symmetric SparseList-Pattern \\
         \hline
     \end{tabular}
+    \vspace{-8pt}
 \end{table}
 
 \subsubsection{Symmetric SpMV}
@@ -242,6 +253,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{Spmv_annotated.png}
+    \vspace{-18pt}
     \caption{Performance of SpMV by Finch format.}
     \label{fig:spmv_grouped}
     \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. "R" indicates row-major implementation and "C" indicates column-major implementation in Finch. The baseline Finch format is unsymmetric Dense(SparseList(Element)).
@@ -332,6 +344,7 @@ mask off contiguous regions of computation, instead of individual pixels, reduci
         end
     \end{minted}
     \end{minipage}
+    \vspace{-12pt}
     \caption{Two approaches to erosion in Finch. The $coalesce$ function defines the out of bounds value. On left, the naive approach. On $SparseRLE(Pattern())$ inputs, this only performs operations at the boundaries of constant regions. On right, a bitwise approach, using a mask to limit work to nonzero blocks of bits.}
     \label{fig:morphology_listing}
 \end{figure}
@@ -339,6 +352,7 @@ mask off contiguous regions of computation, instead of individual pixels, reduci
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{erode2_speedup_over_opencv.png}%
 	\includegraphics[width=0.5\linewidth]{hist_speedup_over_opencv.png}
+ \vspace{-12pt}
     \caption{Performance of Finch on image morphology tasks. On left, we run 2 iterations of erosion. On right, we run a masked histogram.}\label{fig:morphology}
 \end{figure}
 
@@ -354,6 +368,7 @@ Figure \ref{fig:graph_result} compares performance to Graphs.jl, an open-source 
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{bfs_speedup_over_graphs.jl.png}%
 	\includegraphics[width=0.5\linewidth]{bellmanford_speedup_over_graphs.jl.png}
+    \vspace{-12pt}
     \caption{Performance of graph apps across various tools. finch\_push\_only exclusively utilizes push traversal, while finch\_push\_pull applies direction-optimization akin to GraphBLAS. Finch's support for push/pull traversal and early break facilitates direction-optimization. Among GraphBLAS's five variants for Bellman-Ford, we selected LAGraph\_BF\_full1a, consistently the fastest with our graphs.}
      \label{fig:graph_result}
 \end{figure}
@@ -442,6 +457,7 @@ The expression fragment of the logical language takes inspiration from relationa
 To express materialization, reuse of common sub-expressions, and multiple outputs, we define queries and plans. A query is the assignment of the output of an expression to a name. We use this assignment to denote that we materialize an expression in memory. Later queries can then access the result of earlier queries through the alias operator which allows multiple queries to benefit from a shared computation. A plan is a sequence of queries and it produces a set of tensors as output. 
 
 \begin{align*}
+\footnotesize
     \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
      \finchrelabel(expr, idxs...) \quad\quad\quad \finchreformat(expr, format) \quad\quad\quad \finchmapjoin(op, exprs...) \\
     \finchaggregate(op, expr)\quad\quad\quad\quad \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
@@ -450,6 +466,7 @@ To express materialization, reuse of common sub-expressions, and multiple output
 
 Given this language, we now describe how to define a few example functions from the API as plans in the Finch Logic language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can access an index as a scalar to implement $argmin$. For conciseness, we omit the outer wrapping of $\finchplan(\finchquery(out,...),out)$.
 \begin{align*}
+\footnotesize
 &\text{sum}(M, dims=[2]) \rightarrow \finchaggregate(+,\finchrelabel(M, i_1,\ldots,i_d), i_2)\\
 &\text{matmul}(A, B) \rightarrow \finchaggregate(+,\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)\\
 &\text{argmin}(A, dims=[2]) \rightarrow \finchaggregate(minby,\finchmapjoin(tuple, \finchrelabel(A, i_1,\ldots,i_d), \finchtable(i_2)), i_2)
@@ -477,6 +494,7 @@ Across all three of these kernels, we see that the high level interface for Finc
   \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
   \vspace{0pt} \includegraphics[width=140pt, height=123pt]{figures/elementwise_speedup_over_duckdb.png}
 \end{tabular}
+\vspace{-12pt}
 \caption{Performance of Finch Logic for common kernels.}
 \end{figure}
 

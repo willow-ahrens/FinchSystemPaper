@@ -28,6 +28,16 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
+\begin{wrapfigure}{R}{0.5\linewidth}
+    \centering
+    \vspace{-8pt}
+    \includegraphics[width=\linewidth]{LevelsVsFibers-matrix.png}
+    %\includegraphics[width=0.5\linewidth]{LevelsVsFibers-tensor.png}
+    \vspace{-8pt}
+    \caption{Levels in the fiber tree representation of a sparse matrix in CSC format, with a dense outer level and a sparse inner level. The element level holds the leaves of the tree.}
+    \label{fig:levelsvsfibers}
+    \vspace{-8pt}
+\end{wrapfigure}
 
 In the rest of this section, we describe this functionality in detail after we review the basics of level abstractions~\cite{sze2017efficient,chou2022compilation, chou2018format}.
 %
@@ -172,7 +182,7 @@ iterating over the corresponding loop, so it has access to any state variables i
 by freezing or thawing the tensor.
 
 \begin{figure}[htbp]
-    \footnotesize
+    \scriptsize
     \raggedright
 $declare(lvl, init, dims...)$: Declares the level to hold subtensors
 of size $dims$ and an initial value of $init$. Requires the level to be in
@@ -197,6 +207,7 @@ $assemble(lvl, pos_{start}, pos_{stop})$: Allocates subfibers in the
 level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
 only ever called on unassembled positions, but some levels (such as dense levels
 or bytemaps) may support reassembly.
+\vspace{-8pt}
 \caption{The five functions that define a level.}
 \end{figure}
 
@@ -248,9 +259,24 @@ data twice to determine the number of required output nonzeros.
         we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
     \end{itemize}
 
+   We consider all combinations of these structural properties in Table
+    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
+    the the 8 resulting situations. While it is impossible to write code which
+    precisely addresses every possible structure, the combination of our level
+    formats can express a wide variety of hierarchical structures to a
+    sufficient granularity that we can generate code which utilizes the four
+    properties.  For example, though banded arrays are a superset of ragged
+    arrays, representing a ragged array using a banded format does not add much
+    overhead.  The structures we consider are exhaustive in the sense that they
+    address all combinations of sparsity, blocks, runs, and singletons in each
+    level. We can represent a wide variety of hierarchical tensor structures by
+    combining these level structures in a tree, as shown in
+    Figure~\ref{fig:structuraldiversity}.
+
     \begin{wrapfigure}{r}{.35\textwidth}
         \centering
-        \footnotesize
+        \vspace{-24pt}
+        \scriptsize
         \begin{tabular}{|c|c|c|c|l|}
             \hline
             \rothead{Sparse} & \rothead{Blocked} & \rothead{Runs} & \rothead{Singletons} & \begin{tabular}{@{}l@{}}\textbf{Corresponding} \\ \textbf{Format}\end{tabular} \\
@@ -272,6 +298,7 @@ data twice to determine the number of required output nonzeros.
             \checkmark & \checkmark &  & \checkmark & SparseBand \\
             \hline
         \end{tabular}
+        \vspace{-8pt}
         \caption{All combinations of relevant structural properties and their
         corresponding formats.  Note that blocks and runs need not be considered
         together because we must store a run length for each run, and so there
@@ -280,31 +307,22 @@ data twice to determine the number of required output nonzeros.
         consider them together either. We omit such combinations
         from the exhaustive table.}
         \label{tab:TypesOfStructure}
+        \vspace{-12pt}
     \end{wrapfigure}
 
-    We consider all combinations of these structural properties in Table
-    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
-    the the 8 resulting situations. While it is impossible to write code which
-    precisely addresses every possible structure, the combination of our level
-    formats can express a wide variety of hierarchical structures to a
-    sufficient granularity that we can generate code which utilizes the four
-    properties.  For example, though banded arrays are a superset of ragged
-    arrays, representing a ragged array using a banded format does not add much
-    overhead.  The structures we consider are exhaustive in the sense that they
-    address all combinations of sparsity, blocks, runs, and singletons in each
-    level. We can represent a wide variety of hierarchical tensor structures by
-    combining these level structures in a tree, as shown in
-    Figure~\ref{fig:structuraldiversity}.
+ 
     
     \begin{figure}
         \centering
         \includegraphics[width=\linewidth]{Structures.png}\hfill%
+        \vspace{-8pt}
         \caption{Several examples of matrix structures represented using the
         level structures identified in Table~\ref{tab:TypesOfStructure}.
         Comparing this figure to \cite[Figure 3]{ahrens_looplets_2023}, we see
         that a level-by-level structural decomposition is diagrammed together
         with the Looplets.}
         \label{fig:structuraldiversity}
+        \vspace{-18pt}
     \end{figure}
 
 \subsection{Randomly Accessible Temporary Levels}
@@ -349,7 +367,7 @@ is the only one which repeats a non-constant number of times.
 
 \begin{table}[ht]
     \centering
-    \footnotesize
+    \scriptsize
     \begin{tabular}{p{14cm}}
 
     \hline
