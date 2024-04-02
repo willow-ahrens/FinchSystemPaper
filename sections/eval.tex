@@ -274,12 +274,21 @@ The dense representation induces the least overhead, the bit-packed representati
 The erosion operation turns off a pixel unless all of it's neighbors are on.
 %
 This can be used to shrink the boundaries of a mask, and remove point instances of noise \cite{fisher_hypermedia_1996}.
+\help{link a few cool images that show erosion}
 %
-Note that two instances of structure occur here, both in the mask and in the convolutional filter itself.
+Note that three instances of structured data are used here, both in the mask, in the padding of the inputs, and in the convolutional filter itself.
 %
 We might understand the filter as a structured tensor of circular shifts, or we might understand each shifted view of the data in an unrolled stencil computation as a structured tensor.
-Figure \ref{fig:erosion_listing} displays example erosion algorithms for bitwise or
-run-length-encoded algorithms.
+Figure \ref{fig:erosion_listing} displays example erosion algorithms for bitwise
+or run-length-encoded algorithms, and a masked histogram kernel.
+
+We compare to OpenCV, and chose the histogram since the OpenCV histogram function also accepts a mask. If we use $SparseRLE(Pattern())$ for our mask, we can reduce the branching
+in the masked kernel and get better performance.
+%
+We this is also an instance where we use a computed index into the output, something not many sparse and structured programming frameworks support.
+
+We used four datasets. We randomly selected 100 images from the MNIST \cite{lecun_gradient-based_1998} and Omniglot \cite{lake_human-level_2015} character recognition datasets, as well as a dataset of human line drawings \cite{eitz_how_2012}. We also hand-selected a subset of mask images (these images were less homogenous, so we listed them in the appendix) from a digital image processing textbook \cite{gonzalez_digital_2006}. All images were thresholded, and we also include versions of the images that have been magnified before thresholding, to induce larger constant regions. IN our erosion task, the sparseRLE format performs the best as it is asymptotically faster and uses less memory, leading to a 19.5X speedup over OpenCV on the sketches dataset, which becomes arbitrarily large as we magnify the images (here shown as 266X). The improvements with SparseRLE are seen in the histogram task as well, as it allows us to
+mask off contiguous regions of computation, instead of individual pixels, reducing the branches in the mask and leading to a significant speedup (51.6x on MNIST and 20.3x on Omniglot). The bitwise kernels were effective as well, and would be more effective on datasets with less structure. A strength of Finch is that it supports structured datasets, even over bitwise operations, allowing us to implement the bitwise kernel and then mask it.
 
 \begin{figure}
     \scriptsize
@@ -337,26 +346,11 @@ run-length-encoded algorithms.
     \label{fig:morphology_listing}
 \end{figure}
 
-\help{In this section, explain what erosion is, link a few cool images that show erosion, and then explain what the finch kernel looks like. in particular, be sure to point out that we're doing unrolled convolution, and how that maps to the generated code (merging shifted sparse iterators).}
-
-\help{Explain the role of formats in this kernel, how sparseRLE(PAttern) is really the right thing to use here}
-
-\help{Explain that finch can support a bitwise version, and that finch can mask the bitwise kernel too to get performance with a small change to the code}
-
-\help{Point out that masks with SparseRLE can sometimes perform better because they lift the masking out of the inner loop. Talk about hist and also the fact that Finch supports scatter, here and in spgemm.}
-
-\help{Strength of flexible operators on bitwise ops}
-
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{erode2_speedup_over_opencv.png}%
 	\includegraphics[width=0.5\linewidth]{hist_speedup_over_opencv.png}
-    \caption{Performance of Finch on image morphology tasks. On left, we run 2 iterations of erosion. On right, we run a masked histogram.}
+    \caption{Performance of Finch on image morphology tasks. On left, we run 2 iterations of erosion. On right, we run a masked histogram.}\label{fig:morphology}
 \end{figure}
-
-%\begin{figure}
-%	\includegraphics[width=\linewidth]{erode4_speedup_over_opencv.png}
-%    \caption{Performance of Finch on erosion task (4 iterations).}
-%\end{figure}
 
 \subsection{Graph Analytics}
 %\help{In this case, the two main highlights are that Finch can do arbitrary operators (i.e. choose), and that Finch can do early break, and also the different loop orders and multiple outputs. We may need to explain a little bit about what push pull is. For bellman, the main point is that we need multiple outputs, sparse inputs, masks, and sparse outputs with differing formats at differing points.}
