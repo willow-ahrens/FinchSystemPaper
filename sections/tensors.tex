@@ -253,8 +253,23 @@ data twice to determine the number of required output nonzeros.
         we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
     \end{itemize}
 
+   We consider all combinations of these structural properties in Table
+    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
+    the the 8 resulting situations. While it is impossible to write code which
+    precisely addresses every possible structure, the combination of our level
+    formats can express a wide variety of hierarchical structures to a
+    sufficient granularity that we can generate code which utilizes the four
+    properties.  For example, though banded arrays are a superset of ragged
+    arrays, representing a ragged array using a banded format does not add much
+    overhead.  The structures we consider are exhaustive in the sense that they
+    address all combinations of sparsity, blocks, runs, and singletons in each
+    level. We can represent a wide variety of hierarchical tensor structures by
+    combining these level structures in a tree, as shown in
+    Figure~\ref{fig:structuraldiversity}.
+
     \begin{wrapfigure}{r}{.35\textwidth}
         \centering
+        \vspace{-12pt}
         \scriptsize
         \begin{tabular}{|c|c|c|c|l|}
             \hline
@@ -287,19 +302,7 @@ data twice to determine the number of required output nonzeros.
         \label{tab:TypesOfStructure}
     \end{wrapfigure}
 
-    We consider all combinations of these structural properties in Table
-    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
-    the the 8 resulting situations. While it is impossible to write code which
-    precisely addresses every possible structure, the combination of our level
-    formats can express a wide variety of hierarchical structures to a
-    sufficient granularity that we can generate code which utilizes the four
-    properties.  For example, though banded arrays are a superset of ragged
-    arrays, representing a ragged array using a banded format does not add much
-    overhead.  The structures we consider are exhaustive in the sense that they
-    address all combinations of sparsity, blocks, runs, and singletons in each
-    level. We can represent a wide variety of hierarchical tensor structures by
-    combining these level structures in a tree, as shown in
-    Figure~\ref{fig:structuraldiversity}.
+ 
     
     \begin{figure}
         \centering
