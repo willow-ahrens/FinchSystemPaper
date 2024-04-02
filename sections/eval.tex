@@ -461,7 +461,7 @@ The expression fragment of the logical language takes inspiration from relationa
      \footnotesize expr:= \finchreorder | \finchrelabel | \finchreformat |\finchmapjoin | \finchaggregate | \finchtable | \finchalias \quad\quad
 \end{align*}
 
-Given this language, we now describe how to define a few example functions from the API as plans in the Finch Logic language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can access an index as a scalar to implement $argmin$. For conciseness, we omit the outer wrapping of $\finchplan(\finchquery(out,...),out)$.
+We now describe how to define a few example functions from the API in this language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can treat an index as a scalar to implement $argmin$. For conciseness, we omit the outer wrapping of $\finchplan(\finchquery(out,...),out)$.
 \begin{align*}
 \footnotesize &\text{sum}(M, dims=[2]) \rightarrow \finchaggregate(+,\finchrelabel(M, i_1,\ldots,i_d), i_2)\\
 \footnotesize &\text{matmul}(A, B) \rightarrow \finchaggregate(+,\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)\\
