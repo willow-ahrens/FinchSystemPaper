@@ -28,13 +28,6 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
-\begin{wrapfigure}{R}{0.5\linewidth}
-    \centering
-    \includegraphics[width=\linewidth]{LevelsVsFibers-matrix.png}
-    %\includegraphics[width=0.5\linewidth]{LevelsVsFibers-tensor.png}
-    \caption{Levels in the fiber tree representation of a sparse matrix in CSC format, with a dense outer level and a sparse inner level. The element level holds the leaves of the tree.}
-    \label{fig:levelsvsfibers}
-\end{wrapfigure}
 
 In the rest of this section, we describe this functionality in detail after we review the basics of level abstractions~\cite{sze2017efficient,chou2022compilation, chou2018format}.
 %
@@ -101,6 +94,14 @@ indices into a space of subfibers.
 %All levels have a postype, typically denoted as Tp in the constructors, used for internal pointer types but accessible by the function:
 %postype(lvl)
 
+
+\begin{wrapfigure}{R}{0.5\linewidth}
+    \centering
+    \includegraphics[width=\linewidth]{LevelsVsFibers-matrix.png}
+    %\includegraphics[width=0.5\linewidth]{LevelsVsFibers-tensor.png}
+    \caption{Levels in the fiber tree representation of a sparse matrix in CSC format, with a dense outer level and a sparse inner level. The element level holds the leaves of the tree.}
+    \label{fig:levelsvsfibers}
+\end{wrapfigure}
 
 Instead of storing the data for each subfiber separately, most sparse tensor
 formats such as CSR, DCSR, and COO usually store the data for all fibers in a
@@ -224,8 +225,6 @@ data twice to determine the number of required output nonzeros.
 
 \subsection{The 8 Key Level Structures}
 
-
-
     The main benefits of specializing to structure come from the following properties of the data:
     \begin{itemize}
         \item \textbf{Sparsity} Sparse data is data that is mostly zero, or some other
@@ -333,9 +332,20 @@ identical value only once. In this work, we introduce the concept of a \textbf{p
 level to handle this binary case. Pattern has a fill value of $false$, and returning $true$ for all ``stored'' values. The pattern level allows us to easily represent unweighted graphs or other boolean matrices.
 
 \subsection{Scalars}
-
-\subsubsection{Sparse Scalars}
-\subsubsection{Early Break Scalars}
+Because elements are geared towards representing many leaves in a level, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
+%
+Scalars can also affect how the leaves are lowered.
+%
+Constant propagation through arrays is known to be a complex compiler pass \cite{mcmichen_representing_nodate}.
+%
+Instead, we provide sparse scalars, which allow reductions but also specialize read accesses for the possible zero value.
+%
+We also provide early break scalars, which modify the stepper looplets to
+re-specialize the loop whenever a reduction into an early break scalar hits an
+annihilator.
+%
+We assume that we don't need to re-specialize other looplets because the stepper
+is the only one which repeats a non-constant number of times.
 
 \begin{table}[ht]
     \centering
@@ -343,7 +353,7 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
     \begin{tabular}{p{14cm}}
 
     \hline
-    \textbf{Sequential Reading and Updating} \\
+    \textbf{Sequential Access Levels} \\
     \hline
     \textbf{Dense}:
     The dense format is the simplest format, mapping $fiber(l, p)[i] \rightarrow fiber(l.lvl, p \times l.shape + i)$.
@@ -389,7 +399,7 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
     \textbf{SparseBand}: Similar to SparseVBL, but stores only one block per subfiber, eliminating the need for the $ptr$ field. It stores two vectors $idx$ and $ofs$, such that $ofs[p]:ofs[p + 1] - 1$ are the subpositions of the block ending at $idx[p]$ in subfiber $p$. \\
 
     \hline
-    \textbf{Random Access Reading and Updating} \\
+    \textbf{Random Access Levels} \\
     \hline
     \textbf{SparseHash}:
     The sparse hash format uses a hash table to store the locations of nonzeros, and sorts the unique indices for iteration during the freeze phase.
@@ -422,6 +432,15 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
     The element level uses an array $val$ to store a value for each position $p$. The zero (fill) value is configurable.\\
     \textbf{Pattern}:
     The pattern level statically represents a leaf level with a fill value of $false$ and whose stored values are all $true$. \\
+    \hline
+    \textbf{Scalars} \\
+    \hline
+    \textbf{Scalar}:
+    A dense scalar that, unlike a variable, supports reduction.  \\
+    \textbf{SparseScalar}:
+    A scalar with a dirty bit which specializes on the fill value when it occurs.\\
+    \textbf{EarlyBreakScalar}:
+    A scalar which triggers early breaks in reductions whenever an annihilator is encountered.\\
     \hline
     \end{tabular}
     \caption{The main level formats supported by Finch. Note that all non-leaf

@@ -9,13 +9,12 @@ Arrays are also universal across programming languages, from their introduction
 in Fortran in 1957 to present-day languages like Python
 \cite{backus_fortran_1957}, keeping more-or-less the same semantics.
 %
-Modern
-array programming languages such as NumPy, SciPy, MatLab, TensorFlow, PyTorch,
-and Halide have pushed the limits of productive data processing with arrays,
-fueling breakthroughs in machine learning, scientific computing, image
-processing, and more  \cite{harris_array_2020, virtanen_scipy_2020,
-moler_history_2020, abadi_tensorflow_2016,
-paszke_pytorch_2019,ragan-kelley_halide_2013}\saman{Put these citations next to each language - otherwise associated with the breakthroughs...}.
+Modern array programming languages such as NumPy~\cite{harris_array_2020},
+SciPy~\cite{virtanen_scipy_2020}, MatLab~\cite{moler_history_2020},
+TensorFlow~\cite{abadi_tensorflow_2016}, PyTorch~\cite{paszke_pytorch_2019}, and
+Halide~\cite{ragan-kelley_halide_2013} have pushed the limits of productive data
+processing with arrays, fueling breakthroughs in machine learning, scientific
+computing, image processing, and more.
 % EASY CUT
 %These frameworks have been the
 %subject of extensive industry investment to enable performant implementations,
@@ -39,7 +38,7 @@ Consequently, dense arrays offer extensive compiler optimizations and many conve
 Compilers understand dense array computations across many
 programming constructs, such as for and while loops, breaks, parallelism,
 caching, prefetching, multiple outputs, scatters, gathers, vectorization,
-loop-carry-dependencies, and more. Several\saman{myriad of} optimizations have been developed for
+loop-carry-dependencies, and more. A myriad of optimizations have been developed for
 dense arrays, such as loop fusion, loop tiling, loop unrolling, and loop
 interchange.
 %
@@ -91,10 +90,10 @@ compilers support an enormous variety of program constructs like early break and
 multiple left hand sides, they only support dense arrays~\cite{ragan-kelley_halide_2013,grosser2012polly}.  
 %
 Special-purpose
-compilers like TACO, Taichi, StructTensor, or CoRa which support a select subset of structured data
+compilers like TACO~\cite{kjolstad_tensor_2019}, Taichi~\cite{hu_taichi_2019}, StructTensor~\cite{ghorbani2023compiling}, or CoRa~\cite{fegade_cora_2022} which support a select subset of structured data
 structures (only sparse, or only ragged arrays) must compromise by greatly
 constraining the classes of programs which they support, such as tensor
-contractions \cite{kjolstad_tensor_2019, hu_taichi_2019, ghorbani2023compiling, fegade_cora_2022}. \saman{when you cite multiple projects, put the citations next to each project.}
+contractions.
 %
 This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_structures}.
 %
@@ -121,7 +120,7 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
   Early Break              &            & \checkmark &            & \checkmark &            &\checkmark \\
   Unrestricted Read/Write              &    \checkmark        &  &            &  &            &  \\
   \end{tabular}
-  \caption{Feature support across various tools.}
+  \caption{Control flow support across various tools.}
   \label{tab:features}
 \end{minipage} 
 \begin{minipage}[t]{.49\textwidth}
@@ -140,7 +139,7 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
   Irregular Sparse Blocks  &            &            &            &            &            &\checkmark \\
   Ragged                   &            &            & \checkmark &            &            & \checkmark \\
   \end{tabular}
-  \caption{Support for various data structures across tools. Finch supports \textbf{both} complex programs and complex data structures.}
+  \caption{Data structure support across various tools.  Finch supports \textbf{both} complex programs and complex data structures.}
   \label{tab:data_structures}
 \end{minipage}
 \vspace{-24pt}
