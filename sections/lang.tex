@@ -1,6 +1,37 @@
 
 \section{The Finch Language}
 
+
+\begin{wrapfigure}{r}{0.51\linewidth}
+    \vspace{-26pt}
+    \begin{minted}{julia}
+     EXPR := LITERAL | VALUE | INDEX | VARIABLE | EXTENT | CALL | ACCESSS
+     STMT := ASSIGN | LOOP | DEFINE | SIEVE | BLOCK
+
+      DECLARE := TENSOR .= EXPR(EXPR...)   #V is the set of all values
+       FREEZE := @freeze(TENSOR)           #S is the set of all Symbols
+         THAW := @thaw(TENSOR)             #T is the set of all types                                      
+       ASSIGN := ACCESS <<EXPR>>= EXPR    
+         LOOP := for INDEX = EXPR              LITERAL := V                           
+                   STMT                          VALUE := S::T                        
+                 end                            TENSOR := S                            
+       DEFINE := let VARIABLE = EXPR             INDEX := S                            
+                   STMT                       VARIABLE := S                            
+                 end                            EXTENT := EXPR : EXPR                  
+        SIEVE := if EXPR                          CALL := EXPR(EXPR...)                
+                   STMT                         ACCESS := TENSOR[EXPR...]              
+                 end                              MODE := @mode(TENSOR)                
+        BLOCK := begin                     
+                   STMT...                 
+                 end                        
+    \end{minted}                                                   
+    \vspace{-12pt}
+\caption{The syntax of the finch language. Compare this grammar to the Concrete
+Index Notation of TACO \cite[Figure~3]{kjolstad_tensor_2019}, noting the
+addition of multiple left hand sides through code blocks, access with expressions, and explicit initialiation.}\label{fig:syntax}
+\vspace{-12pt}
+\end{wrapfigure}
+
 \subsection{Syntax}
 
 The syntax of Finch is displayed in Figure \ref{fig:syntax}. The Finch syntax
@@ -73,54 +104,6 @@ In the semantics section, we detail other specifics that allow us to specialize 
 % \mintinline{julia}{@thaw} explicitly as those can be inferred through a separate
 % pass.
 
-\begin{figure}
-\scriptsize
-\noindent % This ensures the minipages fill the page width
-\begin{minipage}{0.4\linewidth}
-\begin{align*}
-    \finchliteral(val \in \mathbb{V}) &:= \text{\mintinline{julia}{val}} \\
-    \finchvalue(ex \in \mathbb{S}, type \in \mathbb{T}) &:= \text{\mintinline{julia}{ex :: type}} \\
-    \finchtensor(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
-    \finchindex(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
-    \finchvar(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
-    \finchextent(a \in E, b \in E) &:= \text{\mintinline{julia}{a : b}} \\
-    \finchcall(f \in E, args\ldots \in E) &:= \text{\mintinline{julia}{f(args...)}} \\
-    \finchaccess(tns \in T, idxs\ldots \in E) &:= \text{\mintinline{julia}{tns[idxs...]}} \\
-    \finchfreeze(tns \in T) &:= \text{\mintinline{julia}{@freeze(tns)}} \\
-    \finchthaw(tns \in T) &:= \text{\mintinline{julia}{@thaw(tns)}} \\
-    \finchmode(tns \in T) &:= \text{\mintinline{julia}{@mode(tns)}} \\
-\end{align*}
-\end{minipage}%
-\begin{minipage}{0.5\linewidth}
-\begin{align*}
-    \mathbb{V} &:= \text{the set of all values.} \\
-    \mathbb{S} &:= \text{the set of all symbols.} \\
-    \mathbb{T} &:= \text{the set of all types.} \\
-    I &:= \finchindex \\
-    A &:= \finchaccess \\
-    V &:= \finchvar \\
-    T &:= \finchtensor \\
-    E &:= \finchliteral \mid \finchvalue \mid \finchindex \\
-        &\quad \mid \finchvar \mid \finchextent \mid \finchcall \mid \finchaccess \\
-    S &:= \finchassign \mid \finchloop \mid \finchdefine \\
-        &\quad \mid \finchsieve \mid \finchblock \\
-\end{align*}
-\end{minipage}%
-\begin{align*}
-    \finchdeclare(tns \in T, init \in E, dims\ldots \in E) &:= \text{\mintinline{julia}{tns .= init(dims...)}} \\
-    \finchassign(lhs \in A, op \in E, rhs \in E) &:= \text{\mintinline{julia}{lhs <<op>>= rhs}} \\
-    \finchloop(idx \in I, range \in E, body \in S) &:= \text{\mintinline{julia}{for idx = range; body end}} \\
-    \finchdefine(var \in V, val \in E, body \in S) &:= \text{\mintinline{julia}{let var = val; body end}} \\
-    \finchsieve(cond \in E, body \in S) &:= \text{\mintinline{julia}{if cond; body end}} \\
-    \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
-\end{align*}
-\caption{The syntax of the finch language. Note that instead of a classic EBNF
-form, we have constrained the classes of subterms on the left hand side to allow
-for descriptive names of the arguments. Compare this grammar to the Concrete
-Index Notation of TACO \cite[Figure~3]{kjolstad_tensor_2019}, noting the
-addition of multiple left hand sides through code blocks, and the explicit
-initialization and finalization of tensors.}\label{fig:syntax}
-\end{figure}
 
 \subsection{Semantics}
 

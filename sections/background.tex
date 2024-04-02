@@ -25,7 +25,7 @@ will not modify that variable.\saman{No context yet to understand this. Need to 
 
 \begin{figure}[ht]
     \footnotesize
-    \begin{minipage}[c]{0.6\linewidth}
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchlookup(seek, body)$: The Lookup Looplet represents a
         randomly accessible region of an iterator. The body of the lookup is
         understood to have one less dimension than the lookup itself, as we have
@@ -33,33 +33,37 @@ will not modify that variable.\saman{No context yet to understand this. Need to 
         body. \texttt{seek(i)} is a function that updates state to the given
         index.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-lookup.png}
+        \includegraphics[scale=0.20]{Looplets-lookup.png}
     \end{minipage}
+    \vspace{3pt}
 
-    \begin{minipage}[c]{0.6\linewidth}
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchrun(body)$: The Run Looplet represents a constant
         region of an iterator. The body of the run is understood to have one
         less dimension than the lookup itself, as all of the bodies are
         identical.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-run.png}
+        \includegraphics[scale=0.20]{Looplets-run.png}
     \end{minipage}
+    \vspace{3pt}
 
-    \begin{minipage}[c]{0.6\linewidth}
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchphase(c:d, body)$: The Phase Looplet represents a
         restriction of the range on which a loop should execute, and allows us
         to succinctly express the ranges on which children of compound looplets
         are defined.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-phase.png}
+        \includegraphics[scale=0.20]{Looplets-phase.png}
     \end{minipage}
-    \begin{minipage}[c]{0.6\linewidth}
+    \vspace{3pt}
+
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchswitch(cond, head, tail)$: The Switch Looplet allows
         us to specialize the body of a looplet based on a condition, evaluated
         in the embedding context. If the condition is true, we use `head`,
@@ -68,32 +72,36 @@ will not modify that variable.\saman{No context yet to understand this. Need to 
         the condition as high as possible into the loop nest. The condition is
         assumed to evaluate to a boolean.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-switch.png}
+        \includegraphics[scale=0.20]{Looplets-switch.png}
     \end{minipage}
-    \begin{minipage}[c]{0.6\linewidth}
+    \vspace{3pt}
+
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchthunk(preamble, body, epilogue)$: The Thunk Looplet
         allows us to cache certain computations in the state under which the
         body will execute. This is useful for computing and caching the results
         of expensive computations.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-thunk.png}
+        \includegraphics[scale=0.20]{Looplets-thunk.png}
     \end{minipage}
+    \vspace{3pt}
 
-    \begin{minipage}[c]{0.6\linewidth}
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchsequence(head, tail)$: The Sequence looplet represents the
         concatenation of two looplets. Both arguments must be phase looplets, and
         are assumed to be nonoverlapping, covering, and in order.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-sequence.png}
+        \includegraphics[scale=0.20]{Looplets-sequence.png}
     \end{minipage}
+    \vspace{3pt}
 
-    \begin{minipage}[c]{0.6\linewidth}
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchspike(body, tail)$ The Spike Looplet represents a run
         followed by a single value. In this paper, Spike will be considered a
         shorthand for $\finchsequence(\finchphase(i:j-1, \finchrun(body)),
@@ -102,12 +110,13 @@ will not modify that variable.\saman{No context yet to understand this. Need to 
         final run to the end of the root loop extent, without using any special
         bounds inference.
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-spike.png}
+        \includegraphics[scale=0.20]{Looplets-spike.png}
     \end{minipage}
+    \vspace{3pt}
 
-    \begin{minipage}[c]{0.6\linewidth}
+    \begin{minipage}[c]{0.65\linewidth}
         $\finchstepper([seek], next, body)$ The stepper looplet
         represents a variable number of looplets, concatenated. Since our
         looplets may be skipped over due to conditions or various rewrites, the
@@ -115,9 +124,9 @@ will not modify that variable.\saman{No context yet to understand this. Need to 
         root loop extent when it comes time to lower the stepper. The $next$
         function advances the state to the next iteration of the stepper. 
     \end{minipage}%
-    \begin{minipage}[c]{0.4\linewidth}
+    \begin{minipage}[c]{0.35\linewidth}
         \centering
-        \includegraphics[scale=0.25]{Looplets-stepper.png}
+        \includegraphics[scale=0.20]{Looplets-stepper.png}
     \end{minipage}
     \caption{The looplet language, as understood in a correct execution of a Finch program.}
 \end{figure}

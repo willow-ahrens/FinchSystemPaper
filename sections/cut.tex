@@ -82,3 +82,45 @@ We observe that this strategy naturally extends the dense solution.
 \teo{
 \item Extensibility of the language and compiler with respect to data structures and control flow: (Maybe put stuff about the data structure extensibility here?)
 }
+
+   
+\scriptsize
+\noindent % This ensures the minipages fill the page width
+\begin{minipage}{0.4\linewidth}
+\begin{align*}
+    \finchliteral(val \in \mathbb{V}) &:= \text{\mintinline{julia}{val}} \\
+    \finchvalue(ex \in \mathbb{S}, type \in \mathbb{T}) &:= \text{\mintinline{julia}{ex :: type}} \\
+    \finchtensor(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
+    \finchindex(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
+    \finchvar(name \in \mathbb{S}) &:= \text{\mintinline{julia}{name}} \\
+    \finchextent(a \in E, b \in E) &:= \text{\mintinline{julia}{a : b}} \\
+    \finchcall(f \in E, args\ldots \in E) &:= \text{\mintinline{julia}{f(args...)}} \\
+    \finchaccess(tns \in T, idxs\ldots \in E) &:= \text{\mintinline{julia}{tns[idxs...]}} \\
+    \finchfreeze(tns \in T) &:= \text{\mintinline{julia}{@freeze(tns)}} \\
+    \finchthaw(tns \in T) &:= \text{\mintinline{julia}{@thaw(tns)}} \\
+    \finchmode(tns \in T) &:= \text{\mintinline{julia}{@mode(tns)}} \\
+\end{align*}
+\end{minipage}%
+\begin{minipage}{0.5\linewidth}
+\begin{align*}
+    \mathbb{V} &:= \text{the set of all values.} \\
+    \mathbb{S} &:= \text{the set of all symbols.} \\
+    \mathbb{T} &:= \text{the set of all types.} \\
+    I &:= \finchindex \\
+    A &:= \finchaccess \\
+    V &:= \finchvar \\
+    T &:= \finchtensor \\
+    E &:= \finchliteral \mid \finchvalue \mid \finchindex \\
+        &\quad \mid \finchvar \mid \finchextent \mid \finchcall \mid \finchaccess \\
+    S &:= \finchassign \mid \finchloop \mid \finchdefine \\
+        &\quad \mid \finchsieve \mid \finchblock \\
+\end{align*}
+\end{minipage}%
+\begin{align*}
+    \finchdeclare(tns \in T, init \in E, dims\ldots \in E) &:= \text{\mintinline{julia}{tns .= init(dims...)}} \\
+    \finchassign(lhs \in A, op \in E, rhs \in E) &:= \text{\mintinline{julia}{lhs <<op>>= rhs}} \\
+    \finchloop(idx \in I, range \in E, body \in S) &:= \text{\mintinline{julia}{for idx = range; body end}} \\
+    \finchdefine(var \in V, val \in E, body \in S) &:= \text{\mintinline{julia}{let var = val; body end}} \\
+    \finchsieve(cond \in E, body \in S) &:= \text{\mintinline{julia}{if cond; body end}} \\
+    \finchblock(bodies\ldots \in S) &:= \text{\mintinline{julia}{begin; bodies... end}}
+\end{align*}
