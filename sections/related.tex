@@ -4,31 +4,93 @@ The related work on array languages and libraries, both for dense and structured
 %
 We highlight these works based on if they are a library or language vs. if they are dense or more general.
 
-\paragraph{Dense Libraries:} There are many well known libraries that specialize in dense computations, exemplified by BLAS, though several BLAS routines are specialized to symmetric, hermitian, and triangular matrices~\cite{Anderson1999}.
+\paragraph{Libraries for Dense Data:} There are many well known libraries that specialize in dense computations, exemplified by BLAS, though several BLAS routines are specialized to symmetric, hermitian, and triangular matrices~\cite{Anderson1999}.
 %
 This pattern is carried over into well known dense array libraries that use BLAS, exemplified by Numpy.
-
-\paragraph{Structured Libraries:}
-
-Many libraries support BLAS plus a few sparse array types, typically CSR, CSC, BCSR, and COO.
 %
-Examples include Scipy, PETSc, Armadillo, and Eigen~\cite{virtanen2020scipy, abhyankarpetsc, Rumengan2021, eigenweb}.
+Many research projects have advanced on BLAS, such as BatchedBlas and BLIS~\cite{dongarra2017design, van2015blis}.
+
+\paragraph{Libraries for Structured Data:}
+
+Many libraries support BLAS plus a few sparse array types, typically CSR, CSC, BCSR, Banded, and COO.
+%
+Examples include Scipy, PETSc, Armadillo, OSKI, Cyclops, MKL (add cite), and Eigen~\cite{virtanen2020scipy, abhyankarpetsc, Rumengan2021, vuduc2005oski,solomonik2013cyclops, eigenweb}.
+%
+There are even libraries for very specific kernels and format combinations, such as SPLATT~\cite{smith2015splatt}.
 %
 Several of these libraries also feature some graph or mesh algorithms built on sparse matrices.
 %
-GraphBlas exemplifies this pattern with support for many sparse matrix operations on a variety of formats~\cite{kepner2016mathematical} although a variety of other graph libraries adopt a similar approach such as LAgraph or GBase~\cite{mattson2019lagraph, kang2011gbase} among many others.
+GraphBlas exemplifies this pattern with support for many sparse matrix operations on a variety of formats~\cite{kepner2016mathematical} although a variety of other graph libraries adopt a similar approach such as LAgraph or GBase~\cite{mattson2019lagraph, kang2011gbase} among many others~\cite{ashari2014fast,huang2020ge}.
+%
+In ML, several frameworks offer this type of support, most notably TorchSparse, which supports a few arrays an few operations on them~\cite{tang2022torchsparse, tang2023torchsparse++}.
+%
+
+\paragraph{Compilers for Dense Data:}
+%% Languages: Halide, Lift, TVM, OptiML
+Outside of general purpose compilers, many compilers have been developed for optimizing dense data on a variety of control flow.
+%
+Perhaps the most well known example is Halide~\cite{ragan-kelley_halide_2013} and its various descendent such as TVM, Exo, and Elevate~\cite{chen2018tvm, ikarashi2022exocompilation, hagedorn2020achieving}.
+%
+These languages typically support most control flow except for an early break though some don't support arbitrary reading/writing or even indirect accesses.
+%
+Several polyhedral languages, such as Polly, Tiramisu, CHiLL, Pluto, AlphaZ ~\cite{grosser2012polly, baghdadi2019tiramisu,chen2008framework, bondhugula2008pluto, yuki2012alphaz} offer similar capabilities in terms of control flow though they often support more irregular regions that the polyhedral framework supports.
+%
+These are based on ISL~\cite{verdoolaege2010isl}.
+%
+The density of this research represents the density of support for dense computation.
+
+
+\paragraph{ Compilers for Structured Data:}
+Several compilers exist for several types of structured data, often featuring separate languages for the storage of the structured data and the computation.
+%
+The TACO compiler originally supported just plain einsum computations, but has been extended several times to support (single dimensional) local tensors, breaks via semi-rings, windowing, tiling, and convolution~\cite{kjolstad_tensor_2017, kjolstad_tensor_2019, senanayake2020sparse, henry_compilation_2021,won2023unified}.
+%
+Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures and tree like structures~\cite{kjolstad_tensor_2017, chou2018format, chou2022compilation}.
+%
+The SDQL language offers a similar level of control flow~\cite{shaikhha2022functional}.
+%
+Similarly, SDQL originally supported only hash tables, but has been extended with one format language that allows one to specify tensors as queries on several base storage types~\cite{schleich2023optimizing} and via another system that optimizing programs by taking advantage of predicates describing symmetries and other structures on a tensor~\cite{ghorbani2023compiling}.
+%
+Taichi is another language with a separate program and data structure specification, but Taichi focuses on a single sparse data structure made from dense blocks, bit-masks, and pointers~\cite{hu_taichi_2019}.
+%
+Outside of these works, the window of comparison fogs up.
+%
+The sparse polyhedral framework builds on CHiLL for the purpose of generating inspector/executor optimizations~\cite{strout2018sparse} though the branch of this work that specifies sparse formats separately from the computation (otherwise they are inlined into the computation manually) seems to apply mainly to einsums~\cite{zhao2022polyhedral}.
+%
+Second to last, SQL's classical physical/logical distinction is the classic program/format distinction, and SQL supports a huge variety of control flow constructs~\cite{kotlyar1997relational, date1989guide}.
+%
+However, many SQL or dataframe systems rely on BTrees, columnar, or Hashtables, with only a few systems, such as Vectowrise, LaraDB, GMAP, or SciDB building physical layouts with other constructs based in array programming~\cite{boncz2012vectorwise,hutchison2017laradb,  tsatalos1996gmap, stonebraker2013scidb}.
+%
+However, array based databases are a new focus given the rise of mixed ML/DB pipelines~\cite{baumann2021array,luo2018scalable}.
+%
+Lastly, we mention SPIRAL, as a system that can express a structure and computation that none of the systems mentioned above can: a recursive FFT. 
+%
+SPIRAL focuses on recursively defined linear algebra and computations on the same (e.g. FFT matrices as tensor products of smaller matrices)~\cite{franchetti2018spiral,franchetti2009operator}.
+%
+
+%Stut and SDQL - similar but more workspaces and rings. Mention formats paper of theirs - similar to looplets, but to our knowledge doesn't support all of oru structures.
+%Tiachi - 
+%SPF - ????
+%Spiral
+%SQL - Vectorwise/Morpheus/HyPer and others?
 
 
 
-\paragraph{Dense Tensor Compilers:}
-
-\paragraph{Tensor Compilers for Structured Data:}
-
+\paragraph{Other Architectures:} We would be remiss if we didn't mention another axis: architectural support. 
+%
+We saved this angle for future work, but we must note that much of this work varies in support for other architectures, which is arguably another element of control flow.
+%%TACO
+%%Tiachi
+%%SPF
+%%Stut
+%%Graphit
+%%Spiral
+%%SQL
 
 
 %% Libraries: Numpy, LAPACK, blas, graphblas, SplAtt, Scipy, Petsc, Graph libraries (ligraph, lagraph,...)
-%% Languages: Halide, Lift, TVM, OptiML
-%% Languages: Lgen/Spiral, LAMapping system,
+
+%% Languages: Lgen/Spiral
 %% languages sparse: TVM Sparse, Tiachi, SPF, TACO, Stut, various extensiosn to TACO, Graphit
 %% SQL: HyPer, SDQL + Formats, Vectorwise, Morphesu,
 
