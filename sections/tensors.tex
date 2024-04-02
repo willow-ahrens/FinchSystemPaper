@@ -105,14 +105,6 @@ indices into a space of subfibers.
 %postype(lvl)
 
 
-\begin{wrapfigure}{R}{0.5\linewidth}
-    \centering
-    \includegraphics[width=\linewidth]{LevelsVsFibers-matrix.png}
-    %\includegraphics[width=0.5\linewidth]{LevelsVsFibers-tensor.png}
-    \caption{Levels in the fiber tree representation of a sparse matrix in CSC format, with a dense outer level and a sparse inner level. The element level holds the leaves of the tree.}
-    \label{fig:levelsvsfibers}
-\end{wrapfigure}
-
 Instead of storing the data for each subfiber separately, most sparse tensor
 formats such as CSR, DCSR, and COO usually store the data for all fibers in a
 level contiguously. In this way, we can think of a level as a bulk allocator for
