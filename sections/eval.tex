@@ -333,6 +333,7 @@ mask off contiguous regions of computation, instead of individual pixels, reduci
         end
     \end{minted}
     \end{minipage}
+    \vspace{-12pt}
     \caption{Two approaches to erosion in Finch. The $coalesce$ function defines the out of bounds value. On left, the naive approach. On $SparseRLE(Pattern())$ inputs, this only performs operations at the boundaries of constant regions. On right, a bitwise approach, using a mask to limit work to nonzero blocks of bits.}
     \label{fig:morphology_listing}
 \end{figure}
@@ -340,7 +341,7 @@ mask off contiguous regions of computation, instead of individual pixels, reduci
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{erode2_speedup_over_opencv.png}%
 	\includegraphics[width=0.5\linewidth]{hist_speedup_over_opencv.png}
- \vspace{-8pt}
+ \vspace{-12pt}
     \caption{Performance of Finch on image morphology tasks. On left, we run 2 iterations of erosion. On right, we run a masked histogram.}\label{fig:morphology}
 \end{figure}
 
@@ -356,6 +357,7 @@ Figure \ref{fig:graph_result} compares performance to Graphs.jl, an open-source 
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{bfs_speedup_over_graphs.jl.png}%
 	\includegraphics[width=0.5\linewidth]{bellmanford_speedup_over_graphs.jl.png}
+    \vspace{-12pt}
     \caption{Performance of graph apps across various tools. finch\_push\_only exclusively utilizes push traversal, while finch\_push\_pull applies direction-optimization akin to GraphBLAS. Finch's support for push/pull traversal and early break facilitates direction-optimization. Among GraphBLAS's five variants for Bellman-Ford, we selected LAGraph\_BF\_full1a, consistently the fastest with our graphs.}
      \label{fig:graph_result}
 \end{figure}
@@ -444,6 +446,7 @@ The expression fragment of the logical language takes inspiration from relationa
 To express materialization, reuse of common sub-expressions, and multiple outputs, we define queries and plans. A query is the assignment of the output of an expression to a name. We use this assignment to denote that we materialize an expression in memory. Later queries can then access the result of earlier queries through the alias operator which allows multiple queries to benefit from a shared computation. A plan is a sequence of queries and it produces a set of tensors as output. 
 
 \begin{align*}
+\footnotesize
     \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
      \finchrelabel(expr, idxs...) \quad\quad\quad \finchreformat(expr, format) \quad\quad\quad \finchmapjoin(op, exprs...) \\
     \finchaggregate(op, expr)\quad\quad\quad\quad \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
@@ -452,6 +455,7 @@ To express materialization, reuse of common sub-expressions, and multiple output
 
 Given this language, we now describe how to define a few example functions from the API as plans in the Finch Logic language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can access an index as a scalar to implement $argmin$. For conciseness, we omit the outer wrapping of $\finchplan(\finchquery(out,...),out)$.
 \begin{align*}
+\footnotesize
 &\text{sum}(M, dims=[2]) \rightarrow \finchaggregate(+,\finchrelabel(M, i_1,\ldots,i_d), i_2)\\
 &\text{matmul}(A, B) \rightarrow \finchaggregate(+,\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)\\
 &\text{argmin}(A, dims=[2]) \rightarrow \finchaggregate(minby,\finchmapjoin(tuple, \finchrelabel(A, i_1,\ldots,i_d), \finchtable(i_2)), i_2)
@@ -479,6 +483,7 @@ Across all three of these kernels, we see that the high level interface for Finc
   \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
   \vspace{0pt} \includegraphics[width=140pt, height=123pt]{figures/elementwise_speedup_over_duckdb.png}
 \end{tabular}
+\vspace{-12pt}
 \caption{Performance of Finch Logic for common kernels.}
 \end{figure}
 
