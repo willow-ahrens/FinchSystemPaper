@@ -171,7 +171,7 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
 
 
 \begin{table}[htbp]
-    \footnotesize
+    \scriptsize
     \centering
     \caption{SpMV Tensor Formats}
     \label{spmv_tensor_formats}
@@ -203,7 +203,7 @@ There were also significant advantages of using the Pattern format instead of th
 
 \begin{table}[htbp]
     \centering
-    \footnotesize
+    \scriptsize
     \caption{Transposed SpMV Sample Matrices}
     \label{tab:transposed_spmv_sample_matrices}
     \begin{tabular}{|
@@ -242,6 +242,7 @@ Finch enables us to exploit symmetry in the sparse matrix of the SpMV kernel by 
 
 \begin{figure}
     \includegraphics[width=\linewidth]{Spmv_annotated.png}
+    \vspace{-18pt}
     \caption{Performance of SpMV by Finch format.}
     \label{fig:spmv_grouped}
     \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. "R" indicates row-major implementation and "C" indicates column-major implementation in Finch. The baseline Finch format is unsymmetric Dense(SparseList(Element)).
@@ -339,6 +340,7 @@ mask off contiguous regions of computation, instead of individual pixels, reduci
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{erode2_speedup_over_opencv.png}%
 	\includegraphics[width=0.5\linewidth]{hist_speedup_over_opencv.png}
+ \vspace{-8pt}
     \caption{Performance of Finch on image morphology tasks. On left, we run 2 iterations of erosion. On right, we run a masked histogram.}\label{fig:morphology}
 \end{figure}
 

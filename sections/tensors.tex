@@ -171,7 +171,7 @@ iterating over the corresponding loop, so it has access to any state variables i
 by freezing or thawing the tensor.
 
 \begin{figure}[htbp]
-    \footnotesize
+    \scriptsize
     \raggedright
 $declare(lvl, init, dims...)$: Declares the level to hold subtensors
 of size $dims$ and an initial value of $init$. Requires the level to be in
@@ -196,6 +196,7 @@ $assemble(lvl, pos_{start}, pos_{stop})$: Allocates subfibers in the
 level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
 only ever called on unassembled positions, but some levels (such as dense levels
 or bytemaps) may support reassembly.
+\vspace{-8pt}
 \caption{The five functions that define a level.}
 \end{figure}
 
@@ -251,7 +252,7 @@ data twice to determine the number of required output nonzeros.
 
     \begin{wrapfigure}{r}{.35\textwidth}
         \centering
-        \footnotesize
+        \scriptsize
         \begin{tabular}{|c|c|c|c|l|}
             \hline
             \rothead{Sparse} & \rothead{Blocked} & \rothead{Runs} & \rothead{Singletons} & \begin{tabular}{@{}l@{}}\textbf{Corresponding} \\ \textbf{Format}\end{tabular} \\
@@ -339,7 +340,7 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
 
 \begin{table}[ht]
     \centering
-    \footnotesize
+    \scriptsize
     \begin{tabular}{p{14cm}}
 
     \hline
