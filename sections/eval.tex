@@ -74,7 +74,9 @@ whichever happens first.
     end
     \end{minted}
     \end{minipage}
+    \vspace{-12pt}
     \caption{Inner Products, Gustavsons, and Outer Products matrix multiply in Finch}\label{fig:spgemm_listing}
+    \vspace{-12pt}
 \end{figure}
 
 Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics. 
@@ -105,6 +107,7 @@ As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance wi
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{spgemm_small_speedup_log_scale.png}%
 	\includegraphics[width=0.5\linewidth]{spgemm_joel_speedup.png}
+    \vspace{-8pt}
     \caption{A comparison of several matrix multiplication algorithms between
     Finch and Taco. On left, we use smaller matrices, ordered from small to big
     dimension. Note that inner products necessarily requires $O(n^2)$ work and
@@ -113,6 +116,7 @@ As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance wi
     output dimensions grow. On right, we use only gustavson's algorithm and
     compare on larger matrices.}
     \label{fig:spgemm}
+    \vspace{-12pt}
 \end{figure}
 
 \subsection{Sparse Matrix-Vector Multiply (SpMV)}
@@ -164,8 +168,10 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
             end
         \end{minted}
     \end{minipage}
+    \vspace{-8pt}
     \caption{Finch row-major, column-major and symmetric SpMV Programs}
     \label{spmv_programs}
+    \vspace{-12pt}
 \end{wrapfigure}
 
 
@@ -173,7 +179,9 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
 \begin{table}[htbp]
     \scriptsize
     \centering
+    \vspace{-12pt}
     \caption{SpMV Tensor Formats}
+    \vspace{-12pt}
     \label{spmv_tensor_formats}
     \begin{tabular}{|l|l|l|l|}
         \hline
@@ -192,6 +200,7 @@ We display speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standar
         & & Pattern & matrix with runs of true or false \\
         \hline 
     \end{tabular}
+    \vspace{-8pt}
 \end{table}
 
 \subsubsection{Tensor Formats}
@@ -205,6 +214,7 @@ There were also significant advantages of using the Pattern format instead of th
     \centering
     \scriptsize
     \caption{Transposed SpMV Sample Matrices}
+    \vspace{-12pt}
     \label{tab:transposed_spmv_sample_matrices}
     \begin{tabular}{|
         >{\centering\arraybackslash}m{0.2\linewidth-2\tabcolsep-1.2\arrayrulewidth}|
@@ -224,6 +234,7 @@ There were also significant advantages of using the Pattern format instead of th
         \textbf{Best Finch Format} & Symmetric SparseList & SparseVBL & SparseBand & Symmetric SparseList-Pattern \\
         \hline
     \end{tabular}
+    \vspace{-8pt}
 \end{table}
 
 \subsubsection{Symmetric SpMV}
