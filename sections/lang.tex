@@ -203,9 +203,12 @@ Also in the next section, we will show how similar means lets us exploit the str
 
     \begin{prooftree}
     \hypo{s = (e, t, d)}
-    \hypo{\langle head, (e, t, \{\}) \rangle \rightarrow s^{\prime}}
-    \hypo{\langle \finchblock(tail...), s^{\prime} \rangle \rightarrow (e^{\prime}, t^{\prime}, d^{\prime})})
-        \infer3[$BlockHead$]{\langle\finchblock(head, tail...), s \rangle \rightarrow (e^{\prime}, t^{\prime}, d) }
+    \hypo{\langle term_{0}, (e, t, \{\}) \rangle \rightarrow s_{1}}
+    \hypo{\langle term_{1}, s_{1} \rangle \rightarrow s_{2}}
+    \hypo{\dots}
+    \hypo{\langle term_{n-1}, s_{n-1} \rangle \rightarrow s_{n}}
+    \hypo{s_{n}= (e^{\prime}, t^{\prime}, d^{\prime})}
+        \infer6[$Block$]{\langle\finchblock(term_{0}, \dots, term_{n}), s \rangle \rightarrow (e^{\prime}, t^{\prime}, d) }
     \end{prooftree}
     \hfill
 
