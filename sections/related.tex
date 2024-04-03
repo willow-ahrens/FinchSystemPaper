@@ -35,7 +35,7 @@ Perhaps the most well known example is Halide~\cite{ragan-kelley_halide_2013} an
 %
 These languages typically support most control flow except for an early break though some don't support arbitrary reading/writing or even indirect accesses.
 %
-Several polyhedral languages, such as Polly~\cite{grosser2012polly}, Tiramisu\cite{baghdadi2019tiramisu}, CHiLL\cite{chen2008framework}, Pluto\cite{bondhugula2008pluto}, and AlphaZ~\cite{yuki2012alphaz} offer similar capabilities in terms of control flow though they often support more irregular regions that the polyhedral framework supports.
+Several polyhedral languages, such as Polly~\cite{grosser2012polly}, Tiramisu~\cite{baghdadi2019tiramisu}, CHiLL~\cite{chen2008framework}, Pluto~\cite{bondhugula2008pluto}, and AlphaZ~\cite{yuki2012alphaz} offer similar capabilities in terms of control flow though they often support more irregular regions that the polyhedral framework supports.
 %
 These are based on ISL~\cite{verdoolaege2010isl}.
 %
@@ -45,7 +45,7 @@ The density of this research represents the density of support for dense computa
 \paragraph{ Compilers for Structured Data:}
 Several compilers exist for several types of structured data, often featuring separate languages for the storage of the structured data and the computation.
 %
-The TACO compiler originally supported just plain einsum computations\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, all as separate extensions.
+The TACO compiler originally supported just plain einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, all as separate extensions.
 %
 Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures~\cite{chou2018format}, and tree like structures~\cite{chou2022compilation}, as separate extensions.
 %
@@ -62,11 +62,11 @@ The sparse polyhedral framework builds on CHiLL for the purpose of generating in
 %
 Second to last, SQL's classical physical/logical distinction is the classic program/format distinction, and SQL supports a huge variety of control flow constructs~\cite{kotlyar1997relational, date1989guide}.
 %
-However, many SQL or dataframe systems rely on BTrees, columnar, or hash tables, with only a few systems, such as Vectorwise\cite{boncz2012vectorwise}, LaraDB~\cite{hutchison2017laradb}, GMAP~\cite{tsatalos1996gmap}, or SciDB~\cite{stonebraker2013scidb} building physical layouts with other constructs based in array programming.
+However, many SQL or dataframe systems rely on BTrees, columnar, or hash tables, with only a few systems, such as Vectorwise~\cite{boncz2012vectorwise}, LaraDB~\cite{hutchison2017laradb}, GMAP~\cite{tsatalos1996gmap}, or SciDB~\cite{stonebraker2013scidb} building physical layouts with other constructs based in array programming.
 %
 However, array based databases are a new focus given the rise of mixed ML/DB pipelines~\cite{baumann2021array,luo2018scalable}.
 %
-Lastly, SPIRAL focuses on recursively defined datastructures and recursively define linear algebra, and can therefore express a structure and computation that none of the systems mentioned above can: a Cooley–Tukey FFT \cite{franchetti2018spiral,franchetti2009operator}.
+Lastly, SPIRAL focuses on recursively defined datastructures and recursively define linear algebra, and can therefore express a structure and computation that none of the systems mentioned above can: a Cooley–Tukey FFT ~\cite{franchetti2018spiral,franchetti2009operator}.
 %
 %RECUMA AND UNISPARSE are in OOPSLA R1, we should probably address these
 
@@ -74,7 +74,7 @@ Lastly, SPIRAL focuses on recursively defined datastructures and recursively def
 
 Both structured and dense libraries support a multitude of architectures, as do dense compilers.
 
-Sparse compilers have been extended to many architectures. An extension of TACO supports GPU \cite{senanayake2020sparse}, Cyclops\cite{solomonik_cyclops_2013,solomonik_sparse_2015} and SPDistal\cite{yadav_spdistal_2022-1} support distributed memory, and the Sparse Abstract Machine\cite{hsu_sparse_2022} supports custom hardware.
+Sparse compilers have been extended to many architectures. An extension of TACO supports GPU~\cite{senanayake2020sparse}, Cyclops~\cite{solomonik_cyclops_2013,solomonik_sparse_2015} and SPDistal~\cite{yadav_spdistal_2022-1} support distributed memory, and the Sparse Abstract Machine~\cite{hsu_sparse_2022} supports custom hardware.
 
 We believe that supporting control flow is the first step towards architectural support for complex structures.
 
