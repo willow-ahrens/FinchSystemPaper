@@ -70,9 +70,17 @@ Lastly, SPIRAL focuses on recursively defined datastructures and recursively def
 %
 %RECUMA AND UNISPARSE are in OOPSLA R1, we should probably address these
 
-\paragraph{Other Architectures:} We would be remiss if we didn't mention another axis: architectural support. 
+\paragraph{Other Architectures:} 
+
+Both structured and dense libraries support a multitude of architectures, as do dense compilers.
+
+Sparse compilers have been extended to many architectures. An extension of TACO supports GPU \cite{senanayake2020sparse}, Cyclops\cite{solomonik_cyclops_2013,solomonik_sparse_2015} and SPDistal\cite{yadav_spdistal_2022-1} support distributed memory, and the Sparse Abstract Machine\cite{hsu_sparse_2022} supports custom hardware.
+
+We believe that supporting control flow is the first step towards architectural support for complex structures.
+
+%Sparse and structured com We would be remiss if we didn't mention another axis: architectural support. 
 %
-We saved this angle for future work, but we must note that much of this work varies in support for other architectures, which is arguably another element of control flow.
+%We saved this angle for future work, but we must note that much of this work varies in support for other architectures, which is arguably another element of control flow.
 %%TACO
 %%Tiachi
 %%SPF
