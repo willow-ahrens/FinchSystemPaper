@@ -63,9 +63,9 @@ However, many SQL or dataframe systems rely on BTrees, columnar, or hash tables,
 %
 However, array based databases are a new focus given the rise of mixed ML/DB pipelines~\cite{baumann2021array,luo2018scalable}.
 %
-Lastly, we mention SPIRAL, as a system that can express a structure and computation that none of the systems mentioned above can: a recursive FFT. 
+Lastly, we mention SPIRAL, as a system that can express a structure and computation that none of the systems mentioned above can: a Cooley–Tukey FFT. 
 %
-SPIRAL focuses on recursively defined linear algebra and computations on the same (e.g. FFT matrices as tensor products of smaller matrices)~\cite{franchetti2018spiral,franchetti2009operator}.
+SPIRAL focuses on recursively defined linear algebra and computations on the same (e.g. FFT matrices as tensor products of smaller FFT matrices)~\cite{franchetti2018spiral,franchetti2009operator}.
 %
 %RECUMA AND UNISPARSE are in OOPSLA R1, we should probably address these
 
