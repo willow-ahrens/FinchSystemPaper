@@ -94,7 +94,7 @@ Figure~\ref{fig:spgemm_listing} implements all three approaches in Finch, and Fi
 %
 Note that these algorithms mainly differ in their loop order, but that different datastructures can be used to support the various access patterns induced.
 %
-Although a sparse bytemap has a dense memory footprint, we use it in our Finch implemenation of Gustavson's for the smaller $O(M)$ intermediate.
+Although a sparse bytemap has a dense memory footprint, we use it in our Finch implemenation of Gustavson's for the smaller $O(N)$ intermediate.
 %
 In our Finch implementation of outer products, we use a sparse hash table, as it is fully-sparse and randomly accessible.
 %
