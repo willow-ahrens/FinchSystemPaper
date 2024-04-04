@@ -36,9 +36,8 @@ programs like  \mintinline{julia}{for i = _; for j = _; s[] += A[i, j] end end}
 by adding a loop to randomly access \mintinline{julia}{A} or adjusting the
 storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
 
-\subsection{Wrapperization}
     \begin{wrapfigure}{R}{0.17\textwidth}
-        \vspace{-1\intextsep}
+        \vspace{-28pt}
         \begin{minted}{julia}
           for i=_, j=_
             if i <= j
@@ -64,6 +63,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
         \end{minted}
         \caption{Wrapperization}\label{fig:wrapperization}
     \end{wrapfigure}
+\subsection{Wrapperization}
 
     Many fancy operations on indices can be resolved by introducing equivalent
     \textbf{wrapper arrays} which modify the behavior of the tensors they wrap,
@@ -242,7 +242,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     expressions concordant by inserting loops with one iteration. Examples are given in Figure~\ref{fig:concordization}.
 
     \begin{wrapfigure}{R}{0.34\linewidth}
-    \vspace{-12pt}
+        \vspace{-28pt}
         \begin{minipage}{0.15\textwidth}
         \begin{minted}{julia}
             y .= 0
