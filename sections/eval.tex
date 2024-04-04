@@ -19,10 +19,10 @@ All experiments were run on a single core of a 12-core 2-socket Intel Xeon E5-26
 through Julia. All timings are the minimum of 10,000 runs or 5s of measurement,
 whichever happens first.
 
-\include{eval/spmv}
-\include{eval/spgemm}
-\include{eval/graphs}
-\include{eval/morphology}
+\input{eval/spmv}
+\input{eval/spgemm}
+\input{eval/graphs}
+\input{eval/morphology}
 
 \subsection{Implementing Numpy's Array API in Finch}
 In the past decade, the adoption of the Python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this API for structured data suffer from either incompleteness or inefficiency. They're either limited to vectors and matrices or only support tabular representations in order to reduce the complexity of interactions between different formats. Further, existing work doesn't support operator fusion which can have a drastic impact on performance as we show in Figure~\ref{fig:fusion}. A flexible compiler like Finch, which can produce efficient code for arbitrary operations between inputs in a wide variety of formats, is the missing piece needed to make the full array API performant for structured data. To handle the expansiveness of the Array API while preserving opportunities for fusion and whole workflow optimization, we pursued a lazy evaluation strategy mediated by a high-level query language. This is implemented by 1) Finch Logic, a minimal, high-level language for expressing array operations and 2) the Finch Interpreter, which executes Finch Logic as a sequence of Finch programs.
