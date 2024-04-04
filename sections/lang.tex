@@ -171,7 +171,7 @@ Also in the next section, we will show how similar means lets us exploit the str
     \hypo{\langle val, (e, t, d) \rangle
     \rightarrow val'}
     \hypo{var\not\in d}
-    \infer2[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t, d)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t, d\cup\{var\}) \rangle}}
+    \infer2[$Define$]{\splitfrac{\langle\finchdefine(var, val, body), (e, t, d)\rangle}{\rightarrow \langle body, (e[var \mapsto val'], t, \{\}) \rangle}}
     \end{prooftree}
     \hfill
     \begin{prooftree}
@@ -212,8 +212,9 @@ Also in the next section, we will show how similar means lets us exploit the str
     \end{prooftree}
     \hfill
 
-    \vspace{6pt}
 
+    \vspace{6pt}
+    
     \begin{prooftree}
     \hypo{\langle cond, (e, t, d) \rangle \Rightarrow true}
     \hypo{\langle body, (e, t, \{\}) \rangle \rightarrow (e^{\prime}, t^{\prime}, d^{\prime})}
@@ -232,26 +233,40 @@ Also in the next section, we will show how similar means lets us exploit the str
     \hypo{e(tns) = tns'}
     \hypo{\langle init, s \rangle \Rightarrow init'}
     \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle declare(tns', init', dims'...), t \rrangle, d\cup\{ tns\})}
+    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchupdate], \llangle declare(tns', init', dims'...), t \rrangle, d\cup\{ tns\})}
     \end{prooftree}
     \vspace{6pt}
     
     \begin{prooftree}  
     \hypo{s = (e, t,d )}
-    \hypo{e(\finchmode(tns)) = update}
+    \hypo{e(\finchmode(tns)) = \finchupdate}
     \hypo{tns\in d}
     \hypo{e(tns) = tns'}
-    \infer4[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto read], \llangle freeze(tns'), t \rrangle, d)}
+    \infer4[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchread], \llangle freeze(tns'), t \rrangle, d)}
     \end{prooftree}
     \vspace{6pt}
 
     \begin{prooftree}  
     \hypo{s = (e, t, d)}
-    \hypo{e(\finchmode(tns)) = read}
+    \hypo{e(\finchmode(tns)) = \finchread}
     \hypo{tns\in d}
     \hypo{e(tns) = tns'}
     \infer4[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle thaw(tns'), t \rrangle, d)}
     \end{prooftree}
+
+    
+\vspace{6pt}
+\begin{prooftree}
+    \hypo{e(tns) = tns'}
+    \hypo{\langle op, s\rangle \rightarrow op'}
+    \hypo{\langle rhs, s\rangle \rightarrow rhs'}
+    \infer[no rule]3{
+        \begin{prooftree}
+    \hypo{e(\finchmode(tns)) = \finchupdate}
+    \hypo{\llangle unfurl(tns', \finchupdate, op', rhs'), t\rrangle \rightarrow  t'}
+    \infer[simple]2[$Assign$]{\langle E[\finchassign(\finchaccess(tns), op, rhs)], (e, t, d)\rangle \rightarrow (e, t', d)}
+    \end{prooftree}}
+\end{prooftree}
     
     \caption{Basic evaluation semantics, roughly defining most of these language
     constructs to function similarly to their classical definitions.
@@ -278,25 +293,31 @@ Also in the next section, we will show how similar means lets us exploit the str
     \footnotesize
 
 \begin{multline*}
-E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) | \finchsieve(E | cond, E | body) |\\ 
+E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) | \finchsieve(E | cond, E | body) | \finchassign(E | lhs, op, E | rhs)\\ 
 \finchdeclare(var, E|rhs, E|body) | \finchcall(E|f, E|args...) | \finchaccess(tns, E | idxs...)
 \end{multline*}
 
 \begin{prooftree}
     \hypo{e(tns) \mapsto tns'}
-    \hypo{\llangle unfurl(tns', ext)\rrangle \mapsto tns''}
-    \infer2[$Unfurl$]{\langle \finchloop(i, ext, E[\finchaccess(tns, j..., i)]), s\rangle \rightarrow \langle \finchloop(i, ext, E[\finchaccess(tns'', j..., i)]), s\rangle}
+    \hypo{e(\finchmode(tns)) \mapsto m}
+    \hypo{\llangle unfurl(tns', ext, m), t\rrangle \Rightarrow tns''}
+    \infer3[$Unfurl$]{\langle \finchloop(i, ext, E[\finchaccess(tns, j..., i)]), s\rangle \rightarrow \langle \finchloop(i, ext, E[\finchaccess(tns'', j..., i)]), s\rangle}
 \end{prooftree}
 \vspace{6pt}
 
 \begin{prooftree}
-    \infer0[$Run$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(run(body), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(body, j...)]), s\rangle}}
+    \infer0[$Run$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(\finchrun(body), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(body, j...)]), s\rangle}}
 \end{prooftree}
 \hfill
 \begin{prooftree}
     \hypo{e(i) = i'}
     \hypo{\llangle seek(i'), t \rrangle \rightarrow t'}
-    \infer2[$Lookup$]{\splitfrac{\langle E[\finchaccess(lookup(seek, body), j..., i)], (e, t)\rangle}{\rightarrow \langle E[\finchaccess(body, j...)], (e, t')\rangle}}
+    \infer2[$Lookup$]{\splitfrac{\langle E[\finchaccess(\finchlookup(seek, body), j..., i)], (e, t, d)\rangle}{\rightarrow \langle E[\finchaccess(body, j...)], (e, t', d)\rangle}}
+\end{prooftree}
+\vspace{6pt}
+
+\begin{prooftree}
+    \infer0[$AcceptRun$]{\splitfrac{\langle \finchloop(i, \finchextent(a, b), E[\finchassign(\finchaccess(\finchrun(body), j..., i), op, rhs)]), s\rangle}{\rightarrow \langle \finchloop(i, \finchextent(a, b), E[\finchsieve(i == a, \finchassign(\finchaccess(body, j...), op, rhs))]), s\rangle}}
 \end{prooftree}
 \vspace{6pt}
 
@@ -312,15 +333,15 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
 \vspace{6pt}
 
 \begin{prooftree}
-    \infer0[$Phase$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle}{\rightarrow \langle \text{\finchloop}(i, extent(max(a, c), min(b, d)), E[\text{\finchaccess}(body, j..., i)]), s\rangle}}
+    \infer0[$Phase$]{\splitfrac{\langle \finchloop(i, \finchextent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle}{\rightarrow \langle \text{\finchloop}(i, extent(max(a, c), min(b, d)), E[\text{\finchaccess}(body, j..., i)]), s\rangle}}
 \end{prooftree}
 \vspace{6pt}
 
 \begin{prooftree}
     \hypo{\llangle preamble, t \rrangle \rightarrow t'}
-    \hypo{\langle E[body], (e, t') \rangle \rightarrow (e', t'')}
+    \hypo{\langle E[body], (e, t', d) \rangle \rightarrow (e', t'', d)}
     \hypo{\llangle epilogue, t'' \rrangle \rightarrow t'''}
-    \infer3[$Thunk$]{\langle E[thunk(preamble, body, epilogue)], (e, t')\rangle \rightarrow (e', t''')}
+    \infer3[$Thunk$]{\langle E[thunk(preamble, body, epilogue)], (e, t', d)\rangle \rightarrow (e', t''', d)}
 \end{prooftree}
 \vspace{6pt}
 
@@ -337,15 +358,43 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
 
 \begin{prooftree}
     \hypo{\llangle seek(a), t \rrangle \rightarrow t'}
-    \infer1[$StepperSeek$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t)\rangle}{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t')\rangle}}
+    \infer1[$StepperSeek$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t, d)\rangle}{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t', d)\rangle}}
 \end{prooftree}
 \vspace{6pt}
 
 \begin{prooftree}
-    \hypo{\langle \finchloop(i, ext, E[\finchaccess(body, j..., i)]), (e, t) \rangle \rightarrow (e', t')}
+    \hypo{\langle \finchloop(i, ext, E[\finchaccess(body, j..., i)]), (e, t, d) \rangle \rightarrow (e', t', d)}
     \hypo{\llangle next, t' \rrangle \rightarrow t''}
-    \infer2[$StepperNext$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), (e', t'')\rangle}}
+    \infer2[$StepperNext$]{\splitfrac{\langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), s\rangle}{\rightarrow \langle \finchloop(i, ext, E[\finchaccess(stepper(body, next), j..., i)]), (e', t'', d)\rangle}}
 \end{prooftree}
+
+
+    \vspace{6pt}
+    
+%    \begin{prooftree}
+%    \hypo{s = (e, t, d)}
+%    \hypo{\langle a, s \rangle \Rightarrow a'}
+%    \hypo{\langle b, s \rangle \Rightarrow b'}
+%    \hypo{a' < b'}
+%    \hypo{\langle body, (e[i \mapsto a'], t, \{\}) \rangle \rightarrow s_2}
+%    \infer5[$Loop$]{\langle\finchloop(i, \finchextent(a, b), body), s_1\rangle \rightarrow \finchloop(i, \finchextent(a + 1, b), body), s_2\rangle}
+%    \end{prooftree}
+%    \hfill
+%    \vspace{6pt}
+    
+    \begin{prooftree}
+    \infer0[$Loop$]{\splitfrac{\langle\finchloop(i, \finchextent(a, b), body), s\rangle}{\rightarrow \finchblock(\finchdeclare(i, a, body), \finchsieve(a < b, \finchloop(i, \finchextent(a + 1, b), body)), s\rangle}}
+    \end{prooftree}
+    
+\vspace{6pt}
+    \begin{prooftree}
+    \hypo{e(tns) \mapsto tns'}
+    \hypo{e(\finchmode(tns)) \mapsto \finchread}
+    \hypo{\llangle unfurl(tns', \finchread), t\rrangle \rightarrow tns''}
+    \infer3[$Access$]{\langle E[\finchaccess(tns)], s\rangle \rightarrow \langle E[tns''], s\rangle} 
+\end{prooftree}
+
+
 
 
     \caption{Looplet evaluation semantics. 
@@ -363,7 +412,7 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
     %
     However, this also means we must specify
     the priority in which we apply looplet rules, which is as follows:
-    $Thunk > Phase > Switch > Simplify > Run > Spike > Sequence > StepperSeek > StepperNext > Lookup > Unfurl$
+    $Thunk > Phase > Switch > Simplify > Run > Spike > Sequence > StepperSeek > StepperNext > Lookup > AcceptRun > Unfurl > Loop > Access$.
     %
     Many looplets, most notably the thunk looplet, introduce variables into the
     host language environment. 

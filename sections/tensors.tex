@@ -192,7 +192,7 @@ to be in read-only mode.
 
 \vspace{3pt}
 
-$unfurl(fiber(lvl, pos), ext, mode)$: Unfurls the fiber at position
+$unfurl(fiber(lvl, pos), [ext], mode)$: Unfurls the fiber at position
 $pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
 returns a looplet nest over the values in the read-only fiber.  When $mode =
 \finchupdate$, returns a looplet nest over mutable subfibers in the update-only
