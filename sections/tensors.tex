@@ -192,12 +192,12 @@ to be in read-only mode.
 
 \vspace{3pt}
 
-$unfurl(fiber(lvl, pos), [ext], mode)$: Unfurls the fiber at position
+$unfurl(fiber(lvl, pos), [ext], mode, [op], [rhs])$: When $ext$ is given, unfurls the fiber at position
 $pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
 returns a looplet nest over the values in the read-only fiber.  When $mode =
 \finchupdate$, returns a looplet nest over mutable subfibers in the update-only
-fiber. Often, skipping over mutable locations allows the level to know which
-locations must be stored. Additionally, a dirty bit may be used to communicate
+fiber. When applied to a scalar or leaf node, $ext$ is omitted and we may also use $op$ and $rhs$ to update the scalar value. Often, skipping over mutable locations allows the level to know which
+locations must be stored. Often, a dirty bit may be used in $tns$ to communicate
 whether the mutable subfiber has been written to, which allows the parent fiber
 to know whether the subfiber must be stored explicitly.
 

@@ -269,7 +269,7 @@ To our knowledge, the Finch programming language is the first to support if-cond
 %
 For example, Finch has been extended to support real-valued array indices with continuous arrays \cite{won2024continuous}.
 %
-\item We evaluate the efficiency, flexibility, and expressibility of our language in several case studies, showing that Finch can be used to accelerate a wide range of applications,  from classic operations such as spmv and spgemm, to more complex applications such as image processing, graph analytics, and the Python Array API. \willow{add speedups and loc}
+\item We evaluate the efficiency, flexibility, and expressibility of our language in several case studies on a wide range of applications, demonstrating speedups over the state of the art in classic operations such as spmv ($2.51\times$) and spgemm ($1.25\times$), to more complex applications such as graph analytics ($3.53\times$, reducing lines of code by $0.25\times$ over GraphBLAS), image processing ($19.5\times$), and the Python Array API ($28\times$).
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
 %\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
@@ -281,4 +281,4 @@ For example, Finch has been extended to support real-valued array indices with c
 
 \end{enumerate}
 
-This advances the state-of-the-art over the Looplets work. While Looplets presented a way to merge iterators over multiple single dimensional structures, we go further by combining single-dimensional looplets into multi-dimensional tensors and operating on them in a programming language with fully-featured control flow.
+This advances the state-of-the-art over the looplets work \cite{ahrens_looplets_2023}. While Looplets presented a way to merge iterators over multiple single dimensional structures, we go further by combining single-dimensional looplets into multi-dimensional tensors and operating on them in a programming language with fully-featured control flow.
