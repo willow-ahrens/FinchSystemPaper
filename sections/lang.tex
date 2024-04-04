@@ -44,7 +44,7 @@ At the level of expressions, we support a wide array of scalar operations throug
 %
 The expressions can also interact with indices and extents.
 % FIXME: ???
-Finally, as detailed in the previous section, tensors are defined externally via an interface that supports the declare, freeze, thaw, and unfurl functions.
+Finally, as detailed in the previous section, tensors are defined externally via an interface that supports the $declare$, $freeze$, $thaw$, and $unfurl$ functions.
 %
 The first three are supported directly in the syntax whereas the four will be introduced through evaluation of \mintinline{julia}{for}-loops loops and accesses,
 in the next section.
@@ -111,12 +111,11 @@ We present a sketch of a small-step operational semantics, showing how to execut
 %
 We distinguish evaluation of the language by evolving compiler state with $\langle \rangle$ and evaluation in the host language via $\llangle\rrangle$.
 %
-For example, in Figure~\ref{fig:semantics_core}, we declare the core semantics of the language and the Define rule (\mintinline{julia}{let}) adds a definition to the compiler state whereas the Call rule passes evaluation off to the host.
+For example, in Figure~\ref{fig:semantics_core}, we declare the core semantics of the language and the $Define$ rule (\mintinline{julia}{let}) adds a definition to the compiler state whereas the $Call$ rule passes evaluation off to the host.
 %
 In Figure~\ref{fig:semantics_looplets}, we detail the Looplet evaluation semantics, which details how acceses within a loop can be replaced with Loopets, which are progressively rewritten to host code.
 %
 Due to the use of rewrite rules, our semantics here make use of an evaluation context.
-
 
 We include the sketch of our semantics to highlight several key design choices.
 %
@@ -128,20 +127,19 @@ We eliminate problems that in a less restrictive language would require alias an
 %
 These restrictions play a similar role to that of a pure function in Halide~\cite{ragan-kelley_halide_2013}.
 %
-Second, loops with tensor accesses enter into a looplet system via the Unfurl rule.
+Second, loops with tensor accesses enter into a looplet system via the $Unfurl$ rule.
 %
-In this system, repeated structures (Run) and constant information (Switch)  are slowly uncovered as accesses are lowered in various points in the program.
+In this system, repeated structures and constants are slowly uncovered as accesses are lowered in various points in the program (e.g. $Run$  and $Switch$, respectively).
 %
-In this process, we are able to use rewrite rules (Simplify) to eliminate cases, unnecessary iterations, and so forth based on the information provided via Looplets and via the control flow (loops, sieve, definitions).
+In this process, we are able to use rewrite rules in $Simplify$ to eliminate cases, unnecessary iterations, and so forth based on the information provided via Looplets and via the control flow (loops, sieve, definitions).
 %
 
 
-Though the user may doubt the coverage of this approach, the next section will detail how the compiler adds additional features on top of this core language ultimately through the assurance that accesses to tensor values will first unravel to Looplets and then simplify in the context of the location of the access.
+Though the reader may doubt the coverage of this approach, the next section will detail how the compiler adds additional features on top of this core language ultimately through the assurance that accesses to tensor values will first unravel to Looplets and then simplify in the context of the location of the access.
 %
 In the next section, we will handle complex index access expressions involving indirection and arithmetic by transforming complex accesses to additional loop variables with additional tensor accesses to insert Looplets to provide the structure dictated by the complex control flow.
 %
 Also in the next section, we will show how similar means lets us exploit the structure of complex conditional expressions when the structure of the expressions is placed inside a tensor access.
-
 
 
 
@@ -164,9 +162,6 @@ Also in the next section, we will show how similar means lets us exploit the str
     \centering
     \footnotesize
 
-% \begin{multline*}
-%         Modes:=update \mid read \mid undefined \mid defined
-% \end{multline*}
     \begin{prooftree}
     \hypo{\langle val, (e, t, d) \rangle
     \rightarrow val'}
@@ -187,12 +182,6 @@ Also in the next section, we will show how similar means lets us exploit the str
     \end{prooftree}
     \hfill
     \begin{prooftree}
-        \hypo{}
-        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t, d)\rangle \Rightarrow \llangle ex, t \rrangle}
-    \end{prooftree}
-    \vspace{6pt}
-
-    \begin{prooftree}
         \infer0[$Variable$]{\splitfrac{\langle\finchvar(name), (e, t, d)\rangle}{\rightarrow e(\finchvar(name))}}
     \end{prooftree}
     \hfill
@@ -202,15 +191,14 @@ Also in the next section, we will show how similar means lets us exploit the str
     \vspace{6pt}
 
     \begin{prooftree}
-    \hypo{s = (e, t, d)}
-    \hypo{\langle stmt_{0}, (e, t, \{\}) \rangle \rightarrow s_{1}}
-    \hypo{\langle stmt_{1}, s_{1} \rangle \rightarrow s_{2}}
-    \hypo{\dots}
-    \hypo{\langle stmt_{n}, s_{n} \rangle \rightarrow s_{n+1}}
-    \hypo{s_{n+1}= (e^{\prime}, t^{\prime}, d^{\prime})}
-        \infer6[$Block$]{\langle\finchblock(stmt_{0}, \dots, stmt_{n}), s \rangle \rightarrow (e^{\prime}, t^{\prime}, d) }
+    \hypo{\langle body, s \rangle \rightarrow s'}
+    \infer1[$Block$]{\langle\finchblock(body, tail...), s \rangle \rightarrow \langle \finchblock(tail...), s' \rangle }
     \end{prooftree}
     \hfill
+    \begin{prooftree}
+        \hypo{}
+        \infer1[$Value$]{\langle\finchvalue(ex, type), (e, t, d)\rangle \Rightarrow \llangle ex, t \rrangle}
+    \end{prooftree}
 
 
     \vspace{6pt}
@@ -233,7 +221,7 @@ Also in the next section, we will show how similar means lets us exploit the str
     \hypo{e(tns) = tns'}
     \hypo{\langle init, s \rangle \Rightarrow init'}
     \hypo{\forall i \langle init, dims_i \rangle \Rightarrow dims'_i}
-    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchupdate], \llangle declare(tns', init', dims'...), t \rrangle, d\cup\{ tns\})}
+    \infer5[$Declare$]{\langle \finchdeclare(tns, init, dims), s\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchupdate], \llangle \finchdeclare(tns', init', dims'...), t \rrangle, d\cup\{ tns\})}
     \end{prooftree}
     \vspace{6pt}
     
@@ -242,7 +230,7 @@ Also in the next section, we will show how similar means lets us exploit the str
     \hypo{e(\finchmode(tns)) = \finchupdate}
     \hypo{tns\in d}
     \hypo{e(tns) = tns'}
-    \infer4[$Freeze$]{\langle\finchfreeze(tns), (e, t)\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchread], \llangle freeze(tns'), t \rrangle, d)}
+    \infer4[$Freeze$]{\langle\finchfreeze(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchread], \llangle freeze(tns'), t \rrangle, d)}
     \end{prooftree}
     \vspace{6pt}
 
@@ -251,7 +239,7 @@ Also in the next section, we will show how similar means lets us exploit the str
     \hypo{e(\finchmode(tns)) = \finchread}
     \hypo{tns\in d}
     \hypo{e(tns) = tns'}
-    \infer4[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto update], \llangle thaw(tns'), t \rrangle, d)}
+    \infer4[$Thaw$]{\langle\finchthaw(tns), s\rangle \rightarrow (e [\finchmode(tns) \mapsto \finchupdate], \llangle thaw(tns'), t \rrangle, d)}
     \end{prooftree}
 
     
@@ -278,12 +266,12 @@ Also in the next section, we will show how similar means lets us exploit the str
     This means that rules which modify $t$ are running in the host language.
     %
     Several Looplets introduce variables into the embedding
-    language, which may be read when evaluating the \finchvalue node.
+    language, which may be read when evaluating the {\finchvalue} node.
 %
      All of the lifecycle
     functions are designed to be implemented and executed in the host language,
     but these semantics enforce that each of these functions may update state in
-    the host language and flip the mode of the tensor between read and update}
+    the host language and flip the mode of the tensor between {\finchread} and {\finchupdate}}
     \label{fig:semantics_core}
 \end{figure}
 
@@ -333,7 +321,7 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
 \vspace{6pt}
 
 \begin{prooftree}
-    \infer0[$Phase$]{\splitfrac{\langle \finchloop(i, \finchextent(a, b), E[\finchaccess(phase(extent(c, d), body), j..., i)]), s\rangle}{\rightarrow \langle \text{\finchloop}(i, extent(max(a, c), min(b, d)), E[\text{\finchaccess}(body, j..., i)]), s\rangle}}
+    \infer0[$Phase$]{\splitfrac{\langle \finchloop(i, \finchextent(a, b), E[\finchaccess(\finchphase(\finchextent(c, d), body), j..., i)]), s\rangle}{\rightarrow \langle \text{\finchloop}(i, \finchextent(max(a, c), min(b, d)), E[\text{\finchaccess}(body, j..., i)]), s\rangle}}
 \end{prooftree}
 \vspace{6pt}
 
@@ -358,7 +346,7 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
 
 \begin{prooftree}
     \hypo{\llangle seek(a), t \rrangle \rightarrow t'}
-    \infer1[$StepperSeek$]{\splitfrac{\langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t, d)\rangle}{\rightarrow \langle \finchloop(i, extent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t', d)\rangle}}
+    \infer1[$StepperSeek$]{\splitfrac{\langle \finchloop(i, \finchextent(a, b), E[\finchaccess(stepper(seek, body, next), j..., i)]), (e, t, d)\rangle}{\rightarrow \langle \finchloop(i, \finchextent(a, b), E[\finchaccess(stepper(body, next), j..., i)]), (e, t', d)\rangle}}
 \end{prooftree}
 \vspace{6pt}
 
@@ -383,7 +371,7 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
 %    \vspace{6pt}
     
     \begin{prooftree}
-    \infer0[$Loop$]{\splitfrac{\langle\finchloop(i, \finchextent(a, b), body), s\rangle}{\rightarrow \finchblock(\finchdeclare(i, a, body), \finchsieve(a < b, \finchloop(i, \finchextent(a + 1, b), body)), s\rangle}}
+    \infer0[$Loop$]{\splitfrac{\langle\finchloop(i, \finchextent(a, b), body), s\rangle}{\rightarrow \langle \finchblock(\finchdefine(i, a, body), \finchsieve(a < b, \finchloop(i, \finchextent(a + 1, b), body))), s\rangle}}
     \end{prooftree}
     
 \vspace{6pt}
@@ -422,7 +410,7 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
     variables), we forbid child looplets from modifying any state variables that
     they didn't introduce. 
     %
-    This allows us to treat the \finchvalue node as a
+    This allows us to treat the {\finchvalue} node as a
     constant.
     %
     Note: the $Simplify$ rule references $algebra$, which is our variable
