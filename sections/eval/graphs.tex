@@ -6,6 +6,8 @@ We used Finch to implement two fundamental graph algorithms: Breadth-first searc
 Direction-optimization~\cite{beamer2012direction} is crucial for achieving high BFS performance in such scenarios, switching between push and pull traversals to efficiently explore graphs. Push traversal visits the neighbors of each frontier node, while pull traversal visits every node and checks to see if it has a neighbor in the frontier. The advantage of pull traversal is that we may terminate our search once we find a node in the frontier, saving time in the event the push traversal were to visit most of the graph anyway. Early break is the critical part of control flow in this algorithm, though the algorithms also require different loop orders, multiple outputs, and custom operators.
 
 Figure~\ref{fig:graph_result} compares performance to Graphs.jl, an open-source Julia library, and the LAGraph Library, which implements graph algorithms in the language of linear algebra using GraphBLAS~\cite{mattson2019lagraph}. For the BFS algorithm, direction-optimization notably enhances performance for scale-free graphs. Although GraphBLAS uses hardwired optimizations, Finch is competitive on these benchmarks. On Bellman-Ford (with path lengths and shortest-path tree), Finch's support for multiple outputs, sparse inputs, and masks leads to superior performance over GraphBLAS (average speedup of 3.53). Note that we did not include GAP-road as it took too long to run. %speedup is arith-mean
+
+In Section~\ref{sec:graph_listings}, we display the code for BFS and Bellman-Ford in Finch (57 and 50 LOC) and LAGraph (215 and 227 LOC), and invite readers to compare the clarity of the algorithms.
  
 \begin{figure}
 	\includegraphics[width=0.5\linewidth]{bfs_speedup_over_graphs.jl.png}%
