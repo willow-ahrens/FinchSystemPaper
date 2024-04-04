@@ -37,7 +37,7 @@ To demonstrate the performance of our array implementation, we evaluate it on 1)
 
 %we evaluate it on a series of kernels which benefit from the kind of kernel fusion that it automatically applies
 
-Across all three of these kernels, we see that the high level interface for Finch provides a major improvement over DuckDB, ranging from $1.2x-28x$. For triangle counting and SDDMM, this improvement stems from DuckDB's use of binary join plans which, while not materializing intermediates, don't optimally intersect the nonzero indices for cyclic queries \footnote{This matches with findings in the database literature showing that worst-case optimal joins (which are very similar to our kernel execution) are more efficient than binary joins for these queries \cite{wang2023free}.}. For element-wise operations, this improvement stems from Finch's better handling of expressions which combine index intersection and union and its compressed data representation.
+Across all three of these kernels, we see that the high level interface for Finch provides a major improvement over DuckDB, ranging from $1.2x-28x$. For triangle counting and SDDMM, this improvement stems from Finch's efficient intersection of the nonzero indices as opposed to DuckDB's use of binary join plans\footnote{This matches with findings in the database literature showing that worst-case optimal joins (which are very similar to our kernel execution) are more efficient than binary joins for these queries \cite{wang2023free}.}. For element-wise operations, this improvement stems from Finch's better handling of expressions which combine index intersection and union and its compressed data representation.
 
 \begin{figure}
 \begin{tabular}{p{0.33\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
