@@ -221,6 +221,8 @@ or bytemaps) may support reassembly.}}
     $declare(lvl, init, dims...)$ & Declares the level to hold subtensors of size $dims$ and an initial value of $init$. Requires the level to be in
 read-only mode.
 \hline
+$freeze(lvl)$: Finalizes the updates in the level, and readies the
+level for reading. Requires the level to be in update-only mode.
 
 
     \end{tabular}
@@ -228,8 +230,7 @@ read-only mode.
 
 \vspace{3pt}
 
-\fbox{\parbox{\textwidth}{$freeze(lvl)$: Finalizes the updates in the level, and readies the
-level for reading. Requires the level to be in update-only mode.}}
+
 
 \vspace{3pt}
 
