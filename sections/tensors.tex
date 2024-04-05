@@ -28,15 +28,15 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
-\begin{wrapfigure}{R}{0.5\linewidth}
+\begin{wrapfigure}{R}{0.45\linewidth}
     \centering
     \vspace{-8pt}
     \includegraphics[width=\linewidth]{LevelsVsFibers-matrix.png}
     %\includegraphics[width=0.5\linewidth]{LevelsVsFibers-tensor.png}
-    \vspace{-8pt}
+    \vspace{-16pt}
     \caption{Levels in the fiber tree representation of a sparse matrix in CSC format, with a dense outer level and a sparse inner level. The element level holds the leaves of the tree.}
     \label{fig:levelsvsfibers}
-    \vspace{-8pt}
+    \vspace{-24pt}
 \end{wrapfigure}
 
 In the rest of this section, we describe this functionality in detail after we review the basics of level abstractions~\cite{sze2017efficient,chou2022compilation, chou2018format}.
@@ -179,17 +179,17 @@ by freezing or thawing the tensor.
 \fbox{\parbox{\textwidth}{$declare(lvl, init, dims...)$: Declares the level to hold subtensors of size $dims$ and an initial value of $init$. Requires the level to be in
 read-only mode.}}
 
-\vspace{3pt}
+\vspace{1pt}
 
 \fbox{\parbox{\textwidth}{$freeze(lvl)$: Finalizes the updates in the level, and readies the
 level for reading. Requires the level to be in update-only mode.}}
 
-\vspace{3pt}
+\vspace{1pt}
 
 \fbox{\parbox{\textwidth}{$thaw(lvl)$: Prepares the level to accept updates. Requires the level
 to be in read-only mode.}}
 
-\vspace{3pt}
+\vspace{1pt}
 
 \fbox{\parbox{\textwidth}{$unfurl(fiber(lvl, pos), [ext], mode, [op], [rhs])$: When $ext$ is given, unfurls the fiber at position
 $pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
@@ -200,7 +200,7 @@ locations must be stored. Often, a dirty bit may be used in $tns$ to communicate
 whether the mutable subfiber has been written to, which allows the parent fiber
 to know whether the subfiber must be stored explicitly.}}
 
-\vspace{3pt}
+\vspace{1pt}
 
 \fbox{\parbox{\textwidth}{$assemble(lvl, pos_{start}, pos_{stop})$: Allocates subfibers in the
 level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
@@ -337,9 +337,38 @@ data twice to determine the number of required output nonzeros.
     combining these level structures in a tree, as shown in
     Figure~\ref{fig:structuraldiversity}.
 
-    \begin{wrapfigure}{r}{.35\textwidth}
+    
+
+ 
+    
+    \begin{figure}
         \centering
+        \includegraphics[width=\linewidth]{Structures.png}\hfill%
         \vspace{-8pt}
+        \caption{Several examples of matrix structures represented using the
+        level structures identified in Table~\ref{tab:TypesOfStructure}.
+        Comparing this figure to \cite[Figure 3]{ahrens_looplets_2023}, we see
+        that a level-by-level structural decomposition is diagrammed together
+        with the Looplets.}
+        \label{fig:structuraldiversity}
+        \vspace{-18pt}
+    \end{figure}
+
+\subsection{Randomly Accessible Temporary Levels}
+To reduce the implementation burden and improve efficiency in the common case, the levels we described in the previous section only support bulk,
+sequential creation of formats. However, when users want to be able to write out
+of order (which is a common requirement arising from loop order or from the
+problem itself, it occurs in our spgemm algorithms and our histogram example in
+the evaluation section), we must use more complicated datastructures like hash
+tables and trees to support the random access. Because these datastructures are
+more complex and have a higher implementation burden and performance overhead,
+we only support random access construction of sparse or dense structures.  We
+can use these two more general structures as intermediates to convert to our
+more specialized structures later.
+
+\begin{wrapfigure}{r}{.5\textwidth}
+        \centering
+        \vspace{-20pt}
         \scriptsize
         \begin{tabular}{|c|c|c|c|l|}
             \hline
@@ -371,35 +400,10 @@ data twice to determine the number of required output nonzeros.
         consider them together either. We omit such combinations
         from the exhaustive table.}
         \label{tab:TypesOfStructure}
-        \vspace{-12pt}
+        \vspace{-36pt}
     \end{wrapfigure}
-
- 
     
-    \begin{figure}
-        \centering
-        \includegraphics[width=\linewidth]{Structures.png}\hfill%
-        \vspace{-8pt}
-        \caption{Several examples of matrix structures represented using the
-        level structures identified in Table~\ref{tab:TypesOfStructure}.
-        Comparing this figure to \cite[Figure 3]{ahrens_looplets_2023}, we see
-        that a level-by-level structural decomposition is diagrammed together
-        with the Looplets.}
-        \label{fig:structuraldiversity}
-        \vspace{-18pt}
-    \end{figure}
 
-\subsection{Randomly Accessible Temporary Levels}
-To reduce the implementation burden and improve efficiency in the common case, the levels we described in the previous section only support bulk,
-sequential creation of formats. However, when users want to be able to write out
-of order (which is a common requirement arising from loop order or from the
-problem itself, it occurs in our spgemm algorithms and our histogram example in
-the evaluation section), we must use more complicated datastructures like hash
-tables and trees to support the random access. Because these datastructures are
-more complex and have a higher implementation burden and performance overhead,
-we only support random access construction of sparse or dense structures.  We
-can use these two more general structures as intermediates to convert to our
-more specialized structures later.
 
 \HIDE{\saman{Can we not put future work into the submission!} As future work, we also recommend the implementation of a tree-based format, as this would enable incremental construction. Currently, the cost of freezing and thawing is usually proportional to the number of stored fibers, so an operation that sets a single value in a tensor would be prohibitively expensive (i.e.  $A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an intermediate randomly accessible structure, because (unlike blocks or singletons), runs have asymptotic benefits. However, these cases were not necessary for our case studies.}
 
@@ -429,7 +433,7 @@ annihilator.
 We assume that we don't need to re-specialize other looplets because the stepper
 is the only one which repeats a non-constant number of times.
 
-\begin{table}[ht]
+\begin{table}[h]
     \centering
     \scriptsize
     \renewcommand{\arraystretch}{1.3}
@@ -526,6 +530,7 @@ is the only one which repeats a non-constant number of times.
     A scalar which triggers early breaks in reductions whenever an annihilator is encountered.\\
     \hline
     \end{tabular}
+    \vspace{8pt}
     \caption{The main level formats supported by Finch. Note that all non-leaf
     levels store a the dimension of the subfibers and a child level. Since we
     must be able to handle the case where a sublevel is not stored because a

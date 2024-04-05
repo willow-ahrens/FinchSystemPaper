@@ -31,6 +31,7 @@ This is implemented by 1) Finch Logic, a minimal, high-level language for expres
 
 \begin{wrapfigure}{R}{0.6\linewidth}
   \scriptsize
+  \vspace{-12pt}
 \begin{minted}{julia}
   EXPR := table(TENSOR, FIELDS...) |         #TENSOR is an immediate tensor
     ALIAS | FIELD | mapjoin(OP, EXPRS...) |  #OP is a immediate function
@@ -40,6 +41,7 @@ This is implemented by 1) Finch Logic, a minimal, high-level language for expres
     reformat(TENSOR, EXPR)                     PLAN := plan(QUERIES..., PRODUCES)
                                               QUERY := query(ALIAS, EXPR)
 \end{minted}
+\vspace{-12pt}
 \caption{\scriptsize Finch Logic Syntax. }\label{fig:finch_logic_syntax}
 \begin{minted}{python}
   sum(A, dims=2) = aggregate(+, relabel(A, i_1, ..., i_d), i_2)
@@ -50,7 +52,9 @@ This is implemented by 1) Finch Logic, a minimal, high-level language for expres
   slice(A, i:j) = table(WindowedArray(A, i:j), k)
   cat(A, B) = mapjoin(coalesce, table(PermissiveArray(A), i), table(OffsetArray(B, length(A)), i))
 \end{minted}
+\vspace{-12pt}
 \caption{\scriptsize Implementations of a few common functions in Finch Logic. Here, \texttt{minby(x, y)} compares \texttt{x[1]} and \texttt{y[1]} and returns the smaller \texttt{x} or \texttt{y}. \texttt{scaled\_plus} rescales whichever argument is smaller, then adds the values with the same scale. \texttt{ifelse(c, a, b)} returns \texttt{a} when \texttt{c} is true,  \texttt{b} otherwise. Finch can understand declared properties and rewrite rules for all of these functions and types, extending these algorithms to operate on structured arguments.} \label{fig:api_extensible}
+\vspace{-18pt}
 \end{wrapfigure}
 \subsubsection{Finch Logic and the Physical Interpreter}
 Finch Logic is used as a common representation to implement and fuse the operations in the Array API.

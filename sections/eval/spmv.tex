@@ -1,7 +1,8 @@
 \begin{wrapfigure}{r}{0.41\linewidth}
-    \vspace{-28pt}
+    \vspace{-36pt}
     \begin{minipage}[t]{0.18\textwidth}
         \begin{minted}{julia}
+        
             y .= 0
             for j = _, i = _
               y[i] += A[i, j] * x[j]
@@ -34,10 +35,10 @@
             end
         \end{minted}
     \end{minipage}
-    \vspace{-8pt}
+    \vspace{-12pt}
     \caption{Finch row-major, column-major and symmetric SpMV Programs}
     \label{spmv_programs}
-    \vspace{-12pt}
+    \vspace{-36pt}
   \end{wrapfigure}
   \subsection{Sparse Matrix-Vector Multiply (SpMV)}
   Sparse matrix-vector multiplication (SpMV) has a wide range of applications and has been thoroughly studied~\cite{liu_csr5_2015,
@@ -72,8 +73,7 @@
   \begin{wrapfigure}{r}{0.5\linewidth}
     \scriptsize
     \centering
-    \vspace{-12pt}
-    \vspace{-12pt}
+    \vspace{-16pt}
     \begin{tabular}{|r|l|l|}
         \hline
         \textbf{Format} & \textbf{Style of Matrix}\\
@@ -86,6 +86,7 @@
         %\mintinline{julia}{Dense(SparseRLE(Pattern(0.0)))} & matrix with runs of true or false \\
         \hline 
     \end{tabular}
+      \vspace{-8pt}
     \caption{SpMV Tensor Formats}
     \label{spmv_tensor_formats}
     \vspace{-8pt}
