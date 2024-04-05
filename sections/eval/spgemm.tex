@@ -58,9 +58,9 @@
     \vspace{-12pt}
 \end{figure}
 
-Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics. 
+%Sparse Matrix-Matrix Multiplication (SpGEMM) is a fundamental operation in scientific computing and data analytics. 
 We compute the $M \times N$ sparse matrix $C$ as the product of $M \times K$ and $K \times N$ sparse matrices $A$ and $B$.
-
+%
 There are three main approaches to SpGEMM \cite[Section 2.2]{zhang2021gamma}.
 %
 The inner-products algorithm takes dot products of corresponding rows and columns, while the outer-products algorithm sums the outer products of corresponding columns and rows.
@@ -68,20 +68,29 @@ The inner-products algorithm takes dot products of corresponding rows and column
 Gustavson's algorithm sums the rows of $B$ scaled by the corresponding nonzero columns in each row of $A$.
 %
 Inner-products is known to be asymptotically less efficient than the others, as we must do a merge operation to compute each of the $O(MN)$ entries in the output \cite{ahrens2022autoscheduling}.
+%
+We will show that our ability to implement these latter methods exceeds that of TACO, translating to asymptotic benefits. 
+% 
 
 Figure~\ref{fig:spgemm_listing} implements all three approaches in Finch, and Figure~\ref{fig:spgemm} compares the performance of Finch to TACO.
 %
-Note that these algorithms mainly differ in their loop order, but that different datastructures can be used to support the various access patterns induced.
-%
-Although a sparse bytemap has a dense memory footprint, we use it in our Finch implemenation of Gustavson's for the smaller $O(N)$ intermediate.
+Note that these algorithms mainly differ in their loop order, but that different data structures can be used to support the various access patterns induced.
 %
 In our Finch implementation of outer products, we use a sparse hash table, as it is fully-sparse and randomly accessible.
 %
-Unfortunately, TACO does not support multidimensional sparse workspaces, only supporting outer-products with a dense output, a limitation with asymptotic consequences.
+Since, TACO does not support multidimensional sparse workspaces, its outer products uses a dense intermediate, which leads to an asymptotic slow down shown in Figure~\ref{fig:spgemm}.
 %
-It is also worth mentioning that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporary formats and transpositions.
-
-As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. Finch outperforms TACO on larger matrices, with an average speedup of 1.25. %arith-mean
+Similarly, although a sparse bytemap has a dense memory footprint, we use it in our Finch implementation of Gustavson's for the smaller $O(N)$ intermediate.
+%
+We note that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporaries and transpositions.
+%
+Without such hard wiring, TACO would have to use a dense intermediate to support random writes.
+%
+But without if conditions, TACO would then be forced to propagate all values in the dense vector to the sparse output matrix, turning the output dense and leading to the same asymptotic results as in the case of outer products. 
+%
+As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. 
+%
+Finch outperforms TACO on larger matrices, with an average speedup of 1.25. %arith-mean
 
 %\changwan{(self)may remove this number for consistency with other exps. finch\_outer\_bytemap not explained.}
 
