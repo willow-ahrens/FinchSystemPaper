@@ -216,9 +216,9 @@ or bytemaps) may support reassembly.}}
 
 \begin{figure}[ht]
 \footnotesize
-\begin{tabular} {|p|p{0.65\linewidth}|} 
+\begin{tabular} {|m{5em}|p{0.65\linewidth}|} 
     \hline
-    $declare(lvl, init, dims...)$ & Declares the level to hold subtensors of size $dims$ and an initial value of $init$. Requires the level to be in
+    $declare(lvl,$\newline{}$ init, dims...)$ & Declares the level to hold subtensors of size $dims$ and an initial value of $init$. Requires the level to be in
 read-only mode.\\
 \hline
 $freeze(lvl)$ & Finalizes the updates in the level, and readies the
@@ -227,7 +227,7 @@ level for reading. Requires the level to be in update-only mode.\\
 $thaw(lvl)$ & Prepares the level to accept updates. Requires the level
 to be in read-only mode.\\
 \hline
-$unfurl(fiber(lvl, pos), [ext], mode, [op], [rhs])$ & When $ext$ is given, unfurls the fiber at position
+$unfurl($\newline{}$fiber(lvl, pos),$\newline{}$ [ext], mode,$ \newline{} $[op], [rhs])$ & When $ext$ is given, unfurls the fiber at position
 $pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
 returns a looplet nest over the values in the read-only fiber.  When $mode =
 \finchupdate$, returns a looplet nest over mutable subfibers in the update-only
