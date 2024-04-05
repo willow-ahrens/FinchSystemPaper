@@ -1,9 +1,8 @@
 \vspace{12pt}
 \section{The Finch Language}
 
-
 \begin{wrapfigure}{R}{0.51\linewidth}
-    %\vspace{-26pt}
+    \vspace{-28pt}
     \begin{minted}{julia}
      EXPR := LITERAL | VALUE | INDEX | VARIABLE | EXTENT | CALL | ACCESSS
      STMT := ASSIGN | LOOP | DEFINE | SIEVE | BLOCK
@@ -24,12 +23,12 @@
         BLOCK := begin                     
                    STMT...                 
                  end                        
-    \end{minted}                                                   
+    \end{minted}                                                 
     \vspace{-12pt}
 \caption{The syntax of the finch language. Compare this grammar to the Concrete
 Index Notation of TACO \cite[Figure~3]{kjolstad_tensor_2019}, noting the
-addition of multiple left hand sides through code blocks, access with expressions, and explicit initialiation.}\label{fig:syntax}
-
+addition of multiple left hand sides through code blocks, access with arbitrary expressions, and explicit declaration, as well as freeze and thaw.}\label{fig:syntax}
+\vspace{-12pt}
 \end{wrapfigure}
 
 \subsection{Syntax}
@@ -50,18 +49,13 @@ The first three are supported directly in the syntax whereas the four will be in
 in the next section.
 %
 
-Our syntax is highly permissive: by allowing blocks of code with multiple statements, we support both multiple outputs and temporary tensors, seen most prominently in our implementation of gustavson's algorithm for sparse-sparse matrix multiply and breadth-first-search.
+Our syntax is highly permissive: by allowing blocks of code with multiple statements, we implicitly support many features gained through complicated scheduling commands in other frameworks, such as multiple outputs, masking to avoid work, temporary tensors, and arbitrary loop fusion and nesting.
 %
-Our breadth-first seach also uses an
-\mintinline{julia}{if} statement to avoid operating on vertices outside the
-frontier. 
+These features are seen most prominently in our implementation of gustavson's algorithm for sparse-sparse matrix multiply, which simply writes to a temporary tensor in an inner loop and then reuses it, or in our breadth-first-search, which uses an \mintinline{julia}{if} statement to avoid operating on vertices outside the frontier. 
 %
-We have found that \mintinline{julia}{if} is particularly useful in
-our model for masking to avoid work.
+The only restriction we impose on our syntax is that it must respect tensor life cycles.
 %
-However, to compile these constructs efficiently, we must restrict this syntax in several ways, as we have alluded to in the previous section, via life cycles.
-%
-In the semantics section, we detail other specifics that allow us to specialize our syntax efficient code over structured data.
+In the semantics section, we detail the specifics of how we compile our syntax to efficient code over structured data.
 
 
 % Finch uses looplets to lower \mintinline{julia}{for}-loops, though a sparse
@@ -119,15 +113,19 @@ Due to the use of rewrite rules, our semantics here make use of an evaluation co
 
 We include the sketch of our semantics to highlight several key design choices.
 %
-First, we note that the life cycle rules (in combination with the definition rules) prevent programs that read and write to values within a loop except in the narrow circumstance of updates, which cannot even be applied to scalar definitions.
+First, we note that the life cycle rules (in combination with the definition rules) prevent programs that access tensors on both the left and the right hand side of an incrementing assignment within a loop.
 %
-Beyond the simple management of iterator state, these rules allow us to effectively analyze the propagation of constants within a loop.
+Tensors may only change their mode in the scope in which they were declared.
 %
-We eliminate problems that in a less restrictive language would require alias analysis so that we can tell when a zero or repetitive value read from one tensor is being used in an expression or written to another tensor.
+The $\finchloop$, $\finchdeclare$, and $\finchsieve$ nodes introduce new scopes, and tensors without declarations
+are assumed to have global scope.
 %
-These restrictions play a similar role to that of a pure function in Halide~\cite{ragan-kelley_halide_2013}.
+Beyond the simple management of iterator state, these rules allow us to effectively analyze the propagation of constants, zeros, and repetitive values within a loop, eliminating problems that in a less restrictive language would require alias analysis.
+%(similar to the role of a pure functions in Halide~\cite{ragan-kelley_halide_2013}).
 %
-Second, loops with tensor accesses enter into a looplet system via the $Unfurl$ rule.
+%We eliminate problems that in a less restrictive language would require alias analysis to, for example, propagate a zero or repetitive value in a tensor.
+%
+Second, loops enter into a looplet system via the $Unfurl$ rule.
 %
 In this system, repeated structures and constants are slowly uncovered as accesses are lowered in various points in the program (e.g. $Run$  and $Switch$, respectively).
 %
@@ -135,11 +133,12 @@ In this process, we are able to use rewrite rules in $Simplify$ to eliminate cas
 %
 
 
-Though the reader may doubt the coverage of this approach, the next section will detail how the compiler adds additional features on top of this core language ultimately through the assurance that accesses to tensor values will first unravel to Looplets and then simplify in the context of the location of the access.
+The next section will detail how the compiler adds additional features on top of this core language.  
+We rely on the assurance that accesses to tensor values will first unravel to Looplets and then simplify in the context of the tensor access.
 %
-In the next section, we will handle complex index access expressions involving indirection and arithmetic by transforming complex accesses to additional loop variables with additional tensor accesses to insert Looplets to provide the structure dictated by the complex control flow.
+We will handle complex index access expressions involving indirection and arithmetic by transforming complex accesses to additional loop variables with additional tensor accesses to insert Looplets to provide the structure dictated by the complex control flow.
 %
-Also in the next section, we will show how similar means lets us exploit the structure of complex conditional expressions when the structure of the expressions is placed inside a tensor access.
+We will also show how we can similarly exploit the structure of complex conditional expressions when the structure of the expressions is placed inside a tensor access.
 
 
 
@@ -158,7 +157,7 @@ Also in the next section, we will show how similar means lets us exploit the str
 % Note that both Looplets and Finch are designed to be embedded into a larger
 % language, and a separate state variable is introduced for this language.  
 
-\begin{figure}
+\begin{figure}[b]
     \centering
     \footnotesize
 
