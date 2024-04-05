@@ -9,7 +9,7 @@ As the API's were designed for only one structure (Dense), the burden only grows
 %
 %In order to reduce the complexity of interactions between different formats, they're either limited to vectors and matrices or only support tabular representations.
 %
-Further, implementing each operation on its own is insufficient. Operator fusion is required to avoid asymptotic performance degredation on sparse kernels, as we show in Figure~\ref{fig:fusion}.
+Further, implementing each operation on its own is insufficient. Operator fusion is required to avoid asymptotic performance degradation on sparse kernels, as we show in Figure~\ref{fig:fusion}.
 %
 A flexible compiler like Finch, which can produce efficient code for arbitrary operations between inputs in a wide variety of formats, is the missing piece needed to implement the full array API for structured data with competitive performance.
 %
