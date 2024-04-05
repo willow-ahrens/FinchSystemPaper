@@ -116,18 +116,18 @@ or incremented by some operator.
 We can switch between these modes using freeze
 and thaw functions.
 %
-The declare function is used to allocate a tensor,
+The $declare$ function is used to allocate a tensor,
 initialize it to some specified size and value, and leave it in update-only
 mode. 
 
-The unfurl function is used to manage iteration over a subfiber. 
+The $unfurl$ function is used to manage iteration over a subfiber. 
 %
 At the point when it comes time to iterate over a tensor, be in on the left or right hand
-side of an assignment, we call the unfurl function to precompute whatever state
+side of an assignment, we call $unfurl$ to precompute whatever state
 and datastructures are necessary to return a looplet nest that would iterate
 over that level of a tensor.
 %
-The unfurl function is called directly before
+We call $unfurl$ directly before
 iterating over the corresponding loop, so it has access to any state variables introduced
 by freezing or thawing the tensor.
 
@@ -239,18 +239,18 @@ $assemble(tns, pos_{start}:pos_{stop})$, which allocates fibers at positions
 $pos_{start}:pos_{stop}$ in the level. We don't specify a de-allocation
 function, instead relying on initialization to reset the fiber if it needs to be
 reused. While all of the previous functions are used to manage the lifecycle and
-iteration over a general tensor, the assemble function is quite specific to the
+iteration over a general tensor, $assemble$ is quite specific to the
 level abstraction, and the notion of positions within sublevels. Note: it was an
 intentional choice to hold the parent level responsible for managing the
 data of the sublevels, which positions they allocate, etc. This allows the parent
 level to reuse allocation logic from internal index datastructures. For example,
 a sparse level might use a list of indices to store which nonzeros are present,
-and when it comes time to resize that list, it could also call assemble to resize the
-sublevel, reducing the number of branches in the code. The assemble function
+and when it comes time to resize that list, it could also call $assemble$ to resize the
+sublevel, reducing the number of branches in the code. The $assemble$ function
 lends itself particularly to a "vector doubling" allocation approach, which we
 have found to be effective and flexible when managing the allocation
-of sparse left hand sides. This benefit is made clear in our evaluation section,
-where we see that prior systems like TACO do not support all possible loop
+of sparse left hand sides. This benefit is made clear in our case studies,
+where prior systems like TACO do not support all possible loop
 orderings and format combinations for sparse matrix multiply because they do
 not have a flexible enough allocation strategy, instead using a two-phase approach
 which requires computing a complicated closed-form kernel to iterate over the
@@ -258,7 +258,43 @@ data twice to determine the number of required output nonzeros.
 
 \subsection{The 4 Key Structures}
 
+\begin{wrapfigure}{r}{.4\textwidth}
+    \vspace{-12pt}
+    \centering
+    \scriptsize
+    \begin{tabular}{|c|c|c|c|l|}
+        \hline
+        \rothead{Sparse} & \rothead{Blocked} & \rothead{Runs} & \rothead{Singular } & \begin{tabular}{@{}l@{}}\textbf{Corresponding} \\ \textbf{Format}\end{tabular} \\ \hline
+        &  &  &  & Dense \\ \hline
+        &  &  & $\checkmark$ & n/a \\ \hline
+        &  & $\checkmark$ &  & DenseRLE \\ \hline
+        &  & $\checkmark$ & $\checkmark$ & n/a \\ \hline
+        & $\checkmark$ &  &  & n/a \\ \hline
+        & $\checkmark$ &  & $\checkmark$ & n/a \\ \hline
+        & $\checkmark$ & $\checkmark$ &  & n/a \\ \hline
+        & $\checkmark$ & $\checkmark$ & $\checkmark$ & n/a \\ \hline
+       $\checkmark$ &  &  &  & Sparse \\ \hline
+       $\checkmark$ &  &  & $\checkmark$ & SparsePinpoint \\ \hline
+       $\checkmark$ &  & $\checkmark$ &  & SparseRLE \\ \hline
+       $\checkmark$ &  & $\checkmark$ & $\checkmark$ & SparseInterval \\ \hline
+       $\checkmark$ & $\checkmark$ &  &  & SparseVBL \\ \hline
+       $\checkmark$ & $\checkmark$ &  & $\checkmark$ & SparseBand \\ \hline
+       $\checkmark$ & $\checkmark$ & $\checkmark$ &  & n/a \\ \hline
+       $\checkmark$ & $\checkmark$ & $\checkmark$ & $\checkmark$ & n/a \\ \hline
+    \end{tabular}
+    \caption{All combinations of our 4 structural properties and the
+    corresponding formats we have chosen to represent them. Not all combinations
+    are relevant. Note that blocks and runs need not be considered together
+    because we must store a run length for each run, so there isn't a
+    significant storage benefit to combining them. Blocks and singletons only
+    make sense in the contex of sparsity.}
+    \vspace{-24pt}
+    %We omit such combinations from the exhaustive table.
+    \label{tab:TypesOfStructure}
+\end{wrapfigure}
+
     In the Finch programming model, the programmer relies on the Finch compiler to specialize to the sequential properties of the data. In our experience, the main benefits of specializing to structure come from the following properties of the data:
+
     \begin{itemize}
         \item \textbf{Sparsity} Sparse data is data that is mostly zero, or some other
         fill value. When we specialize on this data, we can use annihilation ($x
@@ -277,7 +313,7 @@ data twice to determine the number of required output nonzeros.
         \mintinline{julia}{for i = 1:n; s += x end} $\rightarrow$
         \mintinline{julia}{s += n * x} or code motion to lift operations out of loops \cite{donenfeld_unified_2022,ahrens_looplets_2023}.
 
-        \item \textbf{Singletons} When we have only one non-fill region in sparse data,
+        \item \textbf{Singular} When we have only one non-fill region in sparse data,
         we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
     \end{itemize}
     In the following section, we consider a set of concrete implementations of levels that expose all combinations of these structures, paying some attention to a few important special cases: random access, scalars, and leaf levels. We summarize the structures in Table~\ref{table:formats} and Table~\ref{tab:TypesOfStructure}.
@@ -301,8 +337,8 @@ data twice to determine the number of required output nonzeros.
     \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
     the the 8 resulting situations. 
     While it is impossible to write code which
-    precisely addresses every possible structure, the combination of our level
-    formats can express a wide variety of hierarchical structures to a
+    precisely addresses every possible structure, our level
+    formats can be combined to express a wide variety of hierarchical structures to a
     sufficient granularity that we can generate code which utilizes the four
     properties.  For example, though banded arrays are a superset of ragged
     arrays, representing a ragged array using a banded format does not add much
@@ -314,7 +350,7 @@ data twice to determine the number of required output nonzeros.
 
 \subsubsection{Non-sequentially Constructed Levels}
 To reduce the implementation burden and improve efficiency in the common case, the levels we described in the previous section only support bulk,
-sequential creation of formats. However, when users want to be able to write out
+sequential construction of formats. However, when users want to be able to write out
 of order (which is a common requirement arising from loop order or from the
 problem itself, it occurs in our SpGEMM algorithms and our histogram example in
 the evaluation section), we must use more complicated datastructures like hash
@@ -324,7 +360,7 @@ can use these two more general structures as intermediates to convert to our
 more specialized structures later.
 
 \subsubsection{Scalars}
-Because elements are geared towards representing many leaves in a level, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
+Because leaf levels are geared towards representing multiple leaves, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
 %
 Scalars don't have as much structure as clearly only two structures apply.
 %
@@ -341,49 +377,9 @@ annihilator.
 We assume that we don't need to re-specialize other Looplets because the stepper
 is the only one which repeats a non-constant number of times.
 
+%\HIDE{\saman{Can we not put future work into the submission!} As future work, we also recommend the implementation of a tree-based format, as this would enable incremental construction. Currently, the cost of freezing and thawing is usually proportional to the number of stored fibers, so an operation that sets a single value in a tensor would be prohibitively expensive (i.e.  $A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an intermediate randomly accessible structure, because (unlike blocks or singletons), runs have asymptotic benefits. However, these cases were not necessary for our case studies.}
 
-\begin{wrapfigure}{r}{.5\textwidth}
-        \centering
-        \vspace{-20pt}
-        \scriptsize
-        \begin{tabular}{|c|c|c|c|l|}
-            \hline
-            \rothead{Sparse} & \rothead{Blocked} & \rothead{Runs} & \rothead{Singletons} & \begin{tabular}{@{}l@{}}\textbf{Corresponding} \\ \textbf{Format}\end{tabular} \\
-            \hline
-             &  &  &  & Dense \\
-            \hline
-             &  & \checkmark &  & DenseRLE \\
-            \hline
-            \checkmark &  &  &  & Sparse \\
-            \hline
-            \checkmark &  &  & \checkmark & SparsePinpoint \\
-            \hline
-            \checkmark &  & \checkmark &  & SparseRLE \\
-            \hline
-            \checkmark &  & \checkmark & \checkmark & SparseInterval \\
-            \hline
-            \checkmark & \checkmark &  &  & SparseVBL \\
-            \hline
-            \checkmark & \checkmark &  & \checkmark & SparseBand \\
-            \hline
-        \end{tabular}
-        \vspace{-8pt}
-        \caption{All combinations of relevant structural properties and their
-        corresponding formats.  Note that blocks and runs need not be considered
-        together because we must store a run length for each run, and so there
-        isn't a significant storage benefit to combining them. Blocks and
-        singletons only make sense in the contex of sparsity, so we don't
-        consider them together either. We omit such combinations
-        from the exhaustive table.}
-        \label{tab:TypesOfStructure}
-        \vspace{-36pt}
-    \end{wrapfigure}
-    
-
-
-\HIDE{\saman{Can we not put future work into the submission!} As future work, we also recommend the implementation of a tree-based format, as this would enable incremental construction. Currently, the cost of freezing and thawing is usually proportional to the number of stored fibers, so an operation that sets a single value in a tensor would be prohibitively expensive (i.e.  $A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an intermediate randomly accessible structure, because (unlike blocks or singletons), runs have asymptotic benefits. However, these cases were not necessary for our case studies.}
-
-\help{this section fails to address freeze or thaw and how it relates to the concrete levels}
+%\help{this section fails to address freeze or thaw and how it relates to the concrete levels}
 
 \subsubsection{Leaf Levels}
 
