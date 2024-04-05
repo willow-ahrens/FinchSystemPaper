@@ -12,7 +12,7 @@ Thus, the Finch language supports multi-dimensional arrays.
 %
 Unfortunately, the Looplet abstraction is best suited towards iterators over a single dimension.
 %
-Our level abstraction provides a bridge between the single dimensional iterators created from looplets and the mutli-dimensional abstractions common to tensor compilers.
+Our level abstraction provides a bridge between the single dimensional iterators created from looplets and the mutli-dimensional fiber-tree abstractions common to tensor compilers.
 % 
 This bridge must address three challenges.
 %
@@ -28,13 +28,20 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
-In the rest of this section, we describe this functionality in detail after we review the basics of level abstractions~\cite{sze2017efficient,chou2022compilation, chou2018format}.
-%
-Then we discuss $declare$, $freeze$, $thaw$, and $unfurl$ functions as part of a life cycle abstraction as well as the $assemble$ function.
+Additionally, prior fiber-tree representations
+focus on sparsity (where only the nonzero elements are represented) and treat
+sparse vectors as sets of represented points. Since our fiber-tree
+representation must handle other kinds of structure, such as diagonal,
+repeated, or constant values, we generalize the concept to view each fiber as a mapping from
+indices into a space of subfibers.
+
+In the rest of this section, we discuss $declare$, $freeze$, $thaw$, and $unfurl$ functions as part of a life cycle abstraction as well as the $assemble$ function.
 %
 These interfaces add to the level abstraction, expanding the types of data that they can express via mapping to Looplets and expanding the contexts in which they can be used.
 %
 Finally, we describe several levels that we implement in this abstraction, which allow us to implement a taxonomy of known structures that appear in tensor computations.
+%
+These levels include implementations of various combinations of structures, but they also include specializations to zero dimensional iterators (scalars) and level structures that support different access patterns.
 
 % Previous efforts to compile a greater variety of sparse array programs left these bridges untouched ~\cite{henry_compilation_2021, won2023unified, senanayake2020sparse}
 
@@ -61,14 +68,8 @@ Finally, we describe several levels that we implement in this abstraction, which
 %3. What is "Unfurling"? and how does it help us represent each structure? refer to looplet decompositions of each case in the earlier figure
 %4. (Done) What are lifecycles? How do lifecycles help us keep sane? Why are they necessary for correctness?
 
-\subsection{Level Abstraction}
+%\subsection{Level Abstraction}
 
-Prior fiber-tree representations
-focus on sparsity (where only the nonzero elements are represented) and treat
-sparse vectors as sets of represented points. Since our fiber-tree
-represesentation must handle other kinds of structure, such as diagonal,
-repeated, or constant values, we instead view each fiber as a mapping from
-indices into a space of subfibers.
 
 %From the docs:
 %Finch represents tensors hierarchically in a tree, where each node in the tree is a vector of subtensors and the leaves are the elements. Thus, a matrix is analogous to a vector of vectors, and a 3-tensor is analogous to a vector of vectors of vectors. The vectors at each level of the tensor all have the same structure, which can be selected by the user.
@@ -264,9 +265,9 @@ not have a flexible enough allocation strategy, instead using a two-phase approa
 which requires computing a complicated closed-form kernel to iterate over the
 data twice to determine the number of required output nonzeros.
 
-\subsection{The 8 Key Level Structures}
+\subsection{The 4 Key Structures}
 
-    The main benefits of specializing to structure come from the following properties of the data:
+    In the Finch programming model, the programmer relies on the Finch compiler to specialize to the sequential properties of the data. In our experience, the main benefits of specializing to structure come from the following properties of the data:
     \begin{itemize}
         \item \textbf{Sparsity} Sparse data is data that is mostly zero, or some other
         fill value. When we specialize on this data, we can use annihilation ($x
@@ -288,26 +289,9 @@ data twice to determine the number of required output nonzeros.
         \item \textbf{Singletons} When we have only one non-fill region in sparse data,
         we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
     \end{itemize}
-
-   We consider all combinations of these structural properties in Table
-    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
-    the the 8 resulting situations. While it is impossible to write code which
-    precisely addresses every possible structure, the combination of our level
-    formats can express a wide variety of hierarchical structures to a
-    sufficient granularity that we can generate code which utilizes the four
-    properties.  For example, though banded arrays are a superset of ragged
-    arrays, representing a ragged array using a banded format does not add much
-    overhead.  The structures we consider are exhaustive in the sense that they
-    address all combinations of sparsity, blocks, runs, and singletons in each
-    level. We can represent a wide variety of hierarchical tensor structures by
-    combining these level structures in a tree, as shown in
-    Figure~\ref{fig:structuraldiversity}.
-
+    In the following section, we consider a set of concrete implementations of levels that expose all combinations of these structures, paying some attention to a few important special cases: random access, scalars, and leaf levels. We summarize the structures in Table~\ref{table:formats} and Table~\ref{tab:TypesOfStructure}.
     
-
- 
-    
-    \begin{figure}
+    \begin{figure}[htbp]
         \centering
         \includegraphics[width=\linewidth]{Structures.png}\hfill%
         \vspace{-8pt}
@@ -320,17 +304,52 @@ data twice to determine the number of required output nonzeros.
         \vspace{-18pt}
     \end{figure}
 
-\subsection{Randomly Accessible Temporary Levels}
+\subsection{Implementations of Structures}
+\subsubsection{Sequentially Constructed Levels}
+   We consider all combinations of these structural properties in Table
+    \ref{tab:TypesOfStructure}, resulting in 8 key level formats that correspond
+    the the 8 resulting situations. 
+    While it is impossible to write code which
+    precisely addresses every possible structure, the combination of our level
+    formats can express a wide variety of hierarchical structures to a
+    sufficient granularity that we can generate code which utilizes the four
+    properties.  For example, though banded arrays are a superset of ragged
+    arrays, representing a ragged array using a banded format does not add much
+    overhead.  The structures we consider are exhaustive in the sense that they
+    address all combinations of sparsity, blocks, runs, and singletons in each
+    level. We can represent a wide variety of hierarchical tensor structures by
+    combining these level structures in a tree, as shown in
+    Figure~\ref{fig:structuraldiversity}.
+
+\subsubsection{Non-sequentially Constructed Levels}
 To reduce the implementation burden and improve efficiency in the common case, the levels we described in the previous section only support bulk,
 sequential creation of formats. However, when users want to be able to write out
 of order (which is a common requirement arising from loop order or from the
-problem itself, it occurs in our spgemm algorithms and our histogram example in
+problem itself, it occurs in our SpGEMM algorithms and our histogram example in
 the evaluation section), we must use more complicated datastructures like hash
-tables and trees to support the random access. Because these datastructures are
-more complex and have a higher implementation burden and performance overhead,
+tables and trees to support the random writes so that in-order levels can be constructed later. Because these datastructures are more complex and have a higher implementation burden and performance overhead,
 we only support random access construction of sparse or dense structures.  We
 can use these two more general structures as intermediates to convert to our
 more specialized structures later.
+
+\subsubsection{Scalars}
+Because elements are geared towards representing many leaves in a level, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
+%
+Scalars don't have as much structure as clearly only two structures apply.
+%
+Through these structures, scalars can also affect other tensors in crucial ways.
+%
+Constant propagation through arrays is known to be a complex compiler pass \cite{mcmichen_representing_nodate}.
+%
+Instead, we provide sparse scalars, which allow reductions but also specialize read accesses for the possible zero value.
+%
+We also provide early break scalars, which modify the stepper Looplets to
+re-specialize the loop whenever a reduction into an early break scalar hits an
+annihilator.
+%
+We assume that we don't need to re-specialize other Looplets because the stepper
+is the only one which repeats a non-constant number of times.
+
 
 \begin{wrapfigure}{r}{.5\textwidth}
         \centering
@@ -375,7 +394,7 @@ more specialized structures later.
 
 \help{this section fails to address freeze or thaw and how it relates to the concrete levels}
 
-\subsection{Leaf Levels}
+\subsubsection{Leaf Levels}
 
 The leaf level stores the actual entries of the tensor. In most cases, it is
 sufficient to store each entry at a separate position in a vector. This is accomplished by the \textbf{ElementLevel}. However, when all of the
@@ -383,21 +402,6 @@ values are the same, an additional optimization can be made by storing the
 identical value only once. In this work, we introduce the concept of a \textbf{pattern}
 level to handle this binary case. Pattern has a fill value of $false$, and returning $true$ for all ``stored'' values. The pattern level allows us to easily represent unweighted graphs or other boolean matrices.
 
-\subsection{Scalars}
-Because elements are geared towards representing many leaves in a level, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
-%
-Scalars can also affect how the leaves are lowered.
-%
-Constant propagation through arrays is known to be a complex compiler pass \cite{mcmichen_representing_nodate}.
-%
-Instead, we provide sparse scalars, which allow reductions but also specialize read accesses for the possible zero value.
-%
-We also provide early break scalars, which modify the stepper looplets to
-re-specialize the loop whenever a reduction into an early break scalar hits an
-annihilator.
-%
-We assume that we don't need to re-specialize other looplets because the stepper
-is the only one which repeats a non-constant number of times.
 
 \begin{table}[h]
     \centering
@@ -406,7 +410,7 @@ is the only one which repeats a non-constant number of times.
     \begin{tabular}{p{14cm}}
 
     \hline
-    \textbf{Sequential Access Levels} \\
+    \textbf{Sequentially Constructed Levels} \\
     \hline
     \textbf{Dense}:
     The dense format is the simplest format, mapping $fiber(l, p)[i] \rightarrow fiber(l.lvl, p \times l.shape + i)$.
@@ -452,7 +456,7 @@ is the only one which repeats a non-constant number of times.
     \textbf{SparseBand}: Similar to SparseVBL, but stores only one block per subfiber, eliminating the need for the $ptr$ field. It stores two vectors $idx$ and $ofs$, such that $ofs[p]:ofs[p + 1] - 1$ are the subpositions of the block ending at $idx[p]$ in subfiber $p$. \\
 
     \hline
-    \textbf{Random Access Levels} \\
+    \textbf{Nonsequentially Constructed Levels} \\
     \hline
     \textbf{SparseHash}:
     The sparse hash format uses a hash table to store the locations of nonzeros, and sorts the unique indices for iteration during the freeze phase.

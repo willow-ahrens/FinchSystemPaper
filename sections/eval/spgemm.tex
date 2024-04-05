@@ -84,9 +84,7 @@ Similarly, although a sparse bytemap has a dense memory footprint, we use it in 
 %
 We note that the bytemap format in TACO's Gustavson's implementation is hard-wired, whereas Finch's programming model allows us to write algorithms with explicit temporaries and transpositions.
 %
-Without such hard wiring, TACO would have to use a dense intermediate to support random writes.
-%
-But without if conditions, TACO would then be forced to propagate all values in the dense vector to the sparse output matrix, turning the output dense and leading to the same asymptotic results as in the case of outer products. 
+Without such hard wiring, TACO would have to use a dense intermediate to support random writes, which TACO would then propagate to the output, turning it dense and leading to the same asymptotic results as in the case of outer products. 
 %
 As depicted in Figure~\ref{fig:spgemm}, Finch achieves comparable performance with TACO on smaller matrices when we use the same datastructures, and significant improvements when we use better datastructures. 
 %
