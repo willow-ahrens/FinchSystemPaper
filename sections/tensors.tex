@@ -28,12 +28,7 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
-Additionally, prior fiber-tree representations
-focus on sparsity (where only the nonzero elements are represented) and treat
-sparse vectors as sets of represented points. Since our fiber-tree
-representation must handle other kinds of structure, such as diagonal,
-repeated, or constant values, we generalize the concept to view each fiber as a mapping from
-indices into a space of subfibers.
+Additionally, prior fiber-tree representations focus on sparsity (where only the nonzero elements are represented) and treat sparse vectors as sets of represented points. Since our fiber-tree representation must handle other kinds of structure, such as diagonal, repeated, or constant values, we generalize our fiber abstraction to allow arbitrary mappings from indices into a space of subfibers.
 
 In the rest of this section, we discuss $declare$, $freeze$, $thaw$, and $unfurl$ functions as part of a life cycle abstraction as well as the $assemble$ function.
 %
