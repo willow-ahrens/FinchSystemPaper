@@ -28,17 +28,6 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
-\begin{wrapfigure}{R}{0.45\linewidth}
-    \centering
-    \vspace{-8pt}
-    \includegraphics[width=\linewidth]{LevelsVsFibers-matrix.png}
-    %\includegraphics[width=0.5\linewidth]{LevelsVsFibers-tensor.png}
-    \vspace{-16pt}
-    \caption{Levels in the fiber tree representation of a sparse matrix in CSC format, with a dense outer level and a sparse inner level. The element level holds the leaves of the tree.}
-    \label{fig:levelsvsfibers}
-    \vspace{-24pt}
-\end{wrapfigure}
-
 In the rest of this section, we describe this functionality in detail after we review the basics of level abstractions~\cite{sze2017efficient,chou2022compilation, chou2018format}.
 %
 Then we discuss $declare$, $freeze$, $thaw$, and $unfurl$ functions as part of a life cycle abstraction as well as the $assemble$ function.
@@ -74,15 +63,7 @@ Finally, we describe several levels that we implement in this abstraction, which
 
 \subsection{Level Abstraction}
 
-Fiber-tree style tensor abstractions have been the subject of extensive study
-\cite{sze2017efficient, chou2022compilation, chou2018format}.  The underlying
-idea is to represent a multi-dimensional tensor as a nested vector
-datastructure, where each level of the nesting corresponds to a dimension of the
-tensor. Thus, a matrix would be represented as a vector of vectors. This kind of
-abstraction lends itself to representing sparse tensors if we vary the type of
-vector used at each level in a tree. Thus, a sparse matrix might be represented
-as a dense vector of sparse vectors. The vector of subtensors in this
-abstraction is referred to as a \textbf{fiber}. Prior fiber-tree representations
+Prior fiber-tree representations
 focus on sparsity (where only the nonzero elements are represented) and treat
 sparse vectors as sets of represented points. Since our fiber-tree
 represesentation must handle other kinds of structure, such as diagonal,
@@ -104,21 +85,6 @@ indices into a space of subfibers.
 %All levels have a postype, typically denoted as Tp in the constructors, used for internal pointer types but accessible by the function:
 %postype(lvl)
 
-
-Instead of storing the data for each subfiber separately, most sparse tensor
-formats such as CSR, DCSR, and COO usually store the data for all fibers in a
-level contiguously. In this way, we can think of a level as a bulk allocator for
-fibers. Continuing the analogy, we can think of each fiber as being
-disambiguated by a \textbf{position}, or an index into the bulk pool of
-subfibers. The mapping $f$ from indices to subfibers is thus a mapping from an
-index and a position in a level to a subposition in a sublevel.
-Figure~\ref{fig:levelsvsfibers} shows a simple example of a level as a pool of fibers.
-
-When we need to refer to a particular fiber at position $p$ in the level $l$, we
-may write $fiber(l, p)$. Note that the formation of fibers from levels is lazy,
-and the data underlying each fiber is managed entirely by the level, so the
-level may choose to overlap the storage between different fibers. Thus, the only
-unique data associated with $fiber(l, p)$ is the position $p$.
 
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
