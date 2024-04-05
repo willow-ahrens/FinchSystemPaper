@@ -214,34 +214,34 @@ or bytemaps) may support reassembly.}}
 
 
 
-\begin{figure}[ht]
-\footnotesize
-\begin{tabular} {|m{5em}|p{0.65\linewidth}|} 
-    \hline
-    $declare(lvl,$\newline{}$ init, dims...)$ & Declares the level to hold subtensors of size $dims$ and an initial value of $init$. Requires the level to be in
-read-only mode.\\
-\hline
-$freeze(lvl)$ & Finalizes the updates in the level, and readies the
-level for reading. Requires the level to be in update-only mode.\\
-\hline
-$thaw(lvl)$ & Prepares the level to accept updates. Requires the level
-to be in read-only mode.\\
-\hline
-$unfurl($\newline{}$fiber(lvl, pos),$\newline{}$ [ext], mode,$ \newline{} $[op], [rhs])$ & When $ext$ is given, unfurls the fiber at position
-$pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
-returns a looplet nest over the values in the read-only fiber.  When $mode =
-\finchupdate$, returns a looplet nest over mutable subfibers in the update-only
-fiber. When applied to a scalar or leaf node, $ext$ is omitted and we may also use $op$ and $rhs$ to update the scalar value. Often, skipping over mutable locations allows the level to know which
-locations must be stored. Often, a dirty bit may be used in $tns$ to communicate
-whether the mutable subfiber has been written to, which allows the parent fiber
-to know whether the subfiber must be stored explicitly.\\
-\hline
-$assemble(lvl, pos_{start}, pos_{stop})$& Allocates subfibers in the
-level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
-only ever called on unassembled positions, but some levels (such as dense levels
-or bytemaps) may support reassembly.\\
-\hline
-    \end{tabular}
+% \begin{figure}[ht]
+% \footnotesize
+% \begin{tabular} {|m{7em}|p{0.85\linewidth}|} 
+%     \hline
+%     $declare(lvl,$\newline{}$ init, dims...)$ & Declares the level to hold subtensors of size $dims$ and an initial value of $init$. Requires the level to be in
+% read-only mode.\\
+% \hline
+% $freeze(lvl)$ & Finalizes the updates in the level, and readies the
+% level for reading. Requires the level to be in update-only mode.\\
+% \hline
+% $thaw(lvl)$ & Prepares the level to accept updates. Requires the level
+% to be in read-only mode.\\
+% \hline
+% $unfurl($\newline{}$fiber(lvl, pos),$\newline{}$ [ext], mode,$ \newline{} $[op], [rhs])$ & When $ext$ is given, unfurls the fiber at position
+% $pos$ in the level $lvl$ over the extent $ext$. When $mode = \finchread$,
+% returns a looplet nest over the values in the read-only fiber.  When $mode =
+% \finchupdate$, returns a looplet nest over mutable subfibers in the update-only
+% fiber. When applied to a scalar or leaf node, $ext$ is omitted and we may also use $op$ and $rhs$ to update the scalar value. Often, skipping over mutable locations allows the level to know which
+% locations must be stored. Often, a dirty bit may be used in $tns$ to communicate
+% whether the mutable subfiber has been written to, which allows the parent fiber
+% to know whether the subfiber must be stored explicitly.\\
+% \hline
+% $assemble(lvl,$\newline{}$ pos_{start},$\newline{}$ pos_{stop})$& Allocates subfibers in the
+% level from positions $pos_{start}$ to $pos_{stop}$. Usually, this function is
+% only ever called on unassembled positions, but some levels (such as dense levels
+% or bytemaps) may support reassembly.\\
+% \hline
+%     \end{tabular}
 
 \caption{The five functions that define a level.}
 
