@@ -27,15 +27,7 @@ We did not include GAP-road as it timed out. %speedup is arith-mean
 %
 In Appendix~\ref{sec:graph_listings}, we display the code for BFS and Bellman-Ford in Finch (57 and 50 LOC) and LAGraph (215 and 227 LOC), and invite readers to compare the clarity of the algorithms.
  
-\begin{figure}
-	\includegraphics[width=0.5\linewidth]{bfs_speedup_over_graphs.jl.png}%
-	\includegraphics[width=0.5\linewidth]{bellmanford_speedup_over_graphs.jl.png}
-    \vspace{-12pt}
-    \caption{Performance of graph apps across various tools. finch\_push\_only exclusively utilizes push traversal, while finch\_push\_pull applies direction-optimization akin to GraphBLAS. Finch's support for push/pull traversal and early break facilitates direction-optimization. Among GraphBLAS's five variants for Bellman-Ford, we selected LAGraph\_BF\_full1a, consistently the fastest with our graphs.}
-     \label{fig:graph_result}
-\end{figure}
-
-\begin{figure}
+\begin{figure}[b]
     \begin{minipage}{0.33\linewidth}
     \begin{minted}{julia}
     V = Tensor(Dense(Element(false)))
@@ -106,4 +98,12 @@ In Appendix~\ref{sec:graph_listings}, we display the code for BFS and Bellman-Fo
 \end{minted}
 \end{minipage}
 \caption{Graph Applications written in Finch. Note that parents are calculated separately for Bellman-Ford. The $choose(z)$ operator is a GraphBLAS concept which returns any argument that is not $z$.}\label{fig:graph_listing}
+\end{figure}
+
+\begin{figure}[t]
+	\includegraphics[width=0.5\linewidth]{bfs_speedup_over_graphs.jl.png}%
+	\includegraphics[width=0.5\linewidth]{bellmanford_speedup_over_graphs.jl.png}
+    \vspace{-12pt}
+    \caption{Performance of graph apps across various tools. finch\_push\_only exclusively utilizes push traversal, while finch\_push\_pull applies direction-optimization akin to GraphBLAS. Finch's support for push/pull traversal and early break facilitates direction-optimization. Among GraphBLAS's five variants for Bellman-Ford, we selected LAGraph\_BF\_full1a, consistently the fastest with our graphs.}
+     \label{fig:graph_result}
 \end{figure}

@@ -38,7 +38,7 @@
     \vspace{-12pt}
     \caption{Finch row-major, column-major and symmetric SpMV Programs}
     \label{spmv_programs}
-    \vspace{-36pt}
+    \vspace{-12pt}
   \end{wrapfigure}
   \subsection{Sparse Matrix-Vector Multiply (SpMV)}
   Sparse matrix-vector multiply (SpMV) has a wide range of applications and has been thoroughly studied~\cite{liu_csr5_2015,
@@ -73,7 +73,7 @@
   \begin{wrapfigure}{r}{0.5\linewidth}
     \scriptsize
     \centering
-    \vspace{-16pt}
+    \vspace{-14pt}
     \begin{tabular}{|r|l|l|}
         \hline
         \textbf{Format} & \textbf{Style of Matrix}\\
@@ -97,14 +97,20 @@
   %The dense vector is randomly generated. 
   %
   We tested using the row-major and column-major Finch programs in Figure \ref{spmv_programs} as well as the symmetric program where applicable; the performance displayed for Finch on each dataset is the fastest among the formats and programs we tested. For TACO, Column-major SpMV consistently performs better than row-major SpMV (an average of 1.36x better) so we use column-major SpMV in TACO as our baseline.
-  
+   
+  \begin{figure}[!h]
+    \includegraphics[width=\linewidth]{Spmv_annotated.drawio.png}
+    \caption{\footnotesize Performance of SpMV by Finch format. The performance displayed for Finch on each dataset is the fastest among the formats we tested. Programs are from Figure~\ref{spmv_programs} and formats are from Figure~\ref{spmv_tensor_formats}. ``finch\_baseline'' is the faster of row major or column major ``SparseList''.}
+    \label{fig:spmv_grouped}
+  \end{figure} 
+
   We found that the SpMV performance was superior for the level format that best paralleled the structure of the tensor.
   %
-  Namely, matrices with a clear blocked structure like exdata\_1, TSOPF\_RS\_b678\_c1, and heart3 performed notably well with the SparseVBL format with speedups of 2.16, 1.55, and 1.30 relative to TACO, while the baseline format had slowdowns of 0.71, 0.53, and 0.92 relative to TACO.
+  Matrices with a clear blocked structure like exdata\_1, TSOPF\_RS\_b678\_c1, and heart3 performed notably well with the SparseVBL format with speedups of 2.16, 1.55, and 1.30 relative to TACO, while the baseline format had minor slowdowns relative to TACO.
   %
-  Furthermore, the synthetic banded matrices we constructed performed the best with the SparseBand matrix, in particular with the large\_band and the medium\_band matrices having a speedup of 1.98 and 1.64 relative to TACO, while the baseline format had slowdowns of 0.84 and 0.51 relative to TACO.
+  Furthermore, the synthetic banded matrices we constructed performed the best with the SparseBand matrix, in particular with the large\_band and the medium\_band matrices having a speedup of 1.98 and 1.64 relative to TACO, while the baseline format had minor slowdowns relative to TACO.
   %
-  There were also significant advantages of using the Pattern format instead of the Element format to represent scalar values in the matrices when these values were boolean, such as matrices in the SNAP collection which represent graph datasets are boolean. 
+  The Pattern format performed better than the Element format for representing the leaf values in the matrices when these values were boolean, such as matrices in the SNAP collection which represent graph datasets are boolean. 
   %
   For example, the SparseList-Pattern for email-Eu-core resulted in a speedup of 2.51, while the SparseList-Element format resulted in a slowdown of 1.84 over TACO.
   %
@@ -177,11 +183,3 @@
   
   
   %Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
-  
-  \begin{figure}
-      \includegraphics[width=\linewidth]{Spmv_annotated.drawio.png}
-      \vspace{-18pt}
-      \caption{Performance of SpMV by Finch format.}
-      \label{fig:spmv_grouped}
-      \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. Programs are from Figure~\ref{spmv_programs} and formats are from Figure~\ref{spmv_tensor_formats}. ``finch\_baseline'' is the faster of row major or column major ``SparseList''.
-  \end{figure}
