@@ -1,35 +1,117 @@
 \subsection{Implementing Numpy's Array API in Finch}
-In the past decade, the adoption of the Python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this API for structured data suffer from either incompleteness or inefficiency. In order to reduce the complexity of interactions between different formats, they're either limited to vectors and matrices or only support tabular representations. Further, existing work doesn't support operator fusion which can have a drastic impact on performance as we show in Figure~\ref{fig:fusion}. A flexible compiler like Finch, which can produce efficient code for arbitrary operations between inputs in a wide variety of formats, is the missing piece needed to make the full array API performant for structured data. To handle the expansiveness of the Array API while preserving opportunities for fusion and whole workflow optimization, we pursued a lazy evaluation strategy mediated by a high-level query language. This is implemented by 1) Finch Logic, a minimal, high-level language for expressing array operations and 2) the Finch Interpreter, which executes Finch Logic as a sequence of Finch programs.
+In the past decade, the adoption of the Python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this and similar APIs for structured data suffer from either incompleteness or inefficiency.
+%
+These APIs have hundreds of required functions, from mapreduce to slicing and windowing. 
+%
+Compilers with simpler interfaces (such as TACOs simple einsum) need a massive amount of glue code outside of the normal compilation path to support the full API, leading to a large implementation burden.
+%
+As the API's were designed for only one structure (Dense), the burden only grows with the introduction of as additional structures such as sparsity, as these structures interact with the complex interface and with each other.
+%
+%In order to reduce the complexity of interactions between different formats, they're either limited to vectors and matrices or only support tabular representations.
+%
+Further, implementing each operation on its own is insufficient. Operator fusion is required to avoid asymptotic performance degredation on sparse kernels, as we show in Figure~\ref{fig:fusion}.
+%
+A flexible compiler like Finch, which can produce efficient code for arbitrary operations between inputs in a wide variety of formats, is the missing piece needed to implement the full array API for structured data with competitive performance.
+%
+To handle the expansiveness of the Array API while preserving opportunities for fusion and whole workflow optimization, we pursued a lazy evaluation strategy mediated by a high-level query language.
+%
+This is implemented by 1) Finch Logic, a minimal, high-level language for expressing array operations and 2) the Physical Interpreter, which executes Finch Logic as a sequence of Finch programs.
+
+%Add a list of all of the functions we currently support, and claim that other frameworks cannot do the same.
+%Masks and wrapper arrays -> needed to implement indexing and slicing
+%Custom operators -> needed to implement argmin, norm, ifelse, and other "weird" operations
+
+%Add back the nice stuff that kyle cut
+%Languages like TACO that are very simple can be trivially incorporated as a library function interface into python.
+%However, Finch provides many other features and control flow than TACO, that are more challenging to integrate.
+%Instead of pushing Finch literally into the hands of python users, we are using their language to describe functions, similar to pytorch.
+
 
 %There is a gap between the expressiveness of the purely declarative Array API and the Finch language which defines both the output and the algorithm. The naive approach to solving this would be to explicitly define a mapping from each function in the API to a Finch program which eagerly produces the output. This approach results in a simple translation procedure but misses crucial opportunities for optimization across a chain of function calls and needlessly materializes large intermediate results. To avoid this, we have implemented a lazy evaluation approach that collects API calls and then computes output when requested by the user.
 
-\subsubsection{Finch Logic}
-The expression fragment takes inspiration from relational algebra while incorporating an ordering on the dimensions of a tensor. This means that operators take in a set of indexed tensors and output an indexed tensor. Conceptually, an indexed tensor can be thought of as a relation with an ordering on the index attributes and a separate value attribute, and we include the $\finchreorder$ operator to manipulate this order. To express materialization, reuse of common sub-expressions, and multiple outputs, we define $\finchquery$ and $\finchplan$. A $\finchquery$ assigns the output of an expression to a name. We use this to denote that we materialize an expression. Later queries can access the result of earlier queries through the $\finchalias$ operator, allowing multiple queries to benefit from a shared computation. A plan is a sequence of queries and outputs a set of tensors. 
+\begin{wrapfigure}{R}{0.6\linewidth}
+  \scriptsize
+\begin{minted}{julia}
+  EXPR := table(TENSOR, FIELDS...) |         #TENSOR is an immediate tensor
+    ALIAS | FIELD | mapjoin(OP, EXPRS...) |  #OP is a immediate function
+    aggregate(OP, INIT, EXPR, FIELDS...) |   #INIT is an immediate init value
+    reorder(EXPR, FIELDS...) |               #FIELD is a name for an index
+    relabel(EXPR, FIELDS...) |               #ALIAS is a name for a tensor
+    reformat(TENSOR, EXPR)                     PLAN := plan(QUERIES..., PRODUCES)
+                                              QUERY := query(ALIAS, EXPR)
+\end{minted}
+\caption{\scriptsize Finch Logic Syntax. }\label{fig:finch_logic_syntax}
+\begin{minted}{python}
+  sum(A, dims=2) = aggregate(+, relabel(A, i_1, ..., i_d), i_2)
+  matmul(A, dims=2) = aggregate(+, mapjoin(*, relabel(A, i, j), relabel(B, j, k)))
+  argmin(A) = aggregate(minby, (Inf, len(A)), mapjoin(tuple, relabel(A, i), i), i)
+  norm2(A) = aggregate(scaled_plus, (0, 0), mapjoin(tuple, mapjoin(sign, A), mapjoin(abs, A)), fields(A)...)
+  where(C, A, B) = mapjoin(ifelse, relabel(C, i), relabel(A, i), relabel(B, i))
+  slice(A, i:j) = table(WindowedArray(A, i:j), k)
+  cat(A, B) = mapjoin(coalesce, table(PermissiveArray(A), i), table(OffsetArray(B, length(A)), i))
+\end{minted}
+\caption{\scriptsize Implementations of a few common functions in Finch Logic. Here, \texttt{minby(x, y)} compares \texttt{x[1]} and \texttt{y[1]} and returns the smaller \texttt{x} or \texttt{y}. \texttt{scaled\_plus} rescales whichever argument is smaller, then adds the values with the same scale. \texttt{ifelse(c, a, b)} returns \texttt{a} when \texttt{c} is true,  \texttt{b} otherwise. Finch can understand declared properties and rewrite rules for all of these functions and types, extending these algorithms to operate on structured arguments.} \label{fig:api_extensible}
+\end{wrapfigure}
+\subsubsection{Finch Logic and the Physical Interpreter}
+Finch Logic is used as a common representation to implement and fuse the operations in the Array API.
+
+\paragraph{Finch Logic}
+The syntax of Finch Logic is described in Figure~\ref{fig:finch_logic_syntax}.
+%
+Note that the syntax is designed to be minimal and expressive, taking inspiration from relational algebra with the goal of being able to express most of the operations in the Array API.
+%
+Our \texttt{mapjoin} represents pointwise application, while \texttt{aggregate} represents reductions.
+%
+We name the result of each computation with \texttt{query}, and join several expressions in a \texttt{plan}.
+%
+\texttt{reorder} reorders the indices while \texttt{relabel} relabels them.
+%
+\texttt{reformat} hints at materialization into its argument.
+
+Finch's support for arbitrary user-defined functions allows us to support complex operations such as \mintinline{python}{argmin}, \mintinline{python}{norm}, and \mintinline{python}{where}, all over structured data. Finch's support for wrapper arrays allows us to express indexing operations. These situations are shown in Figure~\ref{fig:api_extensible}.
+\begin{figure}
+
+\end{figure}
+
+\paragraph{Heuristic Optimization}
+Once we express our operation in Finch Logic, we use a quick heuristic to fuse the expressions. 
+%
+We heuristically split nested \texttt{aggregate} queries into separate queries, and fuse all of the \texttt{mapjoin}s into corresponding \texttt{aggregate}s.
+%
+We then heuristically choose a loop order for each query with \texttt{reorder} nodes, and introduce separate \texttt{query} nodes to transpose so that the resulting expressions are concordant.
+%
+Our heuristic assigns a format to each output by recursively evaluating the properties of structure (sparsity, repetition, etc.) and checking whether they are preserved under the operation in question.
+
+%The expression fragment takes inspiration from relational algebra while incorporating an ordering on the dimensions of a tensor. This means that operators take in a set of indexed tensors and output an indexed tensor. Conceptually, an indexed tensor can be thought of as a relation with an ordering on the index attributes and a separate value attribute, and we include the $\finchreorder$ operator to manipulate this order. To express materialization, reuse of common sub-expressions, and multiple outputs, we define $\finchquery$ and $\finchplan$. A $\finchquery$ assigns the output of an expression to a name. We use this to denote that we materialize an expression. Later queries can access the result of earlier queries through the $\finchalias$ operator, allowing multiple queries to benefit from a shared computation. A plan is a sequence of queries and outputs a set of tensors. 
 %This ordering is necessary for two reasons 1) the outputs of a function in the Array API must match a defined order on the dimensions based on the order of the inputs' dimensions 2) to benefit from concordant iteration we must ensure that the operands to a mapjoin have compatible index orders.
 
-\begin{align*}
-    \footnotesize \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
-     \footnotesize \finchrelabel(expr, idxs...) \quad\quad\quad \finchreformat(expr, format) \quad\quad\quad \finchmapjoin(op, exprs...) \\
-    \footnotesize\finchaggregate(op, expr)\quad\quad\quad\quad \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
-     \footnotesize expr:= \finchreorder | \finchrelabel | \finchreformat |\finchmapjoin | \finchaggregate | \finchtable | \finchalias \quad\quad
-\end{align*}
+%\begin{align*}
+%    \footnotesize \finchplan(queries..., names...) \quad\quad\quad \finchquery(name, expr) \quad\quad\quad \finchreorder(expr, idxs...)\\
+%     \footnotesize \finchrelabel(expr, idxs...) \quad\quad\quad \finchreformat(expr, format) \quad\quad\quad \finchmapjoin(op, exprs...) \\
+%    \footnotesize\finchaggregate(op, expr)\quad\quad\quad\quad \finchtable(tns, idxs...)  \quad\quad\quad\quad\quad\quad \finchalias(name) \quad\quad\\
+%     \footnotesize expr:= \finchreorder | \finchrelabel | \finchreformat |\finchmapjoin | \finchaggregate | \finchtable | \finchalias \quad\quad
+%\end{align*}
 
-We now describe how to define a few example functions from the API in this language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can treat an index as a scalar to implement $argmin$. For conciseness, we omit the outer $\finchplan(\finchquery(out,...),out)$.
-\begin{align*}
-&\footnotesize \text{sum}(M, dims=[2]) \rightarrow \finchaggregate(+,\finchrelabel(M, i_1,\ldots,i_d), i_2)\\
-&\footnotesize \text{matmul}(A, B) \rightarrow \finchaggregate(+,\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)\\
-&\footnotesize \text{argmin}(A, dims=[2]) \rightarrow \finchaggregate(minby,\finchmapjoin(tuple, \finchrelabel(A, i_1,\ldots,i_d), \finchtable(i_2)), i_2)
-\end{align*}
+%We now describe how to define a few example functions from the API in this language. Due to the flexibility of Finch, we can use the custom operators $minby(x,y)$ (which compares $x[1]$ and $y[1]$ and returns the smaller $x$ or $y$) and $tuple(x, y)$ (which returns the tuple $(x,y)$), and we can treat an index as a scalar to implement $argmin$. For conciseness, we omit the outer $\finchplan(\finchquery(out,...),out)$.
+%\begin{align*}
+%&\footnotesize \text{sum}(M, dims=[2]) \rightarrow \finchaggregate(+,\finchrelabel(M, i_1,\ldots,i_d), i_2)\\
+%&\footnotesize \text{matmul}(A, B) \rightarrow \finchaggregate(+,\finchmapjoin(*, \finchrelabel(A, i, j), \finchrelabel(B, j, k)), j)\\
+%&\footnotesize \text{argmin}(A, dims=[2]) \rightarrow \finchaggregate(minby,\finchmapjoin(tuple, \finchrelabel(A, i_1,\ldots,i_d), \finchtable(i_2)), i_2)
+%\end{align*}
 
 %Notably, these plans do not specify important details about the computation such as the format of intermediates and the order of the loops. In the following discussion, we provide sensible heuristics and show that they provide good performance on important kernels. However, for larger or more complex programs, it would be important to apply a cost-based optimization strategy which we leave for future work.
 
-\subsubsection{Standardizing \& Heuristic Optimization}
-Before a plan in Finch Logic can be interpreted, it must be converted to a standard form which resolves ambiguity about loop ordering and output formatting. The semantically important requirements of this standard form are 1) all inputs (i.e. tables and alias operators) in a query's RHS must conform to a common ordering of the indices 2) the outermost operator of each query's RHS must be a reformat 3) the expression within the reformat must be a pointwise expression, optionally wrapped in an aggregate operator. The former allows the interpreter to identify the loop order for each kernel. The second determines the output format for each intermediate. The last one guarantees that the innermost expression can be computed as a single kernel. To achieve this: 1) a concordization pass examines each query, heuristically selects a loop order, and transposes inputs which don't match that order 2) a formatting pass selects a level format for each output index based on the formats of the inputs and whether the loop order requires random writes. In future work, these heuristics could be improved with cost-based optimization similar to query optimization in the database setting.
+%\paragraph{Execution}
+%\subsubsection{Standardizing \& Heuristic Optimization}
+%Before a plan in Finch Logic can be interpreted, it must be converted to a standard form which resolves ambiguity about loop ordering and output formatting. The semantically important requirements of this standard form are 1) all inputs (i.e. tables and alias operators) in a query's RHS must conform to a common ordering of the indices 2) the outermost operator of each query's RHS must be a reformat 3) the expression within the reformat must be a pointwise expression, optionally wrapped in an aggregate operator. The former allows the interpreter to identify the loop order for each kernel. The second determines the output format for each intermediate. The last one guarantees that the innermost expression can be computed as a single kernel. To achieve this: 1) a concordization pass examines each query, heuristically selects a loop order, and transposes inputs which don't match that order 2) a formatting pass selects a level format for each output index based on the formats of the inputs and whether the loop order requires random writes. In future work, these heuristics could be improved with cost-based optimization similar to query optimization in the database setting.
 
 % based on a heuristic which loops over intersecting variables first.
 
-\subsubsection{Finch Interpreter} 
-Once the program is in a standard form, the Finch Interpreter executes each query, in order, through a straightforward lowering process. The output format is identified by unpacking the outer $\finchreformat$ statement. Next, the inner expression of the is unpacked to identify the $\finchaggregate$ operator and extract the pointwise expression. At this point, any aliases to the result of previous queries are replaced with an access to the actual result. Lastly, the concordant loop order is identified and instantiated. The lowered query is then compiled and executed with the Finch compiler, and the result is assigned to $name$ before proceeding to the next query. 
+\paragraph{Finch Interpreter} 
+Once the program is in a standard form where each \texttt{query} has a specified format with \texttt{reformat} and at most one \texttt{aggregate}, the Finch Interpreter executes each query, in order, through a straightforward lowering process.
+%
+%Each result is assigned to the corresponding alias the .
+% The output format is identified by unpacking the outer $\finchreformat$ statement. Next, the inner expression of the is unpacked to identify the $\finchaggregate$ operator and extract the pointwise expression. At this point, any aliases to the result of previous queries are replaced with an access to the actual result. Lastly, the concordant loop order is identified and instantiated. The lowered query is then compiled and executed with the Finch compiler, and the result is assigned to $name$ before proceeding to the next query. 
 
 
 \subsubsection{Evaluation}
@@ -40,13 +122,32 @@ To demonstrate the performance of our array implementation, we evaluate it on 1)
 Across all three of these kernels, we see that the high level interface for Finch provides a major improvement over DuckDB, ranging from $1.2x-28x$. For triangle counting and SDDMM, this improvement stems from Finch's efficient intersection of the nonzero indices as opposed to DuckDB's use of binary join plans\footnote{This matches with findings in the database literature showing that worst-case optimal joins (which are very similar to our kernel execution) are more efficient than binary joins for these queries \cite{wang2023free}.}. For element-wise operations, this improvement stems from Finch's better handling of expressions which combine index intersection and union and its compressed data representation.
 
 \begin{figure}
-\begin{tabular}{p{0.33\textwidth} p{0.33\textwidth} p{0.33\textwidth}}
-  \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/triangle_count_speedup_over_duckdb.png} &
-  \vspace{0pt} \includegraphics[width=140pt, height=135pt]{figures/sddmm_speedup_over_duckdb.png} &
-  \vspace{0pt} \includegraphics[width=140pt, height=123pt]{figures/elementwise_speedup_over_duckdb.png}
-\end{tabular}
-\vspace{-12pt}
-\caption{Performance of Finch Logic for common kernels.} \label{fig:fusion}
+  \centering % Centers the figure block in the text area
+  % First minipage for the first image
+  \begin{minipage}[t]{0.32\linewidth}
+    \vspace{0pt}
+    \centering
+    \includegraphics[width=\linewidth]{figures/triangle_count_speedup_over_duckdb.png}
+    \vspace{0pt}
+  \end{minipage}%
+  % Second minipage for the second image
+  \begin{minipage}[t]{0.32\linewidth}
+    \vspace{0pt}
+    \centering
+    \includegraphics[width=\linewidth]{figures/sddmm_speedup_over_duckdb.png}
+    \vspace{0pt}
+  \end{minipage}%
+  % Third minipage for the third image
+  \begin{minipage}[t]{0.36\linewidth}
+    \vspace{0pt}
+    \centering
+    \includegraphics[width=\linewidth]{figures/elementwise_speedup_over_duckdb.png}
+    \vspace{0pt}
+  \end{minipage}
+
+  \vspace{-24pt}
+  \caption{Performance of Finch Logic for common kernels.}
+  \label{fig:fusion}
 \end{figure}
 
 
@@ -56,8 +157,3 @@ Across all three of these kernels, we see that the high level interface for Finc
 %in-place.
 %dot((v^t .* u), w)) vs. 
 %(v^t .* dot(u, w))
-
-\willow{Note: I may want to explain format inference somewhere in here, but I'll
-have to get to it a little later, perhaps after the paper deadline}
-\willow{Note: I think it would be cool to include something about how we support
-numerically stable norms and argmin in this model}
