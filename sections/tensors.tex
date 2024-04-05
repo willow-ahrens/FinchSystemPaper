@@ -16,11 +16,11 @@ Our level abstraction provides a bridge between the single dimensional iterators
 % 
 This bridge must address three challenges.
 %
-First, looplets represent an instance of an iterator over a tensor, but we may access the same tensor twice with different indices.
+First, while looplets represent an instance of an iterator over a tensor, we may access the same tensor twice with different indices.
 %
 Thus, the $unfurl$ function creates separate looplet nests for each iterator.
 %
-Next, since Finch programs are not just single einsums, they may read and write to the same data at different times.
+Next, since Finch programs go beyond just single einsums, they may read and write to the same data at different times.
 %
 The $declare$, $freeze$, and $thaw$ functions provide machinery to manage transition between these states.
 %
@@ -28,15 +28,16 @@ Finally, we must be able to write looplet nests that modify tensors, as well as 
 %
 The $assemble$ function manages the allocation of new data in the tensor.
 
-Additionally, prior fiber-tree representations focus on sparsity (where only the nonzero elements are represented) and treat sparse vectors as sets of represented points. Since our fiber-tree representation must handle other kinds of structure, such as diagonal, repeated, or constant values, we generalize our fiber abstraction to allow arbitrary mappings from indices into a space of subfibers.
+Additionally, prior fiber-tree representations focus on sparsity (where only the nonzero elements are represented) and treat sparse vectors as sets of represented points. Since our fiber-tree representation must handle other kinds of structure, such as diagonal, repeated, or constant values, we must generalize our fiber abstraction to allow arbitrary mappings from indices into a space of subfibers.
 
-In the rest of this section, we discuss $declare$, $freeze$, $thaw$, and $unfurl$ functions as part of a life cycle abstraction as well as the $assemble$ function.
+In the rest of this section, we discuss how these 5 core functions ($declare$, $freeze$, $thaw$, $unfurl$, and $assemble$) function as part of a life cycle abstraction that defines a level in Finch.
 %
 These interfaces add to the level abstraction, expanding the types of data that they can express via mapping to Looplets and expanding the contexts in which they can be used.
 %
-Finally, we describe several levels that we implement in this abstraction, which allow us to implement a taxonomy of known structures that appear in tensor computations.
+We then identify a taxonomy of four key structural properties exhibited in data.
 %
-These levels include implementations of various combinations of structures, but they also include specializations to zero dimensional iterators (scalars) and level structures that support different access patterns.
+We implement several levels in this abstraction that capture all combinations of these structures, 
+including specializations to zero dimensional tensors (scalars) and level structures that support different access patterns.
 
 % Previous efforts to compile a greater variety of sparse array programs left these bridges untouched ~\cite{henry_compilation_2021, won2023unified, senanayake2020sparse}
 
@@ -90,14 +91,9 @@ the structure within each fiber.
 In fact, our level interface requires only 5
 highly general operations, described below.
 
-The first three of these functions, declare, freeze, and thaw, \saman{Italics for keywords?}have to do with
-managing when tensors can be assumed mutable or immutable.
+The first three of these functions, $declare$, $freeze$, and $thaw$, have to do with managing when tensors can be assumed mutable or immutable.
 %
-\saman{This is because Finch goes beyond just a single einsum...the scope of Finch w.r.t. TACO etc, is not clear.}
-%
-As we use Looplets to
-represent iteration over a tensor, we must restrict the mutability of tensors
-while we iterate over them. 
+As we use Looplets to represent iteration over a tensor, we must restrict the mutability of tensors while we iterate over them. 
 %
 For example, if a tensor declares it has a constant
 region from $i = 2:5$, but some other part of the computation modifies the
