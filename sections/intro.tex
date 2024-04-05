@@ -35,7 +35,7 @@ Consequently, dense arrays offer extensive compiler optimizations and many conve
 %optimizations by breaking the abstraction barrier between array representation
 %and array storage.  
 %
-Compilers understand dense array computations across many
+Compilers understand dense computations across many
 programming constructs, such as for and while loops, breaks, parallelism,
 caching, prefetching, multiple outputs, scatters, gathers, vectorization,
 loop-carry-dependencies, and more. A myriad of optimizations have been developed for
@@ -50,8 +50,8 @@ However, while dense arrays are the easiest way to program for performance, the 
     \caption{A few examples of matrix structures arising in practice}
     \vspace{-8pt}
 \end{figure}
-\kyle{In this paragraph, I wonder if it should be more "our world is full of structured data" which can be described by structured arrays. The "X describes Y" framing feels less fundamental than "Y is Z" like "images, masks, geometry, and transactions consist of long runs of identical values that can be compressed via run length encoding". This might be overly clunky though.}
-Our world is full of structured arrays.
+
+Our world is full of structured data.
 %
 Sparse arrays (which store only nonzero elements) describe networks, databases, and simulations~\cite{abhyankarpetsc, bell2007lessons, mcauley2013hidden, balay2020petsc}.
 %
