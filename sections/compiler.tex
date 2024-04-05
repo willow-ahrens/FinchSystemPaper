@@ -36,7 +36,7 @@ by adding a loop to randomly access \mintinline{julia}{A} or adjusting the
 storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
 
     \begin{wrapfigure}{r}{0.17\textwidth}
-        \vspace{-28pt}
+        \vspace{-14pt}
         \begin{minted}{julia}
           for i=_, j=_
             if i <= j
@@ -75,8 +75,8 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     tensor and permutes the indices of an access when it is unwrapped during the
     wrapperization pass. On the other hand, the $offset$ array wraps a tensor
     and shifts all of the ranges declared in Figure \ref{fig:semantics_looplets} by one.
-    The implementation burden for a wrapper tensor is to implement a suitable
-    program modification during the wrapperization procedure and then unwrap the wrapper, or to 
+    The implementation burden for a wrapper is to implement a suitable
+    program rewrite during the wrapperization procedure to unwrap the wrapper, or to 
     implement the looplet functions of \ref{fig:semantics_looplets} with some minor modifications
     to shift dimensions, for example.
 
@@ -99,7 +99,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
         \hline
         A[\~i] $\rightarrow$ permissive(A)[i] & Creates a PermissiveArray, allowing for out-of-bounds access or padding. This tensor returns no dimensions as its size. \\
         \hline
-        A[p(i)] $\rightarrow$ protocolize(A, p)[i] & Accesses dimension n with protocol protos[n], allowing for advanced iteration protocols. \\
+        %A[p(i)] $\rightarrow$ protocolize(A, p)[i] & Accesses dimension n with protocol protos[n], allowing for advanced iteration protocols. \\
         \hline
         A[p(i)] $\rightarrow$ swizzle(A, perm)[i] & A lazily transposed array, swizzle(A, perm)[idx...] is transformed to A[idx[perm]...] during wrapperization. \\
         \hline
@@ -130,14 +130,13 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     is not needed because any tensor dimensions that share an index are assumed to be the same~\cite{kjolstad_tensor_2017}.
     %
     Other languages, such as Halide, perform bounds inference where
-    known bounds are symbolically propagated to fill in unknown bounds, often from the desired output/input sizes to intermediates via some conservative approximation such as interval analysis or polyhedral methods~\cite{ragan-kelley_halide_2013, grosser2012polly}.
+    known bounds are symbolically propagated to fill in unknown bounds, often from output/input sizes to intermediates via some approximation such as interval analysis or polyhedral methods~\cite{ragan-kelley_halide_2013, grosser2012polly}.
     %
     We refer to the process of discovering suitable
     dimensions as \textbf{dimensionalization}. 
     %
 
-    
-    In Finch, we use a straightforward algorithm to automatically determine suitable dimensions for loops and declaration statements (output tensors).
+    In Finch, we use a straightforward dimensionalization algorithm on loops and declaration statements (output tensors).
     %
     Finch determines the dimension of a loop index i from all of the tensors using i in an access, as well as the bounds in the loop itself, and operates similarly for declarations.
     %   
@@ -167,6 +166,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
           end
         \end{minted}
         \caption{Dimensionalization.}\label{fig:dimensionalization}
+        \vspace{-12pt}
     \end{wrapfigure}
     \begin{enumerate}
         \item We assign dimensions to indices.
@@ -183,53 +183,52 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
         access.
     \end{enumerate}
 
-    
-    \begin{wrapfigure}{r}{0.4\linewidth}
-        \centering % Center the figure
-        % First pair of examples
-        \begin{minipage}{0.16\textwidth}
-        \begin{minted}{julia}
-          for i = _
-            for j = _
-                s[] += A[i, j]
-            end
-          end
-        \end{minted}
-        $\downarrow$
-        \begin{minted}{julia}
-          for i = _
-            for j = _
-              for k = _
-                if i == k
-                  s[] += A[k, j]
-                end
-              end
-            end
-          end
-        \end{minted}
-        \end{minipage}\hfill%
-        \begin{minipage}{0.12\textwidth}
-            \begin{minted}{julia}
-              for i = _
-                A[I[i]] += 1
-              end
-            \end{minted}
-            $\downarrow$
-            \begin{minted}{julia}
-              for i = _
-                for j = _
-                  if j == I[i]
-                    A[j] += 1
-                  end
-                end
-              end
-            \end{minted}
-        \end{minipage}\hfill
-        \caption{Examples of concordization, transforming accesses to column major with bare indices.}\label{fig:concordization}
-    \end{wrapfigure}
-
     For example, in Figure ~\ref{fig:dimensionalization}, the second dimension of A must match the first dimension of B. Also, the first dimension of A must match the i loop dimension, 1:3. Finch will also resize declared tensors to match indices used in writes, so C is resized to (1:3, 1:5). If no dimensions are specified elsewhere, then Finch will use the dimension of the declared tensor.
-    
+       
+    \begin{wrapfigure}{r}{0.4\linewidth}
+      \centering % Center the figure
+      % First pair of examples
+      \begin{minipage}{0.16\textwidth}
+      \begin{minted}{julia}
+        for i = _
+          for j = _
+              s[] += A[i, j]
+          end
+        end
+      \end{minted}
+      $\downarrow$
+      \begin{minted}{julia}
+        for i = _
+          for j = _
+            for k = _
+              if i == k
+                s[] += A[k, j]
+              end
+            end
+          end
+        end
+      \end{minted}
+      \end{minipage}\hfill%
+      \begin{minipage}{0.12\textwidth}
+          \begin{minted}{julia}
+            for i = _
+              A[I[i]] += 1
+            end
+          \end{minted}
+          $\downarrow$
+          \begin{minted}{julia}
+            for i = _
+              for j = _
+                if j == I[i]
+                  A[j] += 1
+                end
+              end
+            end
+          \end{minted}
+      \end{minipage}\hfill
+      \caption{Examples of concordization, transforming accesses to normal column major.}\label{fig:concordization}
+      \vspace{-20pt}
+  \end{wrapfigure} 
     Dimensionalization occurs after wrapper arrays are de-sugared. You can
     therefore exempt a mode in an access from dimensionalization by wrapping the
     corresponding index in \mintinline{julia}{~} to produce a "PermissiveArray" (e.g. \mintinline{julia}{A[~i]}).
@@ -240,13 +239,13 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     point, we run a pass over the code to make the program concordant. We make
     expressions concordant by inserting loops with one iteration. Examples are given in Figure~\ref{fig:concordization}.
 
-    \begin{wrapfigure}{R}{0.34\linewidth}
-        \vspace{-52pt}
+    \begin{wrapfigure}{R}{0.34\textwidth}
+        \vspace{-12pt}
         \begin{minipage}{0.15\textwidth}
         \begin{minted}{julia}
             y .= 0
             for i = _
-                y[i] .= x[i] + 1
+                y[i] = x[i] + 1
             end
             for i = _
                 x[i] += 1
@@ -262,7 +261,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
         \begin{minted}{julia}
             y .= 0
             for i = _
-                y[i] .= x[i] + 1
+                y[i] = x[i] + 1
             end
             @thaw(x)
             @freeze(y)
@@ -276,6 +275,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
             end
         \end{minted}
         \end{minipage}
+
         \vspace{-8pt}
         \caption{Life cycle automation.} \label{fig:lifecycles}
         \vspace{-18pt}
