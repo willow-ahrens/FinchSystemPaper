@@ -1,14 +1,4 @@
 \section{Background}
-\subsection{Looplets}
-Finch represents iteration patterns using Looplets, a language that decomposes datastructure iterators hierarchically. 
-%
-Looplets represent the control-flow structures needed to iterate over any given datastructure, or multiple datastructures simultaneously. 
-%
-In particular, looplets are good at lifting code to the highest loop level that it's needed and subdividing iteration hierarchically in coordinate space.
-%
-Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation during the intermediate lowering stages.
-
-The looplets are described in Figure~\ref{fig:looplets}. We simplify the presentation to focus on the semantics, rather than precise implementation. Several looplets introduce or modify variables in the scope of the target language. It is assumed that if a looplet introduces a variable to be used in a child looplet, the child looplet will not modify that variable. For more background on Looplets, we recommend the original work \cite{ahrens_looplets_2023}. 
 
 \begin{figure}[ht]
 \footnotesize
@@ -58,6 +48,17 @@ The looplets are described in Figure~\ref{fig:looplets}. We simplify the present
 \vspace{-8pt}
 \caption{The looplet language, as understood in a correct execution of a Finch program.}\label{fig:looplets}
 \end{figure}
+
+\subsection{Looplets}
+Finch represents iteration patterns using Looplets, a language that decomposes datastructure iterators hierarchically. 
+%
+Looplets represent the control-flow structures needed to iterate over any given datastructure, or multiple datastructures simultaneously. 
+%
+In particular, looplets are good at lifting code to the highest loop level that it's needed and subdividing iteration hierarchically in coordinate space.
+%
+Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation during the intermediate lowering stages.
+
+The looplets are described in Figure~\ref{fig:looplets}. We simplify the presentation to focus on the semantics, rather than precise implementation. Several looplets introduce or modify variables in the scope of the target language. It is assumed that if a looplet introduces a variable to be used in a child looplet, the child looplet will not modify that variable. For more background on Looplets, we recommend the original work \cite{ahrens_looplets_2023}. 
 
 \begin{wrapfigure}{r}{0.45\linewidth}
     \centering
