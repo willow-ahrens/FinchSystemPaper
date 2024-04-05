@@ -68,7 +68,29 @@
   locations (using multiple outputs).
   %
   All of our programs apply to all of our level formats, enabling exploitation of multiple structural patterns concurrently (e.g. sparsity \textit{and} symmetry).
-  
+   
+  \begin{wrapfigure}{r}{0.5\linewidth}
+    \scriptsize
+    \centering
+    \vspace{-12pt}
+    \vspace{-12pt}
+    \begin{tabular}{|r|l|l|}
+        \hline
+        \textbf{Format} & \textbf{Style of Matrix}\\
+        \hline
+        \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseList(Element(0.0)))} & real, sparse \\
+        \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseList(Pattern()))} & boolean, sparse \\
+        \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseVBL(Element(0.0)))} & real, blocked \\
+        \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseBand(Element(0.0)))} & real, banded \\
+        %\mintinline{julia}{Dense(SparsePoint(Element(0.0)))} & real-valued matrices with one value per row \\
+        %\mintinline{julia}{Dense(SparseRLE(Pattern(0.0)))} & matrix with runs of true or false \\
+        \hline 
+    \end{tabular}
+    \caption{SpMV Tensor Formats}
+    \label{spmv_tensor_formats}
+    \vspace{-8pt}
+  \end{wrapfigure} 
+
   Figure~\ref{fig:spmv_grouped} displays speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created some synthetic matrices containing bands of varying sizes.
   % or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases.
   %The dense vector is randomly generated. 
@@ -142,33 +164,7 @@
   %     \label{spmv_programs}
   %     \vspace{-12pt}
   % \end{wrapfigure}
-  
-  \begin{table}[htbp]
-      \scriptsize
-      \centering
-      \vspace{-12pt}
-      \caption{SpMV Tensor Formats}
-      \vspace{-12pt}
-      \label{spmv_tensor_formats}
-      \begin{tabular}{|l|l|l|l|}
-          \hline
-          \textbf{Outer Level} & \textbf{Inner Level} & \textbf{Scalar Values} & \textbf{Style of Matrix}\\
-          \hline
-          \multirow{6}{*}{Dense} & \multirow{2}{*}{SparseList} & Element & sparse, real-valued matrices \\
-          \cline{3-4} 
-          & & Pattern & sparse, boolean-valued matrices \\
-          \cline{2-4} 
-          & SparseVBL & Element & real-valued matrices with blocked structure \\
-          \cline{2-4}
-          & SparseBand & Element & real-valued matrices with diagonal band \\
-          \cline{2-4}
-          & \multirow{2}{*}{SparsePoint} & Element & real-valued matrices with one value per row \\
-          \cline{3-4} 
-          & & Pattern & matrix with runs of true or false \\
-          \hline 
-      \end{tabular}
-      \vspace{-8pt}
-  \end{table}
+
   
   % Perhaps add the following section again in a future iteration of paper
   % \subsubsection{4D Blocked SpMV}
@@ -182,9 +178,9 @@
   %Here's a figure with spmv_performance_sorted_(faster_than_taco).png and spmv_performance_sorted_(slower_than_taco).png
   
   \begin{figure}
-      \includegraphics[width=\linewidth]{Spmv_annotated.png}
+      \includegraphics[width=\linewidth]{Spmv_annotated.drawio.png}
       \vspace{-18pt}
       \caption{Performance of SpMV by Finch format.}
       \label{fig:spmv_grouped}
-      \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. "R" indicates row-major implementation and "C" indicates column-major implementation in Finch. The baseline Finch format is unsymmetric Dense(SparseList(Element)).
+      \footnotesize The performance displayed for Finch on each dataset is the fastest among the formats we tested. Programs are from Figure~\ref{spmv_programs} and formats are from Figure~\ref{spmv_tensor_formats}. ``finch\_baseline'' is the faster of row major or column major ``SparseList''.
   \end{figure}
