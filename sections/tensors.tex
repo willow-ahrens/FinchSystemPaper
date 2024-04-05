@@ -359,35 +359,11 @@ we only support random access construction of sparse or dense structures.  We
 can use these two more general structures as intermediates to convert to our
 more specialized structures later.
 
-\subsubsection{Scalars}
-Because leaf levels are geared towards representing multiple leaves, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
-%
-Scalars don't have as much structure as clearly only two structures apply.
-%
-Through these structures, scalars can also affect other tensors in crucial ways.
-%
-Constant propagation through arrays is known to be a complex compiler pass \cite{mcmichen_representing_nodate}.
-%
-Instead, we provide sparse scalars, which allow reductions but also specialize read accesses for the possible zero value.
-%
-We also provide early break scalars, which modify the stepper Looplets to
-re-specialize the loop whenever a reduction into an early break scalar hits an
-annihilator.
-%
-We assume that we don't need to re-specialize other Looplets because the stepper
-is the only one which repeats a non-constant number of times.
 
 %\HIDE{\saman{Can we not put future work into the submission!} As future work, we also recommend the implementation of a tree-based format, as this would enable incremental construction. Currently, the cost of freezing and thawing is usually proportional to the number of stored fibers, so an operation that sets a single value in a tensor would be prohibitively expensive (i.e.  $A[3, 4] = 3.14$). We would also recommend supporting SparseRLE as an intermediate randomly accessible structure, because (unlike blocks or singletons), runs have asymptotic benefits. However, these cases were not necessary for our case studies.}
 
 %\help{this section fails to address freeze or thaw and how it relates to the concrete levels}
 
-\subsubsection{Leaf Levels}
-
-The leaf level stores the actual entries of the tensor. In most cases, it is
-sufficient to store each entry at a separate position in a vector. This is accomplished by the \textbf{ElementLevel}. However, when all of the
-values are the same, an additional optimization can be made by storing the
-identical value only once. In this work, we introduce the concept of a \textbf{pattern}
-level to handle this binary case. Pattern has a fill value of $false$, and returning $true$ for all ``stored'' values. The pattern level allows us to easily represent unweighted graphs or other boolean matrices.
 
 
 \begin{table}[h]
@@ -496,3 +472,36 @@ level to handle this binary case. Pattern has a fill value of $false$, and retur
     default fill value and thus, whether it needs to be stored.}
     \label{table:formats}
 \end{table}
+
+\subsubsection{Scalars}
+Because leaf levels are geared towards representing multiple leaves, we also introduce a much simpler Scalar format to represent 0-dimensional tensors.
+%
+Scalars don't have as much structure as clearly only two structures apply.
+%
+Through these structures, scalars can also affect other tensors in crucial ways.
+%
+Constant propagation through arrays is known to be a complex compiler pass \cite{mcmichen_representing_nodate}.
+%
+Instead, we provide sparse scalars, which allow reductions but also specialize read accesses for the possible zero value.
+%
+We also provide early break scalars, which modify the stepper Looplets to
+re-specialize the loop whenever a reduction into an early break scalar hits an
+annihilator.
+%
+We don't need to re-specialize other Looplets because the stepper
+is the only one which repeats a non-constant number of times.
+%
+We represent early break as a structural property rather than a program node
+because it allows us to represent the tail of a loop where one scalar has hit an
+annihlator but another scalar hasn't.
+%
+To our knowlege, sparse and early break scalars are novel contributions of this
+work; other systems don't include them, limiting the impact of sparsity.
+
+\subsubsection{Leaf Levels}
+
+The leaf level stores the actual entries of the tensor. In most cases, it is
+sufficient to store each entry at a separate position in a vector. This is accomplished by the \textbf{ElementLevel}. However, when all of the
+values are the same, an additional optimization can be made by storing the
+identical value only once. In this work, we introduce the concept of a \textbf{pattern}
+level to handle this binary case. Pattern has a fill value of $false$, and returning $true$ for all ``stored'' values. The pattern level allows us to easily represent unweighted graphs or other boolean matrices.
