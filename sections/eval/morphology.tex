@@ -2,7 +2,7 @@
 
 Some image processing pipelines stand to benefit from structured data processing \cite{donenfeld_unified_2022}.
 %
-We focus on binary image morpology and the logical transformation of binary images and masks.
+We focus on binary image morphology and the logical transformation of binary images and masks.
 %
 We consider two operations: binary erosion (computing a mask), and a masked histogram (using a mask to avoid work).
 %
@@ -39,11 +39,11 @@ We compared against OpenCV.
 %
 We used four datasets. We randomly selected 100 images from the MNIST \cite{lecun_gradient-based_1998} and Omniglot \cite{lake_human-level_2015} character recognition datasets, as well as a dataset of human line drawings \cite{eitz_how_2012}. 
 %
-We also hand-selected a subset of mask images (these images were less homogenous, so we listed them in Appendix C) from a digital image processing textbook \cite{gonzalez_digital_2006}. 
+We also hand-selected a subset of mask images (these images were less homogeneous, so we listed them in Appendix C) from a digital image processing textbook \cite{gonzalez_digital_2006}. 
 %
 All images were thresholded, and we also include versions of the images that have been magnified before thresholding, to induce larger constant regions. 
 %
-In our erosion task, the sparseRLE format performs the best as it is asymptotically faster and uses less memory, leading to a 19.5X speedup over OpenCV on the sketches dataset, which becomes arbitrarily large as we magnify the images (here shown as 266X). 
+In our erosion task, the SparseRLE format performs the best as it is asymptotically faster and uses less memory, leading to a 19.5X speedup over OpenCV on the sketches dataset, which becomes arbitrarily large as we magnify the images (here shown as 266X). 
 %
 We believe the 51.6x on MNIST is due to calling overhead in OpenCV. 
 %

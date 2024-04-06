@@ -1,9 +1,9 @@
-\subsection{Implementing Numpy's Array API in Finch}
+\subsection{Implementing NumPy's Array API in Finch}
 In the past decade, the adoption of the Python Array API \cite{harris_array_2020} has allowed for a proliferation array programming systems, but existing implementations of this and similar APIs for structured data suffer from either incompleteness or inefficiency.
 %
 These APIs have hundreds of required functions, from mapreduce to slicing and windowing. 
 %
-Compilers with simpler interfaces (such as TACOs simple einsum) need a massive amount of glue code outside of the normal compilation path to support the full API, leading to a large implementation burden.
+Compilers with simpler interfaces (such as TACO's simple Einsum) need a massive amount of glue code outside of the normal compilation path to support the full API, leading to a large implementation burden.
 %
 As the API's were designed for only one structure (Dense), the burden only grows with the introduction of as additional structures such as sparsity, as these structures interact with the complex interface and with each other.
 %
