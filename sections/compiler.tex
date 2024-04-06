@@ -98,7 +98,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
         A[(a:b)(i)] $\rightarrow$ window(A, a:b)[i] & Creates a WindowedArray, representing a view into another tensor. This wrapper returns a different size of tensor. \\
         \hline
         A[\~i] $\rightarrow$ permissive(A)[i] & Creates a PermissiveArray, allowing for out-of-bounds access or padding. This tensor returns no dimensions as its size. \\
-        \hline
+        %\hline
         %A[p(i)] $\rightarrow$ protocolize(A, p)[i] & Accesses dimension n with protocol protos[n], allowing for advanced iteration protocols. \\
         \hline
         A[p(i)] $\rightarrow$ swizzle(A, perm)[i] & A lazily transposed array, swizzle(A, perm)[idx...] is transformed to A[idx[perm]...] during wrapperization. \\
