@@ -170,14 +170,14 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     \end{wrapfigure}
     \begin{enumerate}
         \item We assign dimensions to indices.
-        \item Using an index in an access “hints” that the index should have the corresponding dimension.
-        \item Loop dimensions are equal to the “meet” of all hints in the loop body
+        \item Using an index in an access ``hints'' that the index should have the corresponding dimension.
+        \item Loop dimensions are equal to the ``meet'' of all hints in the loop body
         and any existing dimensions in the loop bounds. The meet usually asserts
         that dimensions match, but may also e.g. propagate info about parallelization
         \item The \mintinline{julia}{_} symbol represents a dimensionless quantity at the bottom of the dimension lattice.
         \item We assign dimensions to declarations.
-        \item Left hand side (updating) tensor access “hint” the size of that tensor
-        \item The dimensions of a declaration are the “meet” of all hints from
+        \item Left hand side (updating) accesses ``hint'' the size of their tensor
+        \item The dimensions of a declaration are the ``meet'' of all hints from
         the declaration to the first read.
         \item The new dimensions of the declared tensor are used when the tensor is on the right hand side (reading)
         access.
