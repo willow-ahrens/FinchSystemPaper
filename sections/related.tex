@@ -25,7 +25,7 @@ The GraphBLAS~\cite{kepner2016mathematical} supports primitive semiring operatio
 Similarly, the Mapreduce and Hadoop platforms support operations on indexed collections~\cite{dean_mapreduce_2008}, and have been used to support graph
 algorithms in the GBASE library\cite{kang2011gbase}.
 %
-In ML, several frameworks offer this type of support, most notably TorchSparse, which supports a few arrays and a few operations on them~\cite{tang2022torchsparse, tang2023torchsparse++}.
+Several machine learning frameworks support some sparse arrays and operations, most notably TorchSparse\cite{tang2022torchsparse, tang2023torchsparse++}.
 %
 \paragraph{Compilers for Dense Data:}
 %% Languages: Halide, Lift, TVM, OptiML
@@ -45,9 +45,10 @@ The density of this research represents the density of support for dense computa
 \paragraph{ Compilers for Structured Data:}
 Several compilers exist for several types of structured data, often featuring separate languages for the storage of the structured data and the computation.
 %
-The TACO compiler originally supported just plain einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, all as separate extensions.
+The TACO compiler originally supported just plain einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, imperfectly nested loops \cite{dias_sparselnr_2022}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, all as separate extensions.
 %
-Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures~\cite{chou2018format}, and tree like structures~\cite{chou2022compilation}, as separate extensions.
+Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures~\cite{chou2018format}, and tree like structures~\cite{chou2022compilation}, as separate extensions. SparseTIR is a similar system supporting combined 
+sparse formats (including block structures) \cite{ye_sparsetir_2022}.
 %
 The SDQL language offers a similar level of control flow~\cite{shaikhha2022functional}, but only on sparse hash tables.
 %
