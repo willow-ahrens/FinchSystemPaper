@@ -65,7 +65,7 @@ In the context of machine learning, combinations of sparse and blocked matrices 
 Even complex operators can be expressed as structured arrays.
 %
 For example, a convolution with a filter can be expressed as a matrix multiplication
-with the toeplitz matrix of all the circular shifts of the filter~\cite{sze2017efficient}.
+with the Toeplitz matrix of all the circular shifts of the filter~\cite{sze2017efficient}.
 
 %
 \textbf{Currently, support for structured data is fragmented and incomplete}.
@@ -153,7 +153,7 @@ This trade-off is visualized in Tables \ref{tab:features} and \ref{tab:data_stru
 %
 Prior implementations are incomplete because the abstractions they use are tightly coupled with the specific data structures that they support.
 %
-For example, TACO merge lattices represent boolean logic over sets of non-zero values on an integer grid~\cite{kjolstad_tensor_2017}.
+For example, TACO merge lattices represent Boolean logic over sets of non-zero values on an integer grid~\cite{kjolstad_tensor_2017}.
 %
 The polyhedral model allows various compilers to represent dense computations on affine regions~\cite{grosser2012polly}.
 %
@@ -269,7 +269,7 @@ To our knowledge, the Finch programming language is the first to support if-cond
 %
 For example, Finch has been extended to support real-valued array indices with continuous arrays \cite{won2024continuous}.
 %
-\item We evaluate the efficiency, flexibility, and expressibility of our language in several case studies on a wide range of applications, demonstrating speedups over the state of the art in classic operations such as spmv ($2.51\times$) and spgemm ($1.25\times$), to more complex applications such as graph analytics ($3.53\times$, reducing lines of code by $4\times$ over GraphBLAS), image processing ($19.5\times$), and the Python Array API ($28\times$).
+\item We evaluate the efficiency, flexibility, and expressibility of our language in several case studies on a wide range of applications, demonstrating speedups over the state of the art in classic operations such as SpMV ($2.51\times$) and SpGEMM ($1.25\times$), to more complex applications such as graph analytics ($3.53\times$, reducing lines of code by $4\times$ over GraphBLAS), image processing ($19.5\times$), and the Python Array API ($28\times$).
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
 %\item A complete set of level formats for expressing data patterns hierarchically in FiberTree-style decompositions. The first such set of formats to efficiently capture banded, triangular, run-length-encoded, or sparse-run-length-encoded datasets. The formats capture many use cases, from random updates to sequential construction.
 %\item The Finch array language, mirroring simple for-loops with imperative code blocks and if-conditions. The first array programming language for the above data formats to support multiple outputs, affine indexing, and imperfectly-nested loops.
@@ -281,4 +281,4 @@ For example, Finch has been extended to support real-valued array indices with c
 
 \end{enumerate}
 
-This advances the state-of-the-art over the looplets work \cite{ahrens_looplets_2023}. While Looplets presented a way to merge iterators over multiple single dimensional structures, we go further by combining single-dimensional looplets into multi-dimensional tensors and operating on them in a programming language with fully-featured control flow.
+This advances the state-of-the-art over the Looplets work \cite{ahrens_looplets_2023}. While Looplets presented a way to merge iterators over multiple single dimensional structures, we go further by combining single-dimensional looplets into multi-dimensional tensors and operating on them in a programming language with fully-featured control flow.

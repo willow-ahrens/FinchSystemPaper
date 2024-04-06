@@ -79,7 +79,7 @@
         \textbf{Format} & \textbf{Style of Matrix}\\
         \hline
         \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseList(Element(0.0)))} & real, sparse \\
-        \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseList(Pattern()))} & boolean, sparse \\
+        \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseList(Pattern()))} & Boolean, sparse \\
         \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseVBL(Element(0.0)))} & real, blocked \\
         \mintinline[fontsize=\scriptsize]{julia}{Dense(SparseBand(Element(0.0)))} & real, banded \\
         %\mintinline{julia}{Dense(SparsePoint(Element(0.0)))} & real-valued matrices with one value per row \\
@@ -92,7 +92,7 @@
     \vspace{-8pt}
   \end{wrapfigure} 
 
-  Figure~\ref{fig:spmv_grouped} displays speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with boolean matrices. We also created some synthetic matrices containing bands of varying sizes.
+  Figure~\ref{fig:spmv_grouped} displays speedup relative to TACO, SuiteSparseGraphBLAS, and Julia’s standard library.  We test using sparse matrices from a large selection of datasets spanning several previous papers: the datasets used by Vuduc et al. to test the OSKI interface \cite{vuduc2005oski}, Ahrens et al. to test a variable block row format partitioning strategy \cite{ahrens_optimal_2021}, and Kjolstad et al. to test the TACO library \cite{kjolstad_tensor_2017}. Additionally, we included the SNAP graph collection to test with Boolean matrices. We also created some synthetic matrices containing bands of varying sizes.
   % or blocks of varying sizes as well as a permutation matrix to encapsulate a few additional use cases.
   %The dense vector is randomly generated. 
   %
@@ -110,7 +110,7 @@
   %
   Furthermore, the synthetic banded matrices we constructed performed the best with the SparseBand matrix, in particular with the large\_band and the medium\_band matrices having a speedup of 1.98 and 1.64 relative to TACO, while the baseline format had minor slowdowns relative to TACO.
   %
-  The Pattern format performed better than the Element format for representing the leaf values in the matrices when these values were boolean, such as matrices in the SNAP collection which represent graph datasets are boolean. 
+  The Pattern format performed better than the Element format for representing the leaf values in the matrices when these values were Boolean, such as matrices in the SNAP collection which represent graph datasets are Boolean. 
   %
   For example, the SparseList-Pattern for email-Eu-core resulted in a speedup of 2.51, while the SparseList-Element format resulted in a slowdown of 1.84 over TACO.
   %

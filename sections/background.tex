@@ -3,37 +3,37 @@
 \footnotesize
 \begin{tabular} {|p{0.7\linewidth}|c|} 
     \hline
-    $\finchlookup(seek, body)$: The Lookup Looplet represents a randomly accessible region of an iterator. The body of the lookup is understood to have one less dimension than the lookup itself, as we have already ``looked up'' that index in the tensor by the time we reach the body. \texttt{seek(i)} is a function that updates state to the given index.
+    $\finchlookup(seek, body)$: The Lookup looplet represents a randomly accessible region of an iterator. The body of the lookup is understood to have one less dimension than the lookup itself, as we have already ``looked up'' that index in the tensor by the time we reach the body. \texttt{seek(i)} is a function that updates state to the given index.
     &
     \raisebox{-0.85\totalheight}{\includegraphics[scale=0.20]{Looplets-lookup.png}}
     \\
     \hline
-    $\finchrun(body)$: The Run Looplet represents a constant region of an iterator. The body of the run is understood to have one less dimension than the lookup itself, as all of the bodies are identical.
+    $\finchrun(body)$: The Run looplet represents a constant region of an iterator. The body of the run is understood to have one less dimension than the lookup itself, as all of the bodies are identical.
         &
     \raisebox{-0.85\totalheight}{\includegraphics[scale=0.20]{Looplets-run.png}}
     \\ 
     \hline
-    $\finchphase(c:d, body)$: The Phase Looplet represents a restriction of the range on which a loop should execute, and allows us to succinctly express the ranges on which children of compound looplets are defined.
+    $\finchphase(c:d, body)$: The Phase looplet represents a restriction of the range on which a loop should execute, and allows us to succinctly express the ranges on which children of compound looplets are defined.
     &
     \raisebox{-0.85\totalheight}{\includegraphics[scale=0.20]{Looplets-phase.png}}
     \\ 
     \hline
-    $\finchswitch(cond, head, tail)$: The Switch Looplet allows us to specialize the body of a looplet based on a condition, evaluated in the embedding context. If the condition is true, we use `head`, otherwise we use `tail`. Switch has a high lowering priority so we can see what's inside of it and lower that appropriately. This also lifts the condition as high as possible into the loop nest. The condition is assumed to evaluate to a boolean.
+    $\finchswitch(cond, head, tail)$: The Switch looplet allows us to specialize the body of a looplet based on a condition, evaluated in the embedding context. If the condition is true, we use `head`, otherwise we use `tail`. Switch has a high lowering priority so we can see what's inside of it and lower that appropriately. This also lifts the condition as high as possible into the loop nest. The condition is assumed to evaluate to a Boolean.
     &
     \raisebox{-1\totalheight}{\includegraphics[scale=0.20]{Looplets-switch.png}}
     \\ 
     \hline
-    $\finchthunk(preamble, body, epilogue)$: The Thunk Looplet allows us to cache certain computations in the state under which the body will execute. This is useful for computing and caching the results of expensive computations.
+    $\finchthunk(preamble, body, epilogue)$: The Thunk looplet allows us to cache certain computations in the state under which the body will execute. This is useful for computing and caching the results of expensive computations.
     &
     \raisebox{-0.8\totalheight}{\includegraphics[scale=0.20]{Looplets-thunk.png}}
     \\ 
     \hline
-    $\finchsequence(head, tail)$: The Sequence looplet represents the concatenation of two looplets. Both arguments must be phase looplets, and are assumed to be nonoverlapping, covering, and in order.
+    $\finchsequence(head, tail)$: The Sequence looplet represents the concatenation of two looplets. Both arguments must be phase looplets, and are assumed to be non-overlapping, covering, and in order.
     &
     \raisebox{-0.85\totalheight}{\includegraphics[scale=0.20]{Looplets-sequence.png}}
     \\ 
     \hline
-    $\finchspike(body, tail)$: The Spike Looplet represents a run followed by a single value. In this paper, Spike will be considered a shorthand for $\finchsequence(\finchphase(i:j-1, \finchrun(body)), \finchphase(j:j, \finchrun(tail)))$.  In the Finch compiler, spikes are handled with special care, since they are an opportunity to align the final run to the end of the root loop extent, without using any special bounds inference.
+    $\finchspike(body, tail)$: The Spike looplet represents a run followed by a single value. In this paper, Spike will be considered a shorthand for $\finchsequence(\finchphase(i:j-1, \finchrun(body)), \finchphase(j:j, \finchrun(tail)))$.  In the Finch compiler, spikes are handled with special care, since they are an opportunity to align the final run to the end of the root loop extent, without using any special bounds inference.
     &
     \raisebox{-1.15\totalheight}{\includegraphics[scale=0.20]{Looplets-spike.png}}
     \\ 
@@ -45,7 +45,7 @@
     \hline
     \end{tabular}
 \vspace{-8pt}
-\caption{The looplet language, as understood in a correct execution of a Finch program.}\label{fig:looplets}
+\caption{The Looplet language, as understood in a correct execution of a Finch program.}\label{fig:looplets}
 \end{figure}
 
 \section{Background}
@@ -55,11 +55,11 @@ Finch represents iteration patterns using Looplets, a language that decomposes d
 %
 Looplets represent the control-flow structures needed to iterate over any given datastructure, or multiple datastructures simultaneously. 
 %
-In particular, looplets are good at lifting code to the highest possible loop level and subdividing iteration hierarchically in coordinate space.
+In particular, Looplets are good at lifting code to the highest possible loop level and subdividing iteration hierarchically in coordinate space.
 %
-Because looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation during the intermediate lowering stages.
+Because Looplets are compiled with progressive lowering, structure-specific mathematical optimizations such as integrals, multiply by zero, etc. can be implemented using simple compiler passes like term rewriting and constant propagation during the intermediate lowering stages.
 
-The looplets are described in Figure~\ref{fig:looplets}. We simplify the presentation to focus on the semantics, rather than precise implementation. Several looplets introduce or modify variables in the scope of the target language. It is assumed that if a looplet introduces a variable, the child looplet will not modify that variable. For more background on Looplets, we recommend the original work \cite{ahrens_looplets_2023}. 
+The Looplets are described in Figure~\ref{fig:looplets}. We simplify the presentation to focus on the semantics, rather than precise implementation. Several looplets introduce or modify variables in the scope of the target language. It is assumed that if a looplet introduces a variable, the child looplet will not modify that variable. For more background on Looplets, we recommend the original work \cite{ahrens_looplets_2023}. 
 
 \begin{wrapfigure}{r}{0.45\linewidth}
     \centering

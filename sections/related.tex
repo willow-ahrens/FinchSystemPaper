@@ -5,7 +5,7 @@ The related work on array languages and libraries spans several areas, from libr
 \paragraph{Libraries for Dense Data:}
 Many libraries specialize in dense computations.
 %
-Perhaps the most well-known example is Numpy~\cite{harris_array_2020},
+Perhaps the most well-known example is NumPy~\cite{harris_array_2020},
 and a classic example is the BLAS, though several BLAS routines are specialized to symmetric, hermitian, and triangular matrices~\cite{Anderson1999}. 
 %
 Many research projects have advanced on BLAS, such as BatchedBlas and BLIS~\cite{dongarra2017design, van2015blis}.
@@ -14,7 +14,7 @@ Many research projects have advanced on BLAS, such as BatchedBlas and BLIS~\cite
 
 Many libraries support BLAS plus a few sparse array types, typically CSR, CSC, BCSR, Banded, and COO.
 %
-Examples include Scipy~\cite{virtanen2020scipy}, PETSc~\cite{abhyankarpetsc}, Armadillo~\cite{Rumengan2021}, OSKI~\cite{vuduc2005oski}, Cyclops~\cite{solomonik2013cyclops}, MKL~\cite{noauthor_developer_2024}, and Eigen~\cite{eigenweb}.
+Examples include SciPy~\cite{virtanen2020scipy}, PETSc~\cite{abhyankarpetsc}, Armadillo~\cite{Rumengan2021}, OSKI~\cite{vuduc2005oski}, Cyclops~\cite{solomonik2013cyclops}, MKL~\cite{noauthor_developer_2024}, and Eigen~\cite{eigenweb}.
 %
 There are even libraries for very specific kernels and format combinations, such as SPLATT~\cite{smith2015splatt} (MTTKRP on CSF).
 %
@@ -22,7 +22,7 @@ Several of these libraries also feature some graph or mesh algorithms built on s
 %
 The GraphBLAS~\cite{kepner2016mathematical} supports primitive semiring operations (operations beyond $(+, *)$, such as $(min, +)$ multiplication) which can be composed to enable graph algorithms, some of which are collected in LAGraph~\cite{mattson2019lagraph}.
 %
-Similarly, the Mapreduce and Hadoop platforms support operations on indexed collections~\cite{dean_mapreduce_2008}, and have been used to support graph
+Similarly, the MapReduce and Hadoop platforms support operations on indexed collections~\cite{dean_mapreduce_2008}, and have been used to support graph
 algorithms in the GBASE library\cite{kang2011gbase}.
 %
 Several machine learning frameworks support some sparse arrays and operations, most notably TorchSparse\cite{tang2022torchsparse, tang2023torchsparse++}.
@@ -31,7 +31,7 @@ Several machine learning frameworks support some sparse arrays and operations, m
 %% Languages: Halide, Lift, TVM, OptiML
 Outside of general purpose compilers, many compilers have been developed for optimizing dense data on a variety of control flow.
 %
-Perhaps the most well known example is Halide~\cite{ragan-kelley_halide_2013} and its various descendent such as TVM~\cite{chen2018tvm}, Exo~\cite{ikarashi2022exocompilation}, Elevate~\cite{hagedorn2020achieving}, and ATL~\cite{liu_verified_2022}.
+Perhaps the most well known example is Halide~\cite{ragan-kelley_halide_2013} and its various descendant such as TVM~\cite{chen2018tvm}, Exo~\cite{ikarashi2022exocompilation}, Elevate~\cite{hagedorn2020achieving}, and ATL~\cite{liu_verified_2022}.
 %
 These languages typically support most control flow except for an early break though some don't support arbitrary reading/writing or even indirect accesses.
 %
@@ -45,7 +45,7 @@ The density of this research represents the density of support for dense computa
 \paragraph{ Compilers for Structured Data:}
 Several compilers exist for several types of structured data, often featuring separate languages for the storage of the structured data and the computation.
 %
-The TACO compiler originally supported just plain einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, imperfectly nested loops \cite{dias_sparselnr_2022}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, and compilation in MLIR \cite{bik_compiler_2022}, all as separate extensions.
+The TACO compiler originally supported just plain Einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, imperfectly nested loops \cite{dias_sparselnr_2022}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, and compilation in MLIR \cite{bik_compiler_2022}, all as separate extensions.
 %
 Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures~\cite{chou2018format}, and tree like structures~\cite{chou2022compilation}, as separate extensions. SparseTIR is a similar system supporting combined 
 sparse formats (including block structures) \cite{ye_sparsetir_2022}.
@@ -59,11 +59,11 @@ The Taichi language focuses on a single sparse data structure made from dense bl
 %
 %Outside of these works, the window of comparison fogs up.
 %
-The sparse polyhedral framework builds on CHiLL for the purpose of generating inspector/executor optimizations~\cite{strout2018sparse} though the branch of this work that specifies sparse formats separately from the computation (otherwise they are inlined into the computation manually) seems to apply mainly to einsums~\cite{zhao2022polyhedral}.
+The sparse polyhedral framework builds on CHiLL for the purpose of generating inspector/executor optimizations~\cite{strout2018sparse} though the branch of this work that specifies sparse formats separately from the computation (otherwise they are inlined into the computation manually) seems to apply mainly to Einsums~\cite{zhao2022polyhedral}.
 %
 Second to last, SQL's classical physical/logical distinction is the classic program/format distinction, and SQL supports a huge variety of control flow constructs~\cite{kotlyar1997relational, date1989guide}.
 %
-However, many SQL or dataframe systems rely on BTrees, columnar, or hash tables, with only a few systems, such as Vectorwise~\cite{boncz2012vectorwise}, LaraDB~\cite{hutchison2017laradb}, GMAP~\cite{tsatalos1996gmap}, or SciDB~\cite{stonebraker2013scidb} building physical layouts with other constructs based in array programming.
+However, many SQL or dataframe systems rely on b-trees, columnar, or hash tables, with only a few systems, such as Vectorwise~\cite{boncz2012vectorwise}, LaraDB~\cite{hutchison2017laradb}, GMAP~\cite{tsatalos1996gmap}, or SciDB~\cite{stonebraker2013scidb} building physical layouts with other constructs based in array programming.
 %
 However, array based databases are a new focus given the rise of mixed ML/DB pipelines~\cite{baumann2021array,luo2018scalable}.
 %

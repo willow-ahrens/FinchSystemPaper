@@ -51,14 +51,14 @@ in the next section.
 
 Our syntax is highly permissive: by allowing blocks of code with multiple statements, we implicitly support many features gained through complicated scheduling commands in other frameworks, such as multiple outputs, masking to avoid work, temporary tensors, and arbitrary loop fusion and nesting.
 %
-These features are seen most prominently in our implementation of gustavson's algorithm for sparse-sparse matrix multiply, which simply writes to a temporary tensor in an inner loop and then reuses it, or in our breadth-first-search, which uses an \mintinline{julia}{if} statement to avoid operating on vertices outside the frontier. 
+These features are seen most prominently in our implementation of Gustavson's algorithm for sparse-sparse matrix multiply, which simply writes to a temporary tensor in an inner loop and then reuses it, or in our breadth-first-search, which uses an \mintinline{julia}{if} statement to avoid operating on vertices outside the frontier. 
 %
 The only restriction we impose on our syntax is that it must respect tensor life cycles.
 %
 In the semantics section, we detail the specifics of how we compile our syntax to efficient code over structured data.
 
 
-% Finch uses looplets to lower \mintinline{julia}{for}-loops, though a sparse
+% Finch uses Looplets to lower \mintinline{julia}{for}-loops, though a sparse
 % program with complicated looplets should produce output tensors with the same
 % semantic value as a dense program with ordinary for-loops.  We include the
 % semantics of how looplets are lowered as it affects the structure of the results
@@ -107,7 +107,7 @@ We distinguish evaluation of the language by evolving compiler state with $\lang
 %
 For example, in Figure~\ref{fig:semantics_core}, we declare the core semantics of the language and the $Define$ rule (\mintinline{julia}{let}) adds a definition to the compiler state whereas the $Call$ rule passes evaluation off to the host.
 %
-In Figure~\ref{fig:semantics_looplets}, we detail the Looplet evaluation semantics, which details how acceses within a loop can be replaced with Loopets, which are progressively rewritten to host code.
+In Figure~\ref{fig:semantics_looplets}, we detail the Looplet evaluation semantics, which details how accesses within a loop can be replaced with Looplets, which are progressively rewritten to host code.
 %
 Due to the use of rewrite rules, our semantics here make use of an evaluation context.
 
@@ -264,7 +264,7 @@ We will also show how we can similarly exploit the structure of complex conditio
     %
     This means that rules which modify $t$ are running in the host language.
     %
-    Several Looplets introduce variables into the embedding
+    Several looplets introduce variables into the embedding
     language, which may be read when evaluating the {\finchvalue} node.
 %
      All of the lifecycle
@@ -394,7 +394,7 @@ E := [\cdot] | \finchloop(idx, ext, E | body) | \finchblock(E | head, E | tail) 
      Note that $E$ is an evaluation context that applies anywhere in
     the syntax tree. 
     %
-    The nonlocal evaluations of Looplets are what allow looplets to
+    The nonlocal evaluations of Looplets are what allow Looplets to
     hoist conditions and subranges out of loops.
     %
     However, this also means we must specify

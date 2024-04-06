@@ -30,7 +30,7 @@ The properties of such a program are as follows:
 
 The subsequent sections will explain how programs that violate each of these
 constraints can be rewritten to programs that satisfy them, and thus how we can
-support such a wide variety of programs. For example, we can write nonconcordant
+support such a wide variety of programs. For example, we can write non-concordant
 programs like  \mintinline{julia}{for i = _; for j = _; s[] += A[i, j] end end}
 by adding a loop to randomly access \mintinline{julia}{A} or adjusting the
 storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.

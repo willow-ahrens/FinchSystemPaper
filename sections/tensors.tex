@@ -12,15 +12,15 @@ Thus, the Finch language supports multi-dimensional arrays.
 %
 Unfortunately, the Looplet abstraction is best suited towards iterators over a single dimension.
 %
-Our level abstraction provides a bridge between the single dimensional iterators created from looplets and the mutli-dimensional fiber-tree abstractions common to tensor compilers.
+Our level abstraction provides a bridge between the single dimensional iterators created from Looplets and the multi-dimensional fiber-tree abstractions common to tensor compilers.
 % 
 This bridge must address three challenges.
 %
-First, while looplets represent an instance of an iterator over a tensor, we may access the same tensor twice with different indices.
+First, while Looplets represent an instance of an iterator over a tensor, we may access the same tensor twice with different indices.
 %
 Thus, the $unfurl$ function creates separate looplet nests for each iterator.
 %
-Next, since Finch programs go beyond just single einsums, they may read and write to the same data at different times.
+Next, since Finch programs go beyond just single Einsums, they may read and write to the same data at different times.
 %
 The $declare$, $freeze$, and $thaw$ functions provide machinery to manage transition between these states.
 %
@@ -52,7 +52,7 @@ including specializations to zero dimensional tensors (scalars) and level struct
 % %
 % We introduce an interface to instatiate iterators in a variety of contexts in our programs and we introduce the lifecycle interface to manage when we read and write to multi-dimensional iterators.
 % %
-% These interfaces add to the level abstraction, expanding the types of data that they can express via mapping to looplets and expanding the contexts in which they can be used.
+% These interfaces add to the level abstraction, expanding the types of data that they can express via mapping to Looplets and expanding the contexts in which they can be used.
 % %
 % Previous efforts to compile a greater variety of sparse array programs left these bridges untouched ~\cite{henry_compilation_2021, won2023unified, senanayake2020sparse}.
 
@@ -85,7 +85,7 @@ including specializations to zero dimensional tensors (scalars) and level struct
 
 \subsection{Tensor Lifecycle, Declare, Freeze, Thaw, Unfurl}
 
-Our simplified view of a level is enabled by our use of looplets to represent
+Our simplified view of a level is enabled by our use of Looplets to represent
 the structure within each fiber.
 %
 In fact, our level interface requires only 5
@@ -287,7 +287,7 @@ data twice to determine the number of required output nonzeros.
     are relevant. Note that blocks and runs need not be considered together
     because we must store a run length for each run, so there isn't a
     significant storage benefit to combining them. Blocks and singletons only
-    make sense in the contex of sparsity.}
+    make sense in the context of sparsity.}
     \vspace{-24pt}
     %We omit such combinations from the exhaustive table.
     \label{tab:TypesOfStructure}
@@ -382,7 +382,7 @@ more specialized structures later.
     %
     Due to its simplicity, freezing and thawing the level are no-ops. \\
     \textbf{DenseRLE}:
-    Used to represent runs of repeated values, storing two vectors, $right$ and $ptr$, with $qth$ run in the $p^th$ subfiber starting and ending at $right[ptr[p] + q]$ and $right[ptr[p] + q + 1] - 1$, respectively.
+    Used to represent runs of repeated values, storing two vectors, $right$ and $ptr$, with $q^{th}$ run in the $p^{th}$ subfiber starting and ending at $right[ptr[p] + q]$ and $right[ptr[p] + q + 1] - 1$, respectively.
     %
     A challenge arises for this level: it is difficult to merge duplicate runs.
     %
@@ -398,7 +398,7 @@ more specialized structures later.
     \textbf{SparseList}:
     The simplest sparse format, used to construct popular formats like CSR, CSC, DCSR, DCSC, and CSF.
     %
-    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$. \\
+    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $q^{th}$ nonzero in the subfiber at position $p$. \\
     \textbf{SparsePinpoint}:
     Similar to SparseList, but only one nonzero in each subfiber, eliminating the need for the $ptr$ field.
     %
@@ -406,7 +406,7 @@ more specialized structures later.
     \textbf{SparseRLE}:
     Similar to DenseRLE level, but because runs are sparse, we must also store the start of each run.
     %
-    It stores three vectors $left$, $right$, and $ptr$, such that the $qth$ run in the $p^th$ subfiber begins and ends at $left[ptr[p] + q]$ and $right[ptr[p] + q]$, respectively.
+    It stores three vectors $left$, $right$, and $ptr$, such that the $q^{th}$ run in the $p^{th}$ subfiber begins and ends at $left[ptr[p] + q]$ and $right[ptr[p] + q]$, respectively.
     %
     Like DenseRLE, it also stores a duplicate sublevel, $buf$, for deduplication. \\
     \textbf{SparseInterval}:
@@ -426,7 +426,7 @@ more specialized structures later.
     %
     This allows for efficient random access, but not incremental construction, as the freeze phase runs in time proportional to the number of nonzeros in the entire level.
     %
-    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$. 
+    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $q^{th}$ nonzero in the subfiber at position $p$. 
     %
     Also stores a hash table $tbl$ for construction and random access in the level. \\
     \textbf{SparseBytemap}
@@ -440,7 +440,7 @@ more specialized structures later.
     %
     This format is analogous to the default workspace format used by TACO.
     %
-    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $qth$ nonzero in the subfiber at position $p$.
+    It stores two vectors, $idx$ and $ptr$, such that $idx[ptr[p] + q]$ is the index of the $q^{th}$ nonzero in the subfiber at position $p$.
     %
     These vectors are used to collect dirty locations.
     %
@@ -484,18 +484,18 @@ Constant propagation through arrays is known to be a complex compiler pass \cite
 %
 Instead, we provide sparse scalars, which allow reductions but also specialize read accesses for the possible zero value.
 %
-We also provide early break scalars, which modify the stepper Looplets to
+We also provide early break scalars, which modify the stepper looplets to
 re-specialize the loop whenever a reduction into an early break scalar hits an
 annihilator.
 %
-We don't need to re-specialize other Looplets because the stepper
+We don't need to re-specialize other looplets because the stepper
 is the only one which repeats a non-constant number of times.
 %
 We represent early break as a structural property rather than a program node
 because it allows us to represent the tail of a loop where one scalar has hit an
-annihlator but another scalar hasn't.
+annihilator but another scalar hasn't.
 %
-To our knowlege, sparse and early break scalars are novel contributions of this
+To our knowledge, sparse and early break scalars are novel contributions of this
 work; other systems don't include them, limiting the impact of sparsity.
 
 \subsubsection{Leaf Levels}
@@ -503,5 +503,5 @@ work; other systems don't include them, limiting the impact of sparsity.
 The leaf level stores the actual entries of the tensor. In most cases, it is
 sufficient to store each entry at a separate position in a vector. This is accomplished by the \textbf{ElementLevel}. However, when all of the
 values are the same, an additional optimization can be made by storing the
-identical value only once. In this work, we introduce the concept of a \textbf{pattern}
-level to handle this binary case. Pattern has a fill value of $false$, and returning $true$ for all ``stored'' values. The pattern level allows us to easily represent unweighted graphs or other boolean matrices.
+identical value only once. In this work, we introduce the concept of a \textbf{PatternLevel}
+ to handle this binary case. The PatternLevel has a fill value of $false$, and returning $true$ for all ``stored'' values. The PatternLevel allows us to easily represent unweighted graphs or other Boolean matrices.
