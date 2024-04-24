@@ -7,7 +7,7 @@ Our BFS implementation and graphs datasets are taken from Yang et al.~\cite{yang
 
 %road networks, characterized by bounded node degrees and long diameters, and scale-free graphs, where node degree distribution follows a power-law distribution and diameters are short.
 
-Direction-optimization~\cite{beamer2012direction} is crucial for achieving high BFS performance in such scenarios, switching between push and pull traversals to efficiently explore graphs.
+Direction-optimization~\cite{beamer_direction-optimizing_2012} is crucial for achieving high BFS performance in such scenarios, switching between push and pull traversals to efficiently explore graphs.
 %
 Push traversal visits the neighbors of each frontier node, while pull traversal visits every node and checks to see if it has a neighbor in the frontier. 
 %
@@ -15,7 +15,7 @@ The advantage of pull traversal is that we may terminate our search once we find
 %
 Early break is the critical part of control flow in this algorithm, though the algorithms also require different loop orders, multiple outputs, and custom operators.
 
-Figure~\ref{fig:graph_result} compares performance to Graphs.jl, a Julia library, and the LAGraph Library, which implements graph algorithms with sparse linear algebra using GraphBLAS~\cite{mattson2019lagraph}.
+Figure~\ref{fig:graph_result} compares performance to Graphs.jl, a Julia library, and the LAGraph Library, which implements graph algorithms with sparse linear algebra using GraphBLAS~\cite{mattson_lagraph_2019}.
 %
 For the BFS algorithm, direction-optimization notably enhances performance for scale-free graphs. 
 %

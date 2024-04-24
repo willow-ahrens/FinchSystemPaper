@@ -314,7 +314,7 @@ data twice to determine the number of required output nonzeros.
         \mintinline{julia}{s += n * x} or code motion to lift operations out of loops \cite{donenfeld_unified_2022,ahrens_looplets_2023}.
 
         \item \textbf{Singular} When we have only one non-fill region in sparse data,
-        we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani2023compiling, ahrens_looplets_2023}.
+        we can avoid a loop entirely and reduce the complexity of iteration \cite{ghorbani_compiling_2023, ahrens_looplets_2023}.
     \end{itemize}
     In the following section, we consider a set of concrete implementations of levels that expose all combinations of these structures, paying some attention to a few important special cases: random access, scalars, and leaf levels. We summarize the structures in Table~\ref{table:formats} and Table~\ref{tab:TypesOfStructure}.
     

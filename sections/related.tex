@@ -6,38 +6,38 @@ The related work on array languages and libraries spans several areas, from libr
 Many libraries specialize in dense computations.
 %
 Perhaps the most well-known example is NumPy~\cite{harris_array_2020},
-and a classic example is the BLAS, though several BLAS routines are specialized to symmetric, hermitian, and triangular matrices~\cite{Anderson1999}. 
+and a classic example is the BLAS, though several BLAS routines are specialized to symmetric, hermitian, and triangular matrices~\cite{anderson_lapack_1999}. 
 %
-Many research projects have advanced on BLAS, such as BatchedBlas and BLIS~\cite{dongarra2017design, van2015blis}.
+Many research projects have advanced on BLAS, such as BatchedBlas and BLIS~\cite{dongarra_design_2017,van_zee_blis:_2015}.
 
 \paragraph{Libraries for Structured Data:}
 
 Many libraries support BLAS plus a few sparse array types, typically CSR, CSC, BCSR, Banded, and COO.
 %
-Examples include SciPy~\cite{virtanen2020scipy}, PETSc~\cite{abhyankarpetsc}, Armadillo~\cite{Rumengan2021}, OSKI~\cite{vuduc2005oski}, Cyclops~\cite{solomonik2013cyclops}, MKL~\cite{noauthor_developer_2024}, and Eigen~\cite{eigenweb}.
+Examples include SciPy~\cite{virtanen_scipy_2020}, PETSc~\cite{abhyankar_petsc_nodate}, Armadillo~\cite{rumengan_pyarmadillo_2021}, OSKI~\cite{vuduc_oski:_2005}, Cyclops~\cite{solomonik_cyclops_2013}, MKL~\cite{noauthor_developer_2024}, and Eigen~\cite{guennebaud_eigen_2010}.
 %
-There are even libraries for very specific kernels and format combinations, such as SPLATT~\cite{smith2015splatt} (MTTKRP on CSF).
+There are even libraries for very specific kernels and format combinations, such as SPLATT~\cite{smith_splatt:_2015} (MTTKRP on CSF).
 %
 Several of these libraries also feature some graph or mesh algorithms built on sparse matrices.
 %
-The GraphBLAS~\cite{kepner2016mathematical} supports primitive semiring operations (operations beyond $(+, *)$, such as $(min, +)$ multiplication) which can be composed to enable graph algorithms, some of which are collected in LAGraph~\cite{mattson2019lagraph}.
+The GraphBLAS~\cite{kepner_mathematical_2016} supports primitive semiring operations (operations beyond $(+, *)$, such as $(min, +)$ multiplication) which can be composed to enable graph algorithms, some of which are collected in LAGraph~\cite{mattson_lagraph_2019}.
 %
 Similarly, the MapReduce and Hadoop platforms support operations on indexed collections~\cite{dean_mapreduce_2008}, and have been used to support graph
-algorithms in the GBASE library\cite{kang2011gbase}.
+algorithms in the GBASE library\cite{kang_gbase_2011}.
 %
-Several machine learning frameworks support some sparse arrays and operations, most notably TorchSparse\cite{tang2022torchsparse, tang2023torchsparse++}.
+Several machine learning frameworks support some sparse arrays and operations, most notably TorchSparse\cite{tang_torchsparse_2022,tang_torchsparse_2023}.
 %
 \paragraph{Compilers for Dense Data:}
 %% Languages: Halide, Lift, TVM, OptiML
 Outside of general purpose compilers, many compilers have been developed for optimizing dense data on a variety of control flow.
 %
-Perhaps the most well known example is Halide~\cite{ragan-kelley_halide_2013} and its various descendant such as TVM~\cite{chen2018tvm}, Exo~\cite{ikarashi2022exocompilation}, Elevate~\cite{hagedorn2020achieving}, and ATL~\cite{liu_verified_2022}.
+Perhaps the most well known example is Halide~\cite{ragan-kelley_halide_2013} and its various descendant such as TVM~\cite{chen_tvm_2018}, Exo~\cite{ikarashi_exocompilation_2022}, Elevate~\cite{hagedorn_achieving_2020}, and ATL~\cite{liu_verified_2022}.
 %
 These languages typically support most control flow except for an early break though some don't support arbitrary reading/writing or even indirect accesses.
 %
-Several polyhedral languages, such as Polly~\cite{grosser2012polly}, Tiramisu~\cite{baghdadi2019tiramisu}, CHiLL~\cite{chen2008framework}, Pluto~\cite{bondhugula2008pluto}, and AlphaZ~\cite{yuki2012alphaz} offer similar capabilities in terms of control flow though they often support more irregular regions that the polyhedral framework supports.
+Several polyhedral languages, such as Polly~\cite{grosser_pollyperforming_2012}, Tiramisu~\cite{baghdadi_tiramisu_2019}, CHiLL~\cite{chen_framework_2008}, Pluto~\cite{bondhugula_pluto_2008}, and AlphaZ~\cite{yuki_alphaz_2012} offer similar capabilities in terms of control flow though they often support more irregular regions that the polyhedral framework supports.
 %
-These are based on ISL~\cite{verdoolaege2010isl}.
+These are based on ISL~\cite{verdoolaege_isl_2010}.
 %
 The density of this research represents the density of support for dense computation.
 
@@ -45,35 +45,35 @@ The density of this research represents the density of support for dense computa
 \paragraph{ Compilers for Structured Data:}
 Several compilers exist for several types of structured data, often featuring separate languages for the storage of the structured data and the computation.
 %
-The TACO compiler originally supported just plain Einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, imperfectly nested loops \cite{dias_sparselnr_2022}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake2020sparse}, and convolution~\cite{won2023unified}, and compilation in MLIR \cite{bik_compiler_2022}, all as separate extensions.
+The TACO compiler originally supported just plain Einsum computations~\cite{kjolstad_tensor_2017}, but has been extended several times to support (single dimensional) local tensors \cite{kjolstad_tensor_2019}, imperfectly nested loops \cite{dias_sparselnr_2022}, breaks via semi-rings~\cite{henry_compilation_2021}, windowing and tiling \cite{senanayake_sparse_2020}, and convolution~\cite{won_unified_2023}, and compilation in MLIR \cite{bik_compiler_2022}, all as separate extensions.
 %
-Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures~\cite{chou2018format}, and tree like structures~\cite{chou2022compilation}, as separate extensions. SparseTIR is a similar system supporting combined 
-sparse formats (including block structures) \cite{ye_sparsetir_2022}.
+Similarly, TACO originally support just dense and CSF like N dimensional structures, but was extended independently to support COO like structures~\cite{chou_format_2018}, and tree like structures~\cite{chou_compilation_2022}, as separate extensions. SparseTIR is a similar system supporting combined 
+sparse formats (including block structures) \cite{ye_sparsetir_2023}.
 %
-The SDQL language offers a similar level of control flow~\cite{shaikhha2022functional}, but only on sparse hash tables.
+The SDQL language offers a similar level of control flow~\cite{shaikhha_functional_2022}, but only on sparse hash tables.
 %
-Similarly, SDQL has been extended with a system that allows one to specify formats as queries on a set of base storage types~\cite{schleich2023optimizing} and separately by another system that describes static symmetries and other structures as predicates~\cite{ghorbani2023compiling}.
+Similarly, SDQL has been extended with a system that allows one to specify formats as queries on a set of base storage types~\cite{schleich_optimizing_2023} and separately by another system that describes static symmetries and other structures as predicates~\cite{ghorbani_compiling_2023}.
 %
 %Taichi is another language with a separate program and data structure specification, but
 The Taichi language focuses on a single sparse data structure made from dense blocks, bit-masks, and pointers~\cite{hu_taichi_2019}.
 %
 %Outside of these works, the window of comparison fogs up.
 %
-The sparse polyhedral framework builds on CHiLL for the purpose of generating inspector/executor optimizations~\cite{strout2018sparse} though the branch of this work that specifies sparse formats separately from the computation (otherwise they are inlined into the computation manually) seems to apply mainly to Einsums~\cite{zhao2022polyhedral}.
+The sparse polyhedral framework builds on CHiLL for the purpose of generating inspector/executor optimizations~\cite{strout_sparse_2018} though the branch of this work that specifies sparse formats separately from the computation (otherwise they are inlined into the computation manually) seems to apply mainly to Einsums~\cite{zhao_polyhedral_2022}.
 %
-Second to last, SQL's classical physical/logical distinction is the classic program/format distinction, and SQL supports a huge variety of control flow constructs~\cite{kotlyar1997relational, date1989guide}.
+Second to last, SQL's classical physical/logical distinction is the classic program/format distinction, and SQL supports a huge variety of control flow constructs~\cite{kotlyar_relational_1997,date_guide_1989}.
 %
-However, many SQL or dataframe systems rely on b-trees, columnar, or hash tables, with only a few systems, such as Vectorwise~\cite{boncz2012vectorwise}, LaraDB~\cite{hutchison2017laradb}, GMAP~\cite{tsatalos1996gmap}, or SciDB~\cite{stonebraker2013scidb} building physical layouts with other constructs based in array programming.
+However, many SQL or dataframe systems rely on b-trees, columnar, or hash tables, with only a few systems, such as Vectorwise~\cite{boncz_vectorwise_2012}, LaraDB~\cite{hutchison_laradb_2017}, GMAP~\cite{tsatalos_gmap_1996}, or SciDB~\cite{stonebraker_scidb_2013} building physical layouts with other constructs based in array programming.
 %
-However, array based databases are a new focus given the rise of mixed ML/DB pipelines~\cite{baumann2021array,luo2018scalable}.
+However, array based databases are a new focus given the rise of mixed ML/DB pipelines~\cite{baumann_array_2021,luo_scalable_2018}.
 %
-Lastly, SPIRAL focuses on recursively defined datastructures and recursively define linear algebra, and can therefore express a structure and computation that none of the systems mentioned above can: a Cooley–Tukey FFT ~\cite{franchetti2018spiral,franchetti2009operator}.
+Lastly, SPIRAL focuses on recursively defined datastructures and recursively define linear algebra, and can therefore express a structure and computation that none of the systems mentioned above can: a Cooley–Tukey FFT ~\cite{franchetti_spiral_2018,franchetti_operator_2009}.
 %
 %RECUMA AND UNISPARSE are in OOPSLA R1, we should probably address these
 
 \paragraph{Other Architectures:} 
 
-Sparse compilers have been extended to many architectures. An extension of TACO supports GPU~\cite{senanayake2020sparse}, Cyclops~\cite{solomonik_cyclops_2013,solomonik_sparse_2015} and SPDistal~\cite{yadav_spdistal_2022-1} support distributed memory, and the Sparse Abstract Machine~\cite{hsu_sparse_2022} supports custom hardware.
+Sparse compilers have been extended to many architectures. An extension of TACO supports GPU~\cite{senanayake_sparse_2020}, Cyclops~\cite{solomonik_cyclops_2013,solomonik_sparse_2015} and SPDistal~\cite{yadav_spdistal_2022} support distributed memory, and the Sparse Abstract Machine~\cite{hsu_sparse_2023} supports custom hardware.
 We believe that supporting control flow is the first step towards architectural support beyond unstructured sparsity.
 
 %Sparse and structured com We would be remiss if we didn't mention another axis: architectural support. 

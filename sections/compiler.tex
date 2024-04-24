@@ -130,7 +130,7 @@ storage order of \mintinline{julia}{A} by adding a lazy transposition wrapper.
     is not needed because any tensor dimensions that share an index are assumed to be the same~\cite{kjolstad_tensor_2017}.
     %
     Other languages, such as Halide, perform bounds inference where
-    known bounds are symbolically propagated to fill in unknown bounds, often from output/input sizes to intermediates via some approximation such as interval analysis or polyhedral methods~\cite{ragan-kelley_halide_2013, grosser2012polly}.
+    known bounds are symbolically propagated to fill in unknown bounds, often from output/input sizes to intermediates via some approximation such as interval analysis or polyhedral methods~\cite{ragan-kelley_halide_2013,grosser_pollyperforming_2012}.
     %
     We refer to the process of discovering suitable
     dimensions as \textbf{dimensionalization}. 
