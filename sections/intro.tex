@@ -267,7 +267,9 @@ To our knowledge, the Finch programming language is the first to support if-cond
 %
 \item Our compiler is highly extensible, evidenced by the variety of level formats and control flow constructs that we implement in this work.
 %
-For example, Finch has been extended to support real-valued array indices with continuous arrays \cite{anonymous_authors_continuous_2024}. Finch is also used as a compiler backend for the Python PyData/Sparse library \cite{abbasi_plans_2023}.
+For example, Finch has been extended to support real-valued array indices with continuous arrays% \cite{anonymous_authors_continuous_2024}.
+%
+Finch is also used as a compiler backend for the Python PyData/Sparse library \cite{abbasi_plans_2023}.
 %
 \item We evaluate the efficiency, flexibility, and expressibility of our language in several case studies on a wide range of applications, demonstrating speedups over the state of the art in classic operations such as SpMV ($2.51\times$) and SpGEMM ($1.25\times$), to more complex applications such as graph analytics ($3.53\times$, reducing lines of code by $4\times$ over GraphBLAS), image processing ($19.5\times$), and the Python Array API ($28\times$).
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.
