@@ -1,0 +1,12 @@
+rm -f *.bak
+rm -f .*.bak
+rm -f */*.bak
+rm -f */*/*.bak
+rm -f *.pdf
+rm -f *.aux
+rm -f *.blg
+rm -f *.fdb_latexmk
+rm -f *.log
+rm -f *.synctex.gz
+rm -f *.fls
+rm -f *.out
