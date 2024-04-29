@@ -52,20 +52,20 @@ However, while dense arrays are the easiest way to program for performance, the 
 \end{figure}
 
 Our world is full of structured data.
-%
-Sparse arrays (which store only nonzero elements) describe networks, databases, and simulations~\cite{abhyankarpetsc, bell2007lessons, mcauley2013hidden, balay2020petsc}.
+
+Sparse arrays (which store only nonzero elements) describe networks, databases, and simulations~\cite{abhyankar_petsc_nodate,bell_lessons_2007,mcauley_hidden_2013,balay_petsc_2020}.
 %
 Run-length encoding describes images and masks, geometry, and
-databases (such as a list of transactions with the date field all the same)~\cite{shi2020column,golomb1966run}.
+databases (such as a list of transactions with the date field all the same)~\cite{shi_column_2020,golomb_run-length_1966}.
 %
-Symmetry, bands, padding, and blocks arise due to modeling choices in scientific computing (e.g., higher order FEMs) as well as in intermediate structures in many linear solvers (e.g., GMRES)~\cite{ded, saad2003iterative, o2009scientific}.
+Symmetry, bands, padding, and blocks arise due to modeling choices in scientific computing (e.g., higher order FEMs) as well as in intermediate structures in many linear solvers (e.g., GMRES)~\cite{burns_dedalus_2020,saad_iterative_2003,oleary_scientific_2009}.
 %
-In the context of machine learning, combinations of sparse and blocked matrices are increasingly under consideration~\cite{dao2022monarch}.
+In the context of machine learning, combinations of sparse and blocked matrices are increasingly under consideration~\cite{dao_monarch_2022}.
 %
 Even complex operators can be expressed as structured arrays.
 %
 For example, a convolution with a filter can be expressed as a matrix multiplication
-with the Toeplitz matrix of all the circular shifts of the filter~\cite{sze2017efficient}.
+with the Toeplitz matrix of all the circular shifts of the filter~\cite{sze_efficient_2017}.
 
 %
 \textbf{Currently, support for structured data is fragmented and incomplete}.
@@ -78,7 +78,7 @@ in a compromise between \textbf{program flexibility} and \textbf{data structure
 flexibility}.
 %
 Hand-written solutions are collected in diverse libraries like
-MKL, OpenCV, LAPACK or SciPy~\cite{ bradski2000opencv, anderson1999lapack, virtanen2020scipy, psarras2022linear}. 
+MKL, OpenCV, LAPACK or SciPy~\cite{bradski_opencv_2000,anderson_lapack_1999,virtanen_scipy_2020,psarras_linear_2022}. 
 %
 However, libraries will only ever support a subset of
 programs on a subset of data structure combinations.
@@ -86,14 +86,14 @@ programs on a subset of data structure combinations.
 Even the most advanced
 libraries, such as the GraphBLAS, which support a wide variety of sparse
 operations over various semi-rings always lack support for other features, such
-as tensors, fused outputs, or runs of repeated values~\cite{bulucc2017design, mattson2019lagraph}.
+as tensors, fused outputs, or runs of repeated values~\cite{buluc_design_2017,mattson_lagraph_2019}.
 %
 While dense array
 compilers support an enormous variety of program constructs like early break and
-multiple left hand sides, they only support dense arrays~\cite{ragan-kelley_halide_2013,grosser2012polly}.  
+multiple left hand sides, they only support dense arrays~\cite{ragan-kelley_halide_2013,grosser_pollyperforming_2012}.  
 %
 Special-purpose
-compilers like TACO~\cite{kjolstad_tensor_2019}, Taichi~\cite{hu_taichi_2019}, StructTensor~\cite{ghorbani2023compiling}, or CoRa~\cite{fegade_cora_2022} which support a select subset of structured data
+compilers like TACO~\cite{kjolstad_tensor_2019}, Taichi~\cite{hu_taichi_2019}, StructTensor~\cite{ghorbani_compiling_2023}, or CoRa~\cite{fegade_cora_2022} which support a select subset of structured data
 structures (only sparse, or only ragged arrays) must compromise by greatly
 constraining the classes of programs which they support, such as tensor
 contractions.
@@ -155,7 +155,7 @@ Prior implementations are incomplete because the abstractions they use are tight
 %
 For example, TACO merge lattices represent Boolean logic over sets of non-zero values on an integer grid~\cite{kjolstad_tensor_2017}.
 %
-The polyhedral model allows various compilers to represent dense computations on affine regions~\cite{grosser2012polly}.
+The polyhedral model allows various compilers to represent dense computations on affine regions~\cite{grosser_pollyperforming_2012}.
 %
 Taichi enriches single static assignment form with a specialized instruction for accessing only a single sparse structure, but it supports more control flow ~\cite{hu_taichi_2019}.
 These systems tightly couple their control flow to narrow classes of data structures to avoid the challenges that occur when we intersect complex control flow with structured data. There are two challenges:
@@ -172,7 +172,7 @@ These zero regions or repeated regions are optimization opportunities, and we mu
 
 \textbf{Performance on structured data is highly algorithm dependent}: The landscape of implementation decisions is dramatically unpredictable. 
 %
-For example, the asymptotic performance of sparse matrix multiplication can be impacted by the distribution of nonzeros, the sparse format, and the loop order~\cite{ahrens2022autoscheduling, zhang2021gamma}. 
+For example, the asymptotic performance of sparse matrix multiplication can be impacted by the distribution of nonzeros, the sparse format, and the loop order~\cite{ahrens_autoscheduling_2022,zhang_gamma_2021}. 
 %For example, sparse kernels don't need to compute on zeros, but this means that the precise input nonzero patterns act as computational filters, affecting the runtime as they interact with each other and the implementation.
 This means that performance engineering for such kernels requires the exploration of a large design space, changing the algorithm as well as the data structures.
 
@@ -257,7 +257,7 @@ As an example, a programmer might explore different ways to intersect only the e
 %
 We have chosen a set of level formats that completely captures all combinations of relevant structural properties (zeros, repeated values, and/or blocks).
 %
-Although many systems (TACO, Taichi, SPF, Ebb)~\cite{chou2018format,  hu_taichi_2019, strout2018sparse, bernstein2016ebb} feature a flexible structure description, our level abstraction is more capable and extensible because it uses Looplets \cite{ahrens_looplets_2023} to express the structure of each level. 
+Although many systems (TACO, Taichi, SPF, Ebb)~\cite{chou_format_2018,  hu_taichi_2019, strout_sparse_2018, bernstein_ebb_2016} feature a flexible structure description, our level abstraction is more capable and extensible because it uses Looplets \cite{ahrens_looplets_2023} to express the structure of each level. 
 %
 \item A rich structured array programming language with for-loops and complex control flow constructs at the same level of productivity of dense arrays. 
 %
@@ -267,7 +267,9 @@ To our knowledge, the Finch programming language is the first to support if-cond
 %
 \item Our compiler is highly extensible, evidenced by the variety of level formats and control flow constructs that we implement in this work.
 %
-For example, Finch has been extended to support real-valued array indices with continuous arrays \cite{won2024continuous}.
+For example, Finch has been extended to support real-valued array indices with continuous arrays. % \cite{anonymous_authors_continuous_2024}.
+%
+Finch is also used as a compiler backend for the Python PyData/Sparse library \cite{abbasi_plans_2023}.
 %
 \item We evaluate the efficiency, flexibility, and expressibility of our language in several case studies on a wide range of applications, demonstrating speedups over the state of the art in classic operations such as SpMV ($2.51\times$) and SpGEMM ($1.25\times$), to more complex applications such as graph analytics ($3.53\times$, reducing lines of code by $4\times$ over GraphBLAS), image processing ($19.5\times$), and the Python Array API ($28\times$).
 %We also demonstrate how Finch can fuse high-level operations to achieve a significant speedup over non-fused kernels. Additionally, as a case study, a high-level array programming language and fusion interface for operations such as map, broadcast, or reduce that can be compiled to efficient code using the previous loop-level abstractions.

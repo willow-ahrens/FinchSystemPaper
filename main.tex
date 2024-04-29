@@ -45,7 +45,7 @@
 %% for your publication.
 %%
 %%
-\documentclass[acmsmall,screen,review,anonymous]{acmart}
+\documentclass[acmsmall,screen,nonacm]{acmart}
 
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
@@ -58,7 +58,7 @@
 %% values in them; it is your responsibility as an author to replace
 %% the commands and values with those provided to you when you
 %% complete the rights form.
-\setcopyright{acmlicensed}
+\setcopyright{none}
 \copyrightyear{2024}
 \acmYear{2024}
 \acmDOI{XXXXXXX.XXXXXXX}
@@ -115,7 +115,7 @@
 %\usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{array}
-\usepackage{minted}
+\usepackage[frozencache]{minted}
 \usepackage{ifthen}
 \usepackage{ebproof}
 \ebproofset{label separation=0pt}
@@ -371,7 +371,7 @@
 %% identification of the section in the article metadata, and the
 %% consistent spelling of the heading.
 \begin{acks}
-    To Mateusz, Hameer, and Jaeyeon for their excellent programming contributions to the Finch codebase.
+  Intel and NSF PPoSS Grant CCF-2217064; DARPA PROWESS Award HR0011-23-C-0101; NSF SHF Grant CCF-2107244
 \end{acks}
 
 \clearpage
@@ -380,7 +380,7 @@
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{FinchOOPSLAWillow.bib, FinchOOPSLAOverleaf.bib}
+\bibliography{FinchOOPSLAWillow.bib}
 
 
 %%
