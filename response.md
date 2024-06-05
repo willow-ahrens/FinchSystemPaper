@@ -11,9 +11,9 @@ We began by clarifying the relationship between Finch and Looplets. Finch is the
 
 > **Reviewer C**: “some important parts, like the structure implementations, do not have detailed explanation.” "Does concordization impact performance? I ask because adding another loop level even with if-conditions might cause some slowdown."
 
-Finch relies on multiple detailed parts that all interact. While each part is explained in detail, examples would help relate the parts to the whole. We take Reviewer B's advice and propose a new section (a draft of which is given in our appendix) which relates the disparate parts through a complete example of lowering.
+Finch relies on multiple detailed parts that all interact. While each part is explained in detail, we agree with Reviewer B that an example would help relate the parts to the whole. We propose a new section which relates the disparate parts through a complete example of lowering. A complete draft is given in the appendix, and we summarize here:
 
-To summarize here: The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. the sparse polyhedral framework attempts similar optimizations (cite that one Mary Hall paper from a year ago)). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when avaliable, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector. It is up to the implementer of the structured level to ensure that `unfurl` returns a correct Looplet nest.
+The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. polyhedral [102] or e-graph search [77]). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when avaliable, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector. It is the implementer's responsibility to ensure that `unfurl` returns a correct Looplet nest.
 
 ```
 unfurl(SubFiber(A.lvl::SparseList, pos)) = Thunk(
@@ -53,15 +53,15 @@ if i == 5
     s[] = A.lvl.val[q]
 end
 ```
-The lowered code runs in logarithmic time. We achieve the desired code because of (1) how SparseList communicates its structure in looplet nests via unfurl, (2) how wrapperization converts `i == 5` to a symbolic `DiagMask[i, 5]` tensor, also expressed in looplets, and (3) how the two looplet nests reliably combine to fast forward the sparse iterator and eliminate the `if false` branches.
+The lowered code runs in logarithmic time. We achieve the desired code because of (1) how SparseList communicates its structure in looplet nests via unfurl, (2) how wrapperization converts `i == 5` to a symbolic `DiagMask[i, 5]`, which then converts to looplets, and (3) how the two looplet nests combine to fast forward the sparse iterator and eliminate the `if false` branches.
 
 This is an example of the productivity of Finch, as we were able to implement efficient scalar reads and writes for all combinations of formats by simply combining the `unfurl` definitions with a structured tensor.
 
-Our language allows fairly complex programs to be expressed on fairly complex structures yet still have these optimizations happen in a predictable and reliable way. Our normal form, life cycles, concordization, and wrapperization are key ideas that allow us to boil our Finch language down to looplets so that the right looplet optimizations fire. 
+Our language allows fairly complex programs to be expressed on fairly complex structures becayse these optimizations happen in a predictable and reliable way. Our normal form, life cycles, concordization, and wrapperization are key ideas that allow us to boil our Finch language down to looplets so that the right looplet optimizations fire. 
 
 > **Reviewer B**: “the use of wrappers ... appears to require materializing potentially expensive temporaries (e.g. Toeplitz matrices).”
 
-None of the wrapper arrays are materialized, they are all lazy. Wrappers instead modify the behavior of `unfurl`, dimensionalization, and other looplet properties such as `stop`. To give an example in terms of the simpler `OffsetArray(1)`,
+We appreciate this concern, and assure Reviewer B that none of the wrapper arrays are materialized, they are all lazy. Wrappers instead modify the behavior of `unfurl`, dimensionalization, and other looplet properties such as `stop`. We plan to expand the section on wrapperization and masks to show the interface and clarify how they are allowed to modify Looplets. To give an example in terms of the simpler `OffsetArray(1)`,
 
 ```
 A = Tensor(Dense(Element(0.0)))
@@ -81,21 +81,20 @@ for i = 2:4
 end
 ```
 
-We will also expand the section on wrapperization and masks to show the interface and clarify how they are allowed to modify Looplets. Additionally, this further shows the productivity in Finch: by adding more wrappers that reinterpret looplet nests in different ways, we can allow users to experiment with different low level strategies: for an index expression `i+j`, the compiler currently scans through i after looking up j, but other strategies are possible. And this is in addition to just mixing one strategy for an index expression with many different structures.
-
 ## Clarifying the Evaluation
 
 Reviewer A asks that we compare to another SpMV and SpGEMM implementation (in addition to TACO and Julia), we agree that this would strengthen the work and plan to include a comparison against Eigen, SparseTIR, or Cora on the datasets where it is relevant. Other related work is either specialized to different architectures (such as Taichi to GPUs) or is not open source (such as MKL or STUR).
 
-Reviewer A also requests geo-mean speedups for our SpMV and SpGEMM implementations, which were _ and _, respectively. We plan to include geo-mean speedups.
-The SpGEMM dataset was chosen to be the matrices in  [101]. We separated the matrices into small matrices and large matrices. Because of asymptotic slowdowns, we couldn’t run TACO outer products or inner products on the large matrices. However, since the matrices are organized by size in the small matrix plot, we can already see the beginnings of a trend where the performance of TACO outer products and inner products perform worse as the matrix size increases. We will include a dedicated scaling plot to make these relationships more clear. Moreover, we used a matrix test set designed to reveal this asymtoptic difference, as seen in (Cite Joel's paper).
+As suggested by Reviewer A, we also plan to report our geo-mean speedups, which were:
 
+
+The SpGEMM dataset was chosen to be the matrices in [101], a matrix test set designed to reveal asymtoptic differences in SpGEMM algorithms. We separated the matrices into small matrices and large matrices. Because of asymptotic slowdowns, we couldn’t run TACO outer products or inner products on the large matrices. However, since the matrices are organized by size in the small matrix plot, we can already see the beginnings of a trend where the TACO outer products and inner products perform worse as the matrix size increases. We will include a dedicated scaling plot to make these relationships more clear. 
 
 > **Reviewer B**: “In Section 6.1, the text says that the program in Figure 14 is restricting its attention to the canonical triangle using masks, but it looks like all three flavors are looping over the bounds of i and j in their entirety?”
 
 > **Reviewer C**: "Please quantify and comment upon the overheads due to extra book keeping code generated by the compiler inside loop nests."
 
-To Reviewer B, this is a typo in the text. For symmetric SpMV, we found it is faster to pre-compute the strict triangle of the argument and re-use it within the kernel, to simplify the logic. It is of course possible to add an `if i < j` statement and compute the triangle on the fly without accessing the whole matrix, but the runtime of SpMV is impacted because this changes the exit condition of that loop.
+To Reviewer B, this is a typo in the text. For symmetric SpMV, we found it is faster to pre-compute the strict triangle of the argument and re-use it within the kernel, to simplify the logic. It is of course possible to add an `if i < j` statement and compute the triangle on the fly without accessing the whole matrix, but the runtime of SpMV is impacted because this changes the exit condition of the innermost loop.
 
 In general, we have found Finch is quite adept at lifting conditionals to the highest level of the loop nest, but that there is a tradeoff between the branching between specialized routines and the benefits of such specialization. Specialization is better in cases where the specialized routine is much faster and much more frequent (such as the zero region of a sparse tensor, which becomes a no-op). In practice, this has led us to sometimes ask Finch to de-specialize certain conditional expressions, and is another example of how Finch can widen the design space for structured operators. We will include a discussion of this tradeoff in the paper.
 
@@ -103,15 +102,17 @@ In general, we have found Finch is quite adept at lifting conditionals to the hi
 
 > **Reviewer C**:  “I would have liked to see quantifying data like how many times you had to use Sequentially constructed levels over Nonsequentially Constructed Levels”
 
-Our SpMV evaluation demonstrates the performance of the SparseList, SparseVBL, SparseBand, and Pattern level formats, as well as conditionals and multiple outputs in the symmetric kernel
+In the following list, nonsequental formats are marked with *.
 
-Our SpMM evaluation shows off the importance of sparse intermediates (SparseBytemap and SparseHash are non-sequential) and the flexibility of our language for scheduling, doing all three matrix multiplication variants.
+SpMV exercises SparseList, SparseVBL, SparseBand, and Pattern formats, as well as multiple outputs in the symmetric kernel.
 
-Our Graph applications demonstrate conditionals, complex loop structures, early breaks, and user-defined functions.
+SpMM exercies SparseBytemap* and SparseHash* formats, as well as sparse intermediates, and demonstrates the flexibility of our language for scheduling all three matrix multiplication variants.
 
-Our Image Morphology benchmarks demonstrate the flexibility of the language, as well as affine indexing and `sparseRLE` and `pattern` formats, as well as user-defined functions.
+Graph Applications exercise SparseBytemap* and Pattern formats, and conditionals, complex loop structures, early breaks, and user-defined functions.
 
-The Array API benchmark shows that the language is reliable and flexible enough to support autoscheduling. It also involves user-defined functions and `SparseHash, non-sequential` format.
+Image Morphology exercises SparseRLE and Pattern formats, as well as affine indexing, padding, and user-defined functions, and demonstrates the flexibility of our language.
+
+The Array API scheduler exercises SparseHash* format and user-defined functions, and shows that the language is reliable and flexible enough to support autoscheduling.
 
 > **Reviewer C**: I would like to know why the formats provide the speedup: Is it just due to looplets iterators at each level? Is it due to constructed levels and if so, how do they provide benefit over other constructed levels and why over TACO’s representation?
 
