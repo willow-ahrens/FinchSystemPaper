@@ -13,7 +13,7 @@ We began by clarifying the relationship between Finch and Looplets. Finch is the
 
 Finch relies on multiple detailed parts that all interact. While each part is explained in detail, we agree with Reviewer B that an example would help relate the parts to the whole. We propose a new section which relates the disparate parts through a complete example of lowering. A complete draft is given in the appendix, and we summarize here:
 
-The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. polyhedral [102] or e-graph search [77]). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when avaliable, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector. It is the implementer's responsibility to ensure that `unfurl` returns a correct Looplet nest.
+The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. polyhedral [102] or e-graph search [77]). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when avaliable, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector.
 
 ```
 unfurl(SubFiber(A.lvl::SparseList, pos)) = Thunk(
