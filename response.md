@@ -329,7 +329,7 @@ We compared with the native C implementation of LAGraph, which calls GraphBLAS u
 
 > I appreciate that you mention this timeout and would be curious who timed out? Finch, Graphblas, ...? Are there previously reported numbers on GAP-road and why does this time a timeout occur?
 
-[98] does not measure Bellman-ford, which is a more expensive algorithm that scales roughly as O(V*E), a quantity which is about 20x larger in GAP-road. GAP-road has 23.9M vertices. At 8 B per integer distance, this exceeds the 49.5 MB L3 cache on our processor, and we stopped measuring LAGraph/GraphBLAS after an hour. We will add a note to the paper.
+[98] does not measure Bellman-Ford, which is a more expensive algorithm. In the implementations we tested, the number of iterations of Bellman-Ford is bounded by the diameter of the graph. GAP-road has a very large diameter. For example, soc-orkut has 212.7M edges and a diameter of 9. GAP-road has 577.1M edges and a diameter of 6809. If each iteration ran in `O(nnz)`, this would result in a factor of 2059  increase in expected runtime. We stopped measuring LAGraph/GraphBLAS after an hour. We will add a note to the paper.
 
 > [98] evaluates on 11 datasets, but this work only on 6. I am unsure why the others are omitted.
 
