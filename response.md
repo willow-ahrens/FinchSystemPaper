@@ -4,7 +4,7 @@ We thank the reviewers for their thorough feedback, as it will surely improve th
 
 ## Relationship to Looplets
 
-We began by clarifying the relationship between Finch and Looplets. Finch is the only framework to support such a broad range of single and multidimensional structured data and control flow. Looplets alone could not achieve these results without Finch. While Looplets provide a powerful mechanism to simplify structured loops, our paper shows how to make this functionality practical. Finch uses Looplets as a symbolic loop simplification engine. The precise choice and implementation of level structures, the lifecycle interface between levels and looplets, and the canonicalization of fancy indexing and masking operations all serve to recombine and utilize looplets to achieve efficient computation over structured tensors.
+We began by clarifying the relationship between Finch and Looplets. Finch is the only framework to support such a broad range of single and multidimensional structured data and control flow. Looplets alone could not achieve these results without Finch. While Looplets provide a powerful mechanism to simplify structured loops, our paper shows how to make this functionality practical. Finch uses Looplets as a symbolic loop simplification engine. The precise choice and implementation of level structures, the lifecycle interface between levels and looplets, and the canonicalization of fancy indexing and masking operations all serve to recombine and utilize looplets to achieve efficient computation over structured tensors. We will illustrate this further in the next section.
 
 ## Improving the Explanation of the Compiler
 > **Reviewer B**: “it appears that all the magic has been squirreled away in the unfurl function”, “the concordization step described in Section 5.4 looks very expensive”
@@ -13,7 +13,7 @@ We began by clarifying the relationship between Finch and Looplets. Finch is the
 
 Finch relies on multiple detailed parts that all interact. While each part is explained in detail, examples would help relate the parts to the whole. We take Reviewer B's advice and propose a new section (a draft of which is given in our appendix) which relates the disparate parts through a complete example of lowering.
 
-To summarize here: The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used. We chose Looplets because they reliably process structured iterators. Here is an simplified definition of `unfurl` for a SparseList vector. It is up to the implementer of the structured level to ensure that `unfurl` returns a correct Looplet nest.
+To summarize here: The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. the sparse polyhedral framework attempts similar optimizations (cite that one Mary Hall paper from a year ago)). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when avaliable, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector. It is up to the implementer of the structured level to ensure that `unfurl` returns a correct Looplet nest.
 
 ```
 unfurl(SubFiber(A.lvl::SparseList, pos)) = Thunk(
@@ -81,13 +81,14 @@ for i = 2:4
 end
 ```
 
+We will also expand the section on wrapperization and masks to show the interface and clarify how they are allowed to modify Looplets. Additionally, this further shows the productivity in Finch: by adding more wrappers that reinterpret looplet nests in different ways, we can allow users to experiment with different low level strategies: for an index expression `i+j`, the compiler currently scans through i after looking up j, but other strategies are possible. And this is in addition to just mixing one strategy for an index expression with many different structures.
 
 ## Clarifying the Evaluation
 
 Reviewer A asks that we compare to another SpMV and SpGEMM implementation (in addition to TACO and Julia), we agree that this would strengthen the work and plan to include a comparison against Eigen, SparseTIR, or Cora on the datasets where it is relevant. Other related work is either specialized to different architectures (such as Taichi to GPUs) or is not open source (such as MKL or STUR).
 
 Reviewer A also requests geo-mean speedups for our SpMV and SpGEMM implementations, which were _ and _, respectively. We plan to include geo-mean speedups.
-The SpGEMM dataset was chosen to be the matrices in  [101]. We separated the matrices into small matrices and large matrices. Because of asymptotic slowdowns, we couldn’t run TACO outer products or inner products on the large matrices. However, since the matrices are organized by size in the small matrix plot, we can already see the beginnings of a trend where the performance of TACO outer products and inner products perform worse as the matrix size increases. We will include a dedicated scaling plot to make these relationships more clear.
+The SpGEMM dataset was chosen to be the matrices in  [101]. We separated the matrices into small matrices and large matrices. Because of asymptotic slowdowns, we couldn’t run TACO outer products or inner products on the large matrices. However, since the matrices are organized by size in the small matrix plot, we can already see the beginnings of a trend where the performance of TACO outer products and inner products perform worse as the matrix size increases. We will include a dedicated scaling plot to make these relationships more clear. Moreover, we used a matrix test set designed to reveal this asymtoptic difference, as seen in (Cite Joel's paper).
 
 
 > **Reviewer B**: “In Section 6.1, the text says that the program in Figure 14 is restricting its attention to the canonical triangle using masks, but it looks like all three flavors are looping over the bounds of i and j in their entirety?”
