@@ -13,7 +13,7 @@ We began by clarifying the relationship between Finch and Looplets. Finch is the
 
 Finch relies on multiple detailed parts that all interact. While each part is explained in detail, we agree with Reviewer B that an example would help relate the parts to the whole. We propose a new section which relates the disparate parts through a complete example of lowering. A complete draft is given in the appendix, and we summarize here:
 
-The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. polyhedral [102] or e-graph search [77]). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when avaliable, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector.
+The `unfurl` function returns a Looplet nest describing the hierarchical structure of the outermost dimension of the tensor. Looplets were chosen for this purpose as a symbolic engine to ensure certain simplifications take place, but another symbolic system could have been used (e.g. polyhedral [102] or e-graph search [77]). We chose Looplets because they reliably process structured iterators, predictably eliminating zero regions, using faster lookups when available, and utilizing repeated work. Here is an simplified definition of `unfurl` for a SparseList vector.
 
 ```
 unfurl(SubFiber(A.lvl::SparseList, pos)) = Thunk(
@@ -192,7 +192,7 @@ end
 @finch @freeze(s)
 ```
 
-Next, we process the `i` loop. We Unfurl the tensors, replacing them with the follwing nests of looplets:
+Next, we process the `i` loop. We Unfurl the tensors, replacing them with the following nests of looplets:
 
 ```
 unfurl(UpTriMaskCol(j)) = 
@@ -303,11 +303,11 @@ The final program accesses only the upper triangle of A, though the original cod
 
 > Which features of your language are exercised by which case study? Can you indicate which features your baseline is lacking to reach the performance you are demonstrating.
 
-The baseline implemenation usually uses a combination of SparseList and Dense formats, which do not specialize at all to the particular structures we tested against.
+The baseline implementation usually uses a combination of SparseList and Dense formats, which do not specialize at all to the particular structures we tested against.
 
 - SpMV exercises SparseVBL, SparseBand, and Pattern formats, as well as multiple outputs in the symmetric kernel.
 
-- SpMM exercies SparseBytemap and SparseHash formats, as well as sparse intermediates, and demonstrates the flexibility of our language for scheduling all three matrix multiplication variants.
+- SpMM exercises SparseBytemap and SparseHash formats, as well as sparse intermediates, and demonstrates the flexibility of our language for scheduling all three matrix multiplication variants.
 
 - Graph Applications exercise SparseBytemap and Pattern formats, and conditionals, complex loop structures, early breaks, and user-defined functions.
 
@@ -317,7 +317,7 @@ The baseline implemenation usually uses a combination of SparseList and Dense fo
 
 > It is unclear how the [SpGEMM] dataset has been selected. A reference to a standard matrix dataset would be appreciated
 
-The SpGEMM dataset was chosen to be the matrices in [101], a matrix test set designed to reveal asymtoptic differences in SpGEMM algorithms. We separated the matrices into small matrices and large matrices. Because of asymptotic slowdowns, we couldn’t run TACO outer products or inner products on the large matrices. However, since the matrices are organized by size in the small matrix plot, we can already see the beginnings of a trend where the TACO outer products and inner products perform worse as the matrix size increases. We will include a dedicated scaling plot to make these relationships more clear. 
+The SpGEMM dataset was chosen to be the matrices in [101], a matrix test set designed to reveal asymptotic differences in SpGEMM algorithms. We separated the matrices into small matrices and large matrices. Because of asymptotic slowdowns, we couldn’t run TACO outer products or inner products on the large matrices. However, since the matrices are organized by size in the small matrix plot, we can already see the beginnings of a trend where the TACO outer products and inner products perform worse as the matrix size increases. We will include a dedicated scaling plot to make these relationships more clear. 
 
 > Do you report here the 'geo mean' or 'arith mean' speedup?
 
